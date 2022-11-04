@@ -1,0 +1,21 @@
+set(lib_sources
+    RouterApi.cpp
+    SqliteInterface.cpp
+    cli.cpp
+    )
+
+set(lib_includes
+    sqlite
+    "./"
+    )
+
+add_subdirectory(sqlite)
+
+add_library(${main_lib_name} STATIC 
+    ${lib_sources} )
+
+target_link_libraries(${main_lib_name} 
+    lib_sqlite )
+
+target_include_directories(${main_lib_name} PUBLIC
+    ${lib_includes} )

@@ -1,0 +1,11 @@
+set(exec_sources
+    "main.cpp")
+
+add_executable(${exec_name} 
+    ${exec_sources}) 
+
+target_link_libraries(${exec_name} 
+    ${main_lib_name})
+
+target_include_directories(${exec_name} PUBLIC 
+    ${CMAKE_SOURCE_DIR}/src)
