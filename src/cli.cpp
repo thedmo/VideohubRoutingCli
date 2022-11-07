@@ -61,63 +61,119 @@ void cli::RemoveRouter() {
 }
 
 void cli::SelectRouter(int argc, const char *argv[], int &current_argument_index) {
-  int required_arg_count = 1;
-  if (!CheckArgCount(argc, current_argument_index, m_err_msg)) {
+  if (CheckArgCount(argc, current_argument_index, m_err_msg) != OK) {
     std::cout << "Error: " << m_err_msg << '\n';
     return;
   }
 
-  if (!Vapi::SelectRouter(argv[++current_argument_index], m_err_msg)) {
+  if (Vapi::SelectRouter(argv[++current_argument_index], m_err_msg) != Vapi::OK) {
     std::cout << "Error: " << m_err_msg << '\n';
     return;
   }
 };
 
-void cli::ListDevices(){
+void cli::ListDevices() {
+
+  std::string device_list;
+
+  if (Vapi::GetDevices(device_list, m_err_msg) != Vapi::OK) {
+    std::cout << "Error: " << m_err_msg << '\n';
+    return;
+  }
+
+  std::cout << device_list << std::endl;
+};
+
+void cli::RenameSource(int argc, const char *argv[], int &current_argument_index) {
+  std::string new_name;
+  int channel_number;
+
+  //Check first argument
+  if (CheckArgCount(argc, current_argument_index, m_err_msg) != OK) {
+    std::cout << "Error: " << m_err_msg << '\n';
+    return;
+  }
+
+  new_name = argv[++current_argument_index];
+
+  //check second Argument
+  if (CheckArgCount(argc, current_argument_index + 1, m_err_msg) != OK) {
+    std::cout << "Error: " << m_err_msg << '\n';
+    return;
+  }
+
+  channel_number = std::stoi(argv[++current_argument_index]);
+
+  if (Vapi::RenameSource(new_name, channel_number, m_err_msg) != Vapi::OK) {
+    std::cout << "Error: " << m_err_msg << '\n';
+    return;
+  }
+};
+
+void cli::ListSources() {
 
 };
 
-void cli::RenameSource(int argc, const char *argv[], int &current_argument_index){
+void cli::RenameDestination(int argc, const char *argv[], int &current_argument_index) {
+  std::string new_name;
+  int channel_number;
+
+  //Check first argument
+  if (CheckArgCount(argc, current_argument_index, m_err_msg) != OK) {
+    std::cout << "Error: " << m_err_msg << '\n';
+    return;
+  }
+
+  new_name = argv[++current_argument_index];
+
+  //check second Argument
+  if (CheckArgCount(argc, current_argument_index + 1, m_err_msg) != OK) {
+    std::cout << "Error: " << m_err_msg << '\n';
+    return;
+  }
+
+  channel_number = std::stoi(argv[++current_argument_index]);
+
+  if (Vapi::RenameDestination(new_name, channel_number, m_err_msg) != Vapi::OK) {
+    std::cout << "Error: " << m_err_msg << '\n';
+    return;
+  };
+}
+
+void cli::ListDestinations() {
+  std::string destination_list;
+  if (Vapi::GetDestinations(destination_list, m_err_msg) != Vapi::OK) {
+    std::cout << "Error: " << m_err_msg << '\n';
+    return;
+  }
+  std::cout << destination_list << std::endl;
+};
+
+void cli::PrepareNewRoute(int argc, const char *argv[], int &current_argument_index) {
 
 };
 
-void cli::ListSources(){
+void cli::TakePreparedRoutes() {
 
 };
 
-void cli::RenameDestination(int argc, const char *argv[], int &current_argument_index){
+void cli::LockRoute(int argc, const char *argv[], int &current_argument_index) {
 
 };
 
-void cli::ListDestinations(){
+void cli::ListRoutes() {
 
 };
 
-void cli::PrepareNewRoute(int argc, const char *argv[], int &current_argument_index){
+void cli::SaveRouting(int argc, const char *argv[], int &current_argument_index) {
 
 };
 
-void cli::TakePreparedRoutes(){
+void cli::ListSavedRoutings() {
 
 };
 
-void cli::LockRoute(int argc, const char *argv[], int &current_argument_index){
-
-};
-
-void cli::ListRoutes(){
-
-};
-
-void cli::SaveRouting(int argc, const char *argv[], int &current_argument_index){
-
-};
-
-void cli::ListSavedRoutings(){
-
-};
-
-void cli::LoadRouting(int argc, const char *argv[], int &current_argument_index){
+void cli::LoadRouting(int argc, const char *argv[], int &current_argument_index) {
 
 };
 
@@ -131,32 +187,33 @@ int cli::Evaluate(const int argc, const char *argv[]) {
 
       switch (option) {
         case (Flags::add_router): {
-          std::cout << "Adding Router" << std::endl;
-          AddRouter(argc, argv, i);
-          break;
-        }
+            std::cout << "Adding Router" << std::endl;
+            AddRouter(argc, argv, i);
+            break;
+          }
         case (Flags::remove_router): {
-          std::cout << "Removing selected router" << std::endl;
-          RemoveRouter();
-          break;
-        }
+            std::cout << "Removing selected router" << std::endl;
+            RemoveRouter();
+            break;
+          }
         case (Flags::list_devices): {
           // list routers
-          std::cout << "listing devices" << '\n';
-          break;
-        }
+            std::cout << "listing devices" << '\n';
+            break;
+          }
         case (Flags::help): {
           // help
-          PrintHelp();
-          break;
-        }
+            PrintHelp();
+            break;
+          }
         default:
           PrintHelp();
           break;
       }
     }
-  } else {
-    // helping
+  }
+  else {
+ // helping
     std::cout << "No Argument passed." << std::endl;
     PrintHelp();
   }
