@@ -22,7 +22,7 @@ int Vapi::GetDevices(std::string &callback, std::string &errmsg)
     errmsg = "Not implemented yet";
     return NOT_OK;
 }
-int Vapi::RenameSource(const std::string new_name, std::string &errmsg)
+int Vapi::RenameSource(const std::string new_name, int channel_number, std::string &errmsg)
 {
     errmsg = "Not implemented yet";
     return NOT_OK;
@@ -32,7 +32,7 @@ int Vapi::GetSources(std::string &callback, std::string &errmsg)
     errmsg = "Not implemented yet";
     return NOT_OK;
 }
-int Vapi::RenameDestination(const std::string new_name, std::string &errmsg)
+int Vapi::RenameDestination(const std::string new_name, int channel_number, std::string &errmsg)
 {
     errmsg = "Not implemented yet";
     return NOT_OK;

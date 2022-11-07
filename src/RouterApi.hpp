@@ -10,9 +10,9 @@ class Vapi {
   static int SelectRouter(std::string ip, std::string &errmsg);
   static int RemoveSelectedRouter(std::string &errmsg);
   static int GetDevices(std::string &callback, std::string &errmsg);
-  static int RenameSource(const std::string new_name, std::string &errmsg);
+  static int RenameSource(const std::string new_name, int channel_number, std::string &errmsg);
   static int GetSources(std::string &callback, std::string &errmsg);
-  static int RenameDestination(const std::string new_name, std::string &errmsg);
+  static int RenameDestination(const std::string new_name, int channel_number, std::string &errmsg);
   static int GetDestinations(std::string &callback, std::string &errmsg);
   static int PrepareNewRoute(unsigned int destination, unsigned int source, std::string &errmsg);
   static int TakePreparedRoutes(std::string &errmsg);
