@@ -18,7 +18,7 @@ class Vapi {
   static int TakePreparedRoutes(std::string &errmsg);
   static int LockRoutes(unsigned int destination, std::string &errmsg);
   static int GetRoutes(std::string &errmsg);
-  static int SaveRoutes(const std::vector<int> destinations, std::string &errmsg);
+  static int SaveRoutes(const std::string destinations, std::string &errmsg);
   static int GetSavedRoutes(std::string &errmsg);
   static int LoadRoutes(std::string name, std::string &errmsg);
 

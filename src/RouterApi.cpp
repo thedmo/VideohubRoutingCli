@@ -62,7 +62,7 @@ int Vapi::GetRoutes(std::string &errmsg)
     errmsg = "Not implemented yet";
     return NOT_OK;
 }
-int Vapi::SaveRoutes(const std::vector<int> destinations, std::string &errmsg)
+int Vapi::SaveRoutes(const std::string destinations, std::string &errmsg)
 {
     errmsg = "Not implemented yet";
     return NOT_OK;
