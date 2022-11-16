@@ -11,6 +11,7 @@ class cli {
   int Evaluate(const int argc, const char* argv[]);
 
  private:
+ // TODO: Add desciption with examples
   struct Option {
     int option_number;
     std::string short_name, long_name;
