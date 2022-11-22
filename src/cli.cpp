@@ -1,4 +1,5 @@
 #include <cli.hpp>
+#include <stdexcept>
 
 // Usage
 void cli::PrintHelp() {
@@ -14,17 +15,10 @@ void cli::PrintHelp() {
 // EVALUATION =====================
 
 int cli::CompareToOptions(const std::string comp_str) {
-  //   std::cout << "Options count: " << m_options.size() << std::endl;
-
-  //   std::cout << "Option: " << comp_str << '\n';
-
   for (size_t i = 0; i < m_options.size(); i++) {
     if ((comp_str == m_options[i].short_name) || (comp_str == m_options[i].long_name)) {
-      //   std::cout << " , Option number: " << std::to_string(m_options[i].option_number) << std::endl;
       return m_options[i].option_number;
     }
-
-    // std::cout << m_options[i].option_number << ", " << m_options.at(i).short_name << ", " << m_options.at(i).long_name << ", " << std::endl;
   }
 
   std::cout << comp_str << " not found." << std::endl;
@@ -88,7 +82,19 @@ void cli::RenameSource(int argc, const char *argv[], int &current_argument_index
   std::string new_name;
   int channel_number;
 
-  // Check first argument
+  if (CheckArgCount(argc, current_argument_index, m_err_msg) != OK) {
+    std::cout << "Error: " << m_err_msg << '\n';
+    return;
+  }
+
+  try {
+    channel_number = std::stoi(argv[++current_argument_index]);
+  } catch (const std::exception &exception) {
+    std::cout << "Error: " << exception.what() << std::endl;
+    return;
+  }
+
+  // check second Argument
   if (CheckArgCount(argc, current_argument_index, m_err_msg) != OK) {
     std::cout << "Error: " << m_err_msg << '\n';
     return;
@@ -96,15 +102,7 @@ void cli::RenameSource(int argc, const char *argv[], int &current_argument_index
 
   new_name = argv[++current_argument_index];
 
-  // check second Argument
-  if (CheckArgCount(argc, current_argument_index + 1, m_err_msg) != OK) {
-    std::cout << "Error: " << m_err_msg << '\n';
-    return;
-  }
-
-  channel_number = std::stoi(argv[++current_argument_index]);
-
-  if (Vapi::RenameSource(new_name, channel_number, m_err_msg) != Vapi::OK) {
+  if (Vapi::RenameSource(channel_number, new_name, m_err_msg) != Vapi::OK) {
     std::cout << "Error: " << m_err_msg << '\n';
     return;
   }
@@ -116,7 +114,7 @@ void cli::ListSources(){
 
 void cli::RenameDestination(int argc, const char *argv[], int &current_argument_index) {
   std::string new_name;
-  int channel_number;
+  int channel_number = 0;
 
   // Check first argument
   if (CheckArgCount(argc, current_argument_index, m_err_msg) != OK) {
@@ -124,18 +122,22 @@ void cli::RenameDestination(int argc, const char *argv[], int &current_argument_
     return;
   }
 
-  new_name = argv[++current_argument_index];
+  try {
+    channel_number = std::stoi(argv[++current_argument_index]);
+  } catch (const std::invalid_argument &exception) {
+    std::cout << "Error, not a valid integer: " << exception.what() << std::endl;
+    return;
+  }
 
   // check second Argument
-  if (CheckArgCount(argc, current_argument_index + 1, m_err_msg) != OK) {
+  if (CheckArgCount(argc, current_argument_index, m_err_msg) != OK) {
     std::cout << "Error: " << m_err_msg << '\n';
     return;
   }
 
-  // TODO: Check, if integer
-  channel_number = std::stoi(argv[++current_argument_index]);
+  new_name = argv[++current_argument_index];
 
-  if (Vapi::RenameDestination(new_name, channel_number, m_err_msg) != Vapi::OK) {
+  if (Vapi::RenameDestination(channel_number, new_name, m_err_msg) != Vapi::OK) {
     std::cout << "Error: " << m_err_msg << '\n';
     return;
   };
@@ -158,16 +160,23 @@ void cli::PrepareNewRoute(int argc, const char *argv[], int &current_argument_in
     std::cout << "Error: " << m_err_msg << '\n';
     return;
   }
-  // TODO: Check, if integer
-  temp_destination = std::stoi(argv[++current_argument_index]);
+
+  try {
+    temp_destination = std::stoi(argv[++current_argument_index]);
+  } catch (const std::invalid_argument &exception) {
+    std::cout << "Error, not a valid integer: " << exception.what() << std::endl;
+  }
 
   if (CheckArgCount(argc, current_argument_index, m_err_msg) != OK) {
     std::cout << "Error: " << m_err_msg << '\n';
     return;
   }
-  // TODO: Check, if integer
-  temp_source = std::stoi(argv[++current_argument_index]);
 
+  try {
+    temp_source = std::stoi(argv[++current_argument_index]);
+  } catch (const std::invalid_argument &exception) {
+    std::cout << "Error, not a valid integer: " << exception.what() << std::endl;
+  }
   if (Vapi::PrepareNewRoute(temp_destination, temp_source, m_err_msg) != Vapi::OK) {
     std::cout << "Error: " << m_err_msg << '\n';
     return;
@@ -188,9 +197,12 @@ void cli::LockRoute(int argc, const char *argv[], int &current_argument_index) {
     std::cout << "Error: " << m_err_msg << '\n';
     return;
   }
-  // TODO: Check, if integer
-  temp_destination = std::stoi(argv[++current_argument_index]);
 
+  try {
+    temp_destination = std::stoi(argv[++current_argument_index]);
+  } catch (const std::invalid_argument &exception) {
+    std::cout << "Error, not a valid integer: " << exception.what() << std::endl;
+  }
   if (Vapi::LockRoutes(temp_destination, m_err_msg) != Vapi::OK) {
     std::cout << "Error: " << m_err_msg << '\n';
     return;
