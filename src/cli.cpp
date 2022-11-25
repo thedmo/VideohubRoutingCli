@@ -108,8 +108,13 @@ void cli::RenameSource(int argc, const char *argv[], int &current_argument_index
   }
 };
 
-void cli::ListSources(){
+void cli::ListSources() {
+  std::string device_text;
 
+  if (Vapi::GetDevices(device_text, m_err_msg) != Vapi::OK) {
+    std::cout << "Error: " << m_err_msg << std::endl;
+    return;
+  }
 };
 
 void cli::RenameDestination(int argc, const char *argv[], int &current_argument_index) {
