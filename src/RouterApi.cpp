@@ -1,8 +1,23 @@
 #include <RouterApi.hpp>
 
+Vapi::Vapi() {
+  // vdb m_sqlite;
+}
+
 int Vapi::AddRouter(std::string ip, std::string &errmsg) {
-  errmsg = "Not implemented yet";
-  return NOT_OK;
+  // TODO: make sqlite object member of static class
+   vdb m_sqlite;
+  if (m_sqlite.check_if_exists(ip)) {
+    errmsg = "router with ip: " + ip + " was already added to devices";
+    return NOT_OK;
+  };
+
+  // TODO: Get data from device
+
+  device_data *new_router = new device_data{
+      ip, "'dummy'", 9999, 9999, "'dummy'", "'dummy'", "'dummy'", "'dummy'", "'dummy'"};
+
+  m_sqlite.insert_device_into_db(new_router);
 
   return OK;
 }

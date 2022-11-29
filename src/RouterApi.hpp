@@ -3,7 +3,7 @@
 
 class Vapi {
  public:
-  Vapi(){};
+  Vapi();
   ~Vapi(){};
 
   static int AddRouter(std::string ip, std::string &errmsg);
@@ -24,5 +24,7 @@ class Vapi {
 
   static const int NOT_OK = 1;
   static const int OK = 0;
+
+//   static vdb m_sqlite;
  private:
 };
