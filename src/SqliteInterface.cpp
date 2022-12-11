@@ -54,7 +54,7 @@ int vdb::sql_query(std::string query) {
 
 bool vdb::check_if_exists(std::string ip) {
   int rows;
-  std::string query = "SELECT ip FROM " + DEVICES_TABLE + " WHERE ip = '" + ip + "';";  // instr(\"ip\", \"" + ip + "\") > 1
+  std::string query = "SELECT ip FROM " + DEVICES_TABLE + " WHERE ip = '" + ip + "';";
 
   rows = sql_query(query);
 
