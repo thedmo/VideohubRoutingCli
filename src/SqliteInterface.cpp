@@ -54,7 +54,7 @@ int vdb::sql_query(std::string query) {
 
 bool vdb::check_if_exists(std::string ip) {
   int rows;
-  std::string query = "SELECT ip FROM " + DEVICES_TABLE + ";";
+  std::string query = "SELECT ip FROM " + DEVICES_TABLE + " WHERE ip = '" + ip + "';";  // instr(\"ip\", \"" + ip + "\") > 1
 
   rows = sql_query(query);
 
@@ -68,12 +68,7 @@ bool vdb::check_if_exists(std::string ip) {
 void vdb::insert_device_into_db(device_data* data) {
   std::cout << "inserting new device" << std::endl;
 
-  std::string query = "INSERT INTO " + DEVICES_TABLE + "(ip, name, source_count, destination_count, source_labels, destination_labels, routing, locks) VALUES (" + data->ip + "," + data->name + "," + std::to_string(data->source_count) + "," + std::to_string(data->destination_count) + "," + data->source_labels + "," + data->destination_labels + "," + data->routing + "," + data->locks + ")";
+  std::string query = "INSERT INTO " + DEVICES_TABLE + "(ip, name, source_count, destination_count, source_labels, destination_labels, routing, locks) VALUES ('" + data->ip + "'," + data->name + "," + std::to_string(data->source_count) + "," + std::to_string(data->destination_count) + "," + data->source_labels + "," + data->destination_labels + "," + data->routing + "," + data->locks + ");";
+  
   sql_query(query);
 }
-
-// sql_query(query, ROUTERS);
-
-// query = "INSERT INTO routers VALUES (0, '10.30.50.70', 'Smart Hub', 40, 40);";
-
-// sql_query(query, ROUTERS);
