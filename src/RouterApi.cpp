@@ -15,7 +15,7 @@ int Vapi::AddRouter(std::string ip, std::string &errmsg) {
   // TODO: Get data from device
 
   device_data *new_router = new device_data{
-      ip, "'dummy'", 9999, 9999, "'dummy'", "'dummy'", "'dummy'", "'dummy'", "'dummy'"};
+      ip, "'name'", 9999, 9999, "'src_lbls'", "'dst_lbls'", "'rtng'", "'pprd_rtng'" ,"'lcks'"};
 
   m_sqlite.insert_device_into_db(new_router);
 
