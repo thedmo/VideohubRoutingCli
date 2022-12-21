@@ -59,8 +59,8 @@ int vdb::check_if_exists(std::string ip) {
 
   rows = sql_query(query);
 
-  if (rows == 0) {
-    std::cout << "no devices in List" << std::endl;
+  if (rows == 1) {
+    std::cout << "device found" << std::endl;
     return 1;
   }
   return SQL_OK;
