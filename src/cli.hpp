@@ -79,4 +79,6 @@ class cli {
 
   static const int NOT_OK = 1;
   static const int OK = 0;
+
+  void PrintErrors(std::vector<std::string>);
 };

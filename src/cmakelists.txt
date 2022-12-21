@@ -2,6 +2,7 @@ set(lib_sources
     RouterApi.cpp
     SqliteInterface.cpp
     cli.cpp
+    TelnetClient.cpp
     )
 
 set(lib_includes
@@ -15,7 +16,8 @@ add_library(${main_lib_name} STATIC
     ${lib_sources} )
 
 target_link_libraries(${main_lib_name} 
-    lib_sqlite )
+    lib_sqlite
+    ws2_32 )
 
 target_include_directories(${main_lib_name} PUBLIC
     ${lib_includes} )

@@ -17,7 +17,7 @@ vdb::~vdb() {
 }
 
 int vdb::sql_query(std::string query) {
-  sqlite3_stmt* statement;
+  sqlite3_stmt *statement;
   int result;
   int rows = 0;
 
@@ -37,7 +37,8 @@ int vdb::sql_query(std::string query) {
       rows++;
       if (sqlite3_column_type(statement, i) == SQLITE_INTEGER) {
         std::cout << "got an Integer" << std::endl;
-      } else if (sqlite3_column_type(statement, i) == SQLITE3_TEXT) {
+      }
+      else if (sqlite3_column_type(statement, i) == SQLITE3_TEXT) {
         std::cout << "got some Text" << std::endl;
       }
     }
@@ -52,23 +53,22 @@ int vdb::sql_query(std::string query) {
   return rows;
 }
 
-bool vdb::check_if_exists(std::string ip) {
+int vdb::check_if_exists(std::string ip) {
   int rows;
   std::string query = "SELECT ip FROM " + DEVICES_TABLE + " WHERE ip = '" + ip + "';";
 
   rows = sql_query(query);
 
   if (rows == 0) {
-    return false;
     std::cout << "no devices in List" << std::endl;
+    return 1;
   }
-  return true;
+  return SQL_OK;
 }
 
-void vdb::insert_device_into_db(device_data* data) {
+void vdb::insert_device_into_db(std::unique_ptr<device_data> &data) {
   std::cout << "inserting new device" << std::endl;
+  std::string query = "INSERT INTO " + DEVICES_TABLE + "(ip, name, source_count, destination_count, source_labels, destination_labels, routing, locks) VALUES ('" + data->ip + "','" + data->name + "'," + std::to_string(data->source_count) + "," + std::to_string(data->destination_count) + ",'" + data->source_labels + "','" + data->destination_labels + "','" + data->routing + "','" + data->locks + "');";
 
-  std::string query = "INSERT INTO " + DEVICES_TABLE + "(ip, name, source_count, destination_count, source_labels, destination_labels, routing, locks) VALUES ('" + data->ip + "'," + data->name + "," + std::to_string(data->source_count) + "," + std::to_string(data->destination_count) + "," + data->source_labels + "," + data->destination_labels + "," + data->routing + "," + data->locks + ");";
-  
   sql_query(query);
 }

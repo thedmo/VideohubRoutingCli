@@ -17,16 +17,21 @@ struct device_data {
 
 // TODO: Remove iostream
 class vdb {
- public:
+public:
+  static const int SQL_OK = 0;
+
+
   vdb();
   ~vdb();
 
-  bool check_if_exists(std::string ip);
+  int check_if_exists(std::string ip);
   //   std::string query = "CREATE TABLE IF NOT EXISTS " + DEVICES_TABLE + " (ip VARCHAR PRIMARY KEY, name VARCHAR, source_count INT, destination_count INT, source_labels VARCHAR, destination_labels VARCHAR, routing VARCHAR, prepared_routes VARCHAR, locks VARCHAR, selected_router VARCHAR)";
 
-  void insert_device_into_db(device_data*);
+  void insert_device_into_db(std::unique_ptr<device_data> &data);
 
- private:
+private:
+
+
   const std::string DEVICES_TABLE = "routers";
   const std::string ROUTINGS_TABLE = "routings";
 

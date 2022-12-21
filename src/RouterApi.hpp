@@ -1,12 +1,16 @@
 #include <SqliteInterface.hpp>
 #include <vector>
 
-class Vapi {
- public:
-  Vapi();
-  ~Vapi(){};
+#include <TelnetClient.hpp>
 
-  static int AddRouter(std::string ip, std::string &errmsg);
+const int VIDEOHUB_TELNET_PORT = 9990;
+
+class Vapi {
+public:
+  Vapi();
+  ~Vapi() {};
+
+  static int AddRouter(std::string ip);
   static int SelectRouter(std::string ip, std::string &errmsg);
   static int RemoveSelectedRouter(std::string &errmsg);
   static int GetDevices(std::string &callback, std::string &errmsg);
@@ -22,9 +26,13 @@ class Vapi {
   static int GetSavedRoutes(std::string &errmsg);
   static int LoadRoutes(std::string name, std::string &errmsg);
 
-  static const int NOT_OK = 1;
-  static const int OK = 0;
+  static int GetStatus(std::string ip, std::unique_ptr<device_data> &_data);
 
-//   static vdb m_sqlite;
- private:
+  static std::vector<std::string> GetErrorMessages();
+
+  static const int ROUTER_API_NOT_OK = 1;
+  static const int ROUTER_API_OK = 0;
+private:
+
+  static std::vector<std::string> m_err_msgs;
 };
