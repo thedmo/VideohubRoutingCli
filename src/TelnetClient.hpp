@@ -27,6 +27,8 @@ public:
 
 private:
     std::vector<std::string> m_err_msgs;
+    void AddToTrace(std::string s);
+
     std::string m_ip_address;
     int m_port;
 

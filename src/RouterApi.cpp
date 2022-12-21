@@ -14,13 +14,13 @@ int Vapi::GetStatus(std::string ip, std::unique_ptr<device_data> &_data) {
   if (result != TelnetClient::TELNET_OK)
   {
     for (std::string err : _telnet.GetErrorMessages()) {
-      m_err_msgs.push_back("TELNET_CLIENT: " + err);
+      AddToTrace(err);
     }
     return ROUTER_API_NOT_OK;
   }
 
   // TODO: create method to get information out of response string to fill in router fields
-  std::cout << response << std::endl;
+  // std::cout << response << std::endl;
 
   // TODO: remove mockup values
   _data->ip = ip;

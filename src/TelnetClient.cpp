@@ -7,9 +7,17 @@ TelnetClient::TelnetClient(std::string ip, int port, std::string &init_response,
     result = OpenConnection();
     if (result != TELNET_OK)
     {
-        m_err_msgs.push_back("could not open connection.");
+        AddToTrace("could not open connection.");
         return;
     }
+
+    result = ReceiveMsgFromServer(init_response);
+    if (result != TELNET_OK)
+    {
+        AddToTrace("Got no message from videohub");
+        return;
+    }
+
 }
 
 TelnetClient::~TelnetClient() { CloseConnection(); }
@@ -47,7 +55,7 @@ int TelnetClient::ChangeIpAddress(std::string newAddress, std::string &init_resp
 
     if (newAddress.empty())
     {
-        m_err_msgs.push_back("ip adress empty..");
+        AddToTrace("ip adress empty..");
         return 1;
     }
 
@@ -57,7 +65,7 @@ int TelnetClient::ChangeIpAddress(std::string newAddress, std::string &init_resp
 
     if (_result != 1)
     {
-        m_err_msgs.push_back("not a valid IPv4 Adress");
+        AddToTrace("not a valid IPv4 Adress");
         return 1;
     }
 
@@ -66,14 +74,14 @@ int TelnetClient::ChangeIpAddress(std::string newAddress, std::string &init_resp
     _result = OpenConnection();
     if (_result != TELNET_OK)
     {
-        m_err_msgs.push_back("could not open connection.");
+        AddToTrace("could not open connection.");
         return 1;
     }
 
     _result = ReceiveMsgFromServer(init_response);
     if (_result != TELNET_OK)
     {
-        m_err_msgs.push_back("could not receive message from server");
+        AddToTrace("could not receive message from server");
         return 1;
     }
 
@@ -92,7 +100,7 @@ int TelnetClient::OpenConnection()
     int wsResult = WSAStartup(ver, &data);
     if (wsResult != 0)
     {
-        m_err_msgs.push_back("Can't start Winsock, err #" + WSAGetLastError());
+        AddToTrace("Can't start Winsock, err #" + WSAGetLastError());
         return 1;
     }
 
@@ -100,7 +108,7 @@ int TelnetClient::OpenConnection()
     if (m_sock == INVALID_SOCKET)
     {
         WSACleanup();
-        m_err_msgs.push_back("Can't Create socket, ERR #" + WSAGetLastError());
+        AddToTrace("Can't Create socket, ERR #" + WSAGetLastError());
         return 1;
     }
 
@@ -110,7 +118,7 @@ int TelnetClient::OpenConnection()
     int ipresult = inet_pton(AF_INET, m_ip_address.c_str(), &hint.sin_addr);
     if (ipresult == 0)
     {
-        m_err_msgs.push_back("Format of Ip Wrong! Err #: " + WSAGetLastError());
+        AddToTrace("Format of Ip Wrong! Err #: " + WSAGetLastError());
         return 1;
     }
 
@@ -119,7 +127,8 @@ int TelnetClient::OpenConnection()
     {
         closesocket(m_sock);
         WSACleanup();
-        m_err_msgs.push_back("Can't connect to server. Wrong IP? Err #" + WSAGetLastError());
+        AddToTrace("Can't connect to server. Wrong IP? Err #" + WSAGetLastError());
+        // m_err_msgs.push_back("Can't connect to server. Wrong IP? Err #" + WSAGetLastError());
         return 1;
     }
 
@@ -131,6 +140,10 @@ int TelnetClient::CloseConnection()
     closesocket(m_sock);
     WSACleanup();
     return 0;
+}
+
+void TelnetClient::AddToTrace(std::string s) {
+    m_err_msgs.push_back("TELNET_CLIENT: " + s);
 }
 
 std::vector<std::string> TelnetClient::GetErrorMessages() {
