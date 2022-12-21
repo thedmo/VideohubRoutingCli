@@ -1,7 +1,7 @@
 #include <sqlite3.h>
-
-#include <iostream>
 #include <string>
+#include <vector>
+#include <memory>
 
 struct device_data {
   std::string ip;
@@ -15,7 +15,6 @@ struct device_data {
   std::string locks;
 };
 
-// TODO: Remove iostream
 class vdb {
 public:
   static const int SQL_OK = 0;
@@ -29,6 +28,8 @@ public:
 
   void insert_device_into_db(std::unique_ptr<device_data> &data);
 
+  static std::vector<std::string> GetErrorMessages();
+
 private:
 
 
@@ -39,5 +40,7 @@ private:
   sqlite3 *m_db;
 
   int sql_query(std::string query);
-  //   int callback(void *NotUsed, int argc, char **argv, char **azColName);
+
+  static std::vector<std::string> m_err_msgs;
+  void AddToTrace(std::string s);
 };

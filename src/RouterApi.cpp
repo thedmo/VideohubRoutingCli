@@ -5,7 +5,6 @@
 Vapi::Vapi() {
 }
 
-std::vector<std::string> Vapi::m_err_msgs;
 
 int Vapi::GetStatus(std::string ip, std::unique_ptr<device_data> &_data) {
   int result;
@@ -46,13 +45,18 @@ int Vapi::AddRouter(std::string ip) {
   int result = GetStatus(ip, router_data);
   if (result != ROUTER_API_OK)
   {
-    m_err_msgs.push_back("ROUTER_API: Could not Get Status, check trace for reason.");
+    for (std::string s : Vapi::GetErrorMessages()) {
+      m_err_msgs.push_back(s);
+    }
     return ROUTER_API_NOT_OK;
   }
 
   result = m_sqlite.check_if_exists(ip);
   if (result != vdb::SQL_OK) {
-    m_err_msgs.push_back("ROUTER_API: router with ip: " + ip + " is already in list of known devices");
+    for (std::string s : vdb::GetErrorMessages())
+    {
+      m_err_msgs.push_back(s);
+    }
     return ROUTER_API_NOT_OK;
   }
 
@@ -116,6 +120,12 @@ int Vapi::GetSavedRoutes(std::string &errmsg) {
 int Vapi::LoadRoutes(std::string name, std::string &errmsg) {
   errmsg = "ROUTER_API: Not implemented yet";
   return ROUTER_API_NOT_OK;
+}
+
+//Error Handling
+std::vector<std::string> Vapi::m_err_msgs;
+void Vapi::AddToTrace(std::string s) {
+  m_err_msgs.push_back("ROUTER_API: " + s);
 }
 
 std::vector<std::string> Vapi::GetErrorMessages() {

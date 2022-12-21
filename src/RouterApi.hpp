@@ -35,4 +35,5 @@ public:
 private:
 
   static std::vector<std::string> m_err_msgs;
+  void AddToTrace(std::string);
 };
