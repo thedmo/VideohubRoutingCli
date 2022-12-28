@@ -1,7 +1,7 @@
 #include <SqliteInterface.hpp>
 
 vdb::vdb() {
-  sqlite3_open("router_db", &m_db);
+  sqlite3_open("router.db", &m_db);
 
   std::string query = "CREATE TABLE IF NOT EXISTS " + DEVICES_TABLE + " (ip VARCHAR PRIMARY KEY, name VARCHAR, source_count INT, destination_count INT, source_labels VARCHAR, destination_labels VARCHAR, routing VARCHAR, prepared_routes VARCHAR, locks VARCHAR, selected_router VARCHAR)";
   sql_query(query);
