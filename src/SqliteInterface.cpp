@@ -1,11 +1,8 @@
 #include <SqliteInterface.hpp>
 
-// #include <iostream>
-
 vdb::vdb() {
 
   std::string path = whereami::getExecutablePath().dirname();
-  // std::cout << "Executablepath: " << path << std::endl;
 
   path = path + "/router.db";
 

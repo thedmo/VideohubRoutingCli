@@ -25,8 +25,6 @@ public:
   ~vdb();
 
   int check_if_exists(std::string ip);
-  //   std::string query = "CREATE TABLE IF NOT EXISTS " + DEVICES_TABLE + " (ip VARCHAR PRIMARY KEY, name VARCHAR, source_count INT, destination_count INT, source_labels VARCHAR, destination_labels VARCHAR, routing VARCHAR, prepared_routes VARCHAR, locks VARCHAR, selected_router VARCHAR)";
-
   void insert_device_into_db(std::unique_ptr<device_data> &data);
 
   static std::vector<std::string> GetErrorMessages();
