@@ -10,13 +10,23 @@ set(lib_includes
     "./"
     )
 
-add_subdirectory(sqlite)
+# add_subdirectory(sqlite)
+
+FetchContent_Declare(
+        sqlite3
+        URL https://www.sqlite.org/2022/sqlite-amalgamation-3400000.zip
+        )
+
+FetchContent_MakeAvailable(sqlite3)
+
+add_library(sqlite3_lib STATIC ${sqlite3_SOURCE_DIR}/sqlite3.c)
+target_include_directories(sqlite3_lib PUBLIC ${sqlite3_SOURCE_DIR})
 
 add_library(${main_lib_name} STATIC 
     ${lib_sources} )
 
 target_link_libraries(${main_lib_name} 
-    lib_sqlite
+    sqlite3_lib
     ws2_32 )
 
 target_include_directories(${main_lib_name} PUBLIC
