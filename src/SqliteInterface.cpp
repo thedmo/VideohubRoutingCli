@@ -1,7 +1,15 @@
 #include <SqliteInterface.hpp>
 
+// #include <iostream>
+
 vdb::vdb() {
-  sqlite3_open("router.db", &m_db);
+
+  std::string path = whereami::getExecutablePath().dirname();
+  // std::cout << "Executablepath: " << path << std::endl;
+
+  path = path + "/router.db";
+
+  sqlite3_open(path.c_str(), &m_db);
 
   std::string query = "CREATE TABLE IF NOT EXISTS " + DEVICES_TABLE + " (ip VARCHAR PRIMARY KEY, name VARCHAR, source_count INT, destination_count INT, source_labels VARCHAR, destination_labels VARCHAR, routing VARCHAR, prepared_routes VARCHAR, locks VARCHAR, selected_router VARCHAR)";
   sql_query(query);

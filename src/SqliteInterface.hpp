@@ -2,6 +2,7 @@
 #include <string>
 #include <vector>
 #include <memory>
+#include <whereami++.h>
 
 struct device_data {
   std::string ip;
