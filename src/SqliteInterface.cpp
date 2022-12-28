@@ -8,7 +8,7 @@ vdb::vdb() {
 
   sqlite3_open(path.c_str(), &m_db);
 
-  std::string query = "CREATE TABLE IF NOT EXISTS " + DEVICES_TABLE + " (ip VARCHAR PRIMARY KEY, name VARCHAR, source_count INT, destination_count INT, source_labels VARCHAR, destination_labels VARCHAR, routing VARCHAR, prepared_routes VARCHAR, locks VARCHAR, selected_router VARCHAR)";
+  std::string query = "CREATE TABLE IF NOT EXISTS " + DEVICES_TABLE + " (ip VARCHAR PRIMARY KEY, name VARCHAR, version VARCHAR, source_count INT, destination_count INT, source_labels VARCHAR, destination_labels VARCHAR, routing VARCHAR, prepared_routes VARCHAR, locks VARCHAR, selected_router VARCHAR)";
   sql_query(query);
 
   query = "CREATE TABLE IF NOT EXISTS " + ROUTINGS_TABLE + " (ip VARCHAR, name VARCHAR, routing VARCHAR, FOREIGN KEY(ip) REFERENCES " + DEVICES_TABLE + "(ip))";
@@ -67,7 +67,7 @@ int vdb::check_if_exists(std::string ip) {
 }
 
 void vdb::insert_device_into_db(std::unique_ptr<device_data> &data) {
-  std::string query = "INSERT INTO " + DEVICES_TABLE + "(ip, name, source_count, destination_count, source_labels, destination_labels, routing, locks) VALUES ('" + data->ip + "','" + data->name + "'," + std::to_string(data->source_count) + "," + std::to_string(data->destination_count) + ",'" + data->source_labels + "','" + data->destination_labels + "','" + data->routing + "','" + data->locks + "');";
+  std::string query = "INSERT INTO " + DEVICES_TABLE + "(ip, name, version, source_count, destination_count, source_labels, destination_labels, routing, locks) VALUES ('" + data->ip + "','" + data->name + "','" + data->version + "'," + std::to_string(data->source_count) + "," + std::to_string(data->destination_count) + ",'" + data->source_labels + "','" + data->destination_labels + "','" + data->routing + "','" + data->locks + "');";
 
   sql_query(query);
 }

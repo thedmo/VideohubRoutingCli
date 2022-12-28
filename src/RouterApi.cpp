@@ -1,10 +1,106 @@
 #include <RouterApi.hpp>
+#include <sstream>
 
-#include <iostream>
+// #include <iostream>
 
 Vapi::Vapi() {
 }
 
+int Vapi::GetInformationType(std::string line, information_type &type) {
+
+  // std::cout << line << std::endl;
+
+  if (line.find("PROTOCOL PREAMBLE:"))
+  {
+    type = information_type::preamble;
+  }
+  else if (line.find("VIDEOHUB DEVICE:"))
+  {
+    type = information_type::device;
+  }
+  else if (line.find("INPUT LABELS:"))
+  {
+    type = information_type::inputs_labels;
+  }
+  else if (line.find("OUTPUT LABELS:"))
+  {
+    type = information_type::outputs_labels;
+  }
+  else if (line.find("VIDEO OUTPUT ROUTING:"))
+  {
+    type = information_type::routing;
+  }
+  else if (line.find("VIDEO OUTPUT LOCKS:"))
+  {
+    type = information_type::locks;
+  }
+  else {
+    AddToTrace("Type could not be extracted from: " + line);
+    return Vapi::ROUTER_API_NOT_OK;
+  }
+  return Vapi::ROUTER_API_OK;
+}
+
+int Vapi::ExtractInformation(std::string info, std::unique_ptr<device_data> &_data) {
+  information_type type = information_type::none;
+
+  std::string line;
+
+  std::stringstream info_stream(info);
+  while (std::getline(info_stream, line)) {
+
+    // continue and reset type upon empty string
+    if (line.empty())
+    {
+      type = information_type::none;
+      continue;
+    }
+
+    //determine information type
+    if (type == information_type::none)
+    {
+      int result = GetInformationType(line, type);
+
+      if (result != Vapi::ROUTER_API_OK)
+      {
+        AddToTrace("Could not determine information type");
+        return Vapi::ROUTER_API_NOT_OK;
+      }
+      continue;
+    }
+
+    // extract information
+    switch (type)
+    {
+      case information_type::preamble:
+        // TODO GetDeviceInformation()
+        break;
+      case information_type::device:
+        // TODO GetDeviceInformation()
+        break;
+      case information_type::inputs_labels:
+        // TODO GetInputLabels()
+        break;
+      case information_type::outputs_labels:
+      // TODO GetOutputLabels()
+        break;
+      case information_type::routing:
+      // TODO GetRouting()
+        break;
+      case information_type::locks:
+      // TODO GetLocks()
+        break;
+
+      default:
+        AddToTrace("empty information type was passed");
+        return Vapi::ROUTER_API_NOT_OK;
+        break;
+    }
+  }
+
+
+  return Vapi::ROUTER_API_OK;
+}
 
 int Vapi::GetStatus(std::string ip, std::unique_ptr<device_data> &_data) {
   int result;
@@ -21,10 +117,17 @@ int Vapi::GetStatus(std::string ip, std::unique_ptr<device_data> &_data) {
 
   // TODO: create method to get information out of response string to fill in router fields
   // std::cout << response << std::endl;
+  result = ExtractInformation(response, _data);
+  if (result != Vapi::ROUTER_API_OK)
+  {
+    AddToTrace("could not extract information");
+    return Vapi::ROUTER_API_NOT_OK;
+  }
 
   // TODO: remove mockup values
   _data->ip = ip;
   _data->name = "MOCKUP_NAME";
+  _data->version = "2.586735892";
   _data->source_count = 999;
   _data->destination_count = 999;
   _data->source_labels = "SOURCE_LABELS";

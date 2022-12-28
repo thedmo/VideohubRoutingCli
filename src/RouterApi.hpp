@@ -7,6 +7,16 @@ const int VIDEOHUB_TELNET_PORT = 9990;
 
 class Vapi {
 public:
+  enum information_type {
+    none,
+    preamble,
+    device,
+    inputs_labels,
+    outputs_labels,
+    routing,
+    locks
+  };
+
   Vapi();
   ~Vapi() {};
 
@@ -32,8 +42,11 @@ public:
 
   static const int ROUTER_API_NOT_OK = 1;
   static const int ROUTER_API_OK = 0;
-private:
 
+private:
   static std::vector<std::string> m_err_msgs;
   static void AddToTrace(std::string);
+
+  static int Vapi::GetInformationType(std::string line, information_type &type);
+  static int ExtractInformation(std::string, std::unique_ptr<device_data> &_data);
 };

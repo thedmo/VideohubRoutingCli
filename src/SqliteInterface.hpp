@@ -7,6 +7,7 @@
 struct device_data {
   std::string ip;
   std::string name;
+  std::string version;
   int source_count;
   int destination_count;
   std::string source_labels;
