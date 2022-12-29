@@ -49,4 +49,6 @@ private:
 
   static int Vapi::GetInformationType(std::string line, information_type &type);
   static int ExtractInformation(std::string, std::unique_ptr<device_data> &_data);
+
+  static int GetDeviceInformation(std::string, std::unique_ptr<device_data> &_data);
 };

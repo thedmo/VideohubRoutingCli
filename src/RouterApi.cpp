@@ -1,36 +1,34 @@
 #include <RouterApi.hpp>
 #include <sstream>
 
-// #include <iostream>
+#include <iostream>
 
 Vapi::Vapi() {
 }
 
 int Vapi::GetInformationType(std::string line, information_type &type) {
 
-  // std::cout << line << std::endl;
-
-  if (line.find("PROTOCOL PREAMBLE:"))
+  if (line == "PROTOCOL PREAMBLE:")
   {
     type = information_type::preamble;
   }
-  else if (line.find("VIDEOHUB DEVICE:"))
+  else if (line == ("VIDEOHUB DEVICE:"))
   {
     type = information_type::device;
   }
-  else if (line.find("INPUT LABELS:"))
+  else if (line == ("INPUT LABELS:"))
   {
     type = information_type::inputs_labels;
   }
-  else if (line.find("OUTPUT LABELS:"))
+  else if (line == ("OUTPUT LABELS:"))
   {
     type = information_type::outputs_labels;
   }
-  else if (line.find("VIDEO OUTPUT ROUTING:"))
+  else if (line == ("VIDEO OUTPUT ROUTING:"))
   {
     type = information_type::routing;
   }
-  else if (line.find("VIDEO OUTPUT LOCKS:"))
+  else if (line == ("VIDEO OUTPUT LOCKS:"))
   {
     type = information_type::locks;
   }
@@ -46,6 +44,8 @@ int Vapi::ExtractInformation(std::string info, std::unique_ptr<device_data> &_da
 
   std::string line;
 
+  int result;
+
   std::stringstream info_stream(info);
   while (std::getline(info_stream, line)) {
 
@@ -59,7 +59,7 @@ int Vapi::ExtractInformation(std::string info, std::unique_ptr<device_data> &_da
     //determine information type
     if (type == information_type::none)
     {
-      int result = GetInformationType(line, type);
+      result = GetInformationType(line, type);
 
       if (result != Vapi::ROUTER_API_OK)
       {
@@ -73,10 +73,10 @@ int Vapi::ExtractInformation(std::string info, std::unique_ptr<device_data> &_da
     switch (type)
     {
       case information_type::preamble:
-        // TODO GetDeviceInformation()
+        result = GetDeviceInformation(line, _data);
         break;
       case information_type::device:
-        // TODO GetDeviceInformation()
+        result = GetDeviceInformation(line, _data);
         break;
       case information_type::inputs_labels:
         // TODO GetInputLabels()
@@ -97,10 +97,57 @@ int Vapi::ExtractInformation(std::string info, std::unique_ptr<device_data> &_da
         break;
     }
   }
+  return Vapi::ROUTER_API_OK;
+}
 
+int Vapi::GetDeviceInformation(std::string line, std::unique_ptr<device_data> &_data) {
+  std::stringstream line_stream(line);
+
+  std::string word;
+
+  std::vector<std::string> words;
+  while (std::getline(line_stream, word, ':')) {
+    words.push_back(word);
+  }
+
+  if (words.empty())
+  {
+    AddToTrace("empty string was given to GetDeviceInformation Function");
+    return Vapi::ROUTER_API_NOT_OK;
+  }
+
+  if (words[0].empty() || words[1].empty())
+  {
+    AddToTrace("empty string in extracted words from line");
+    return Vapi::ROUTER_API_NOT_OK;
+  }
+
+  std::string key = words[0];
+  std::string value = words[1];
+  value.erase(0, 1);
+
+  std::cout << key << " " << value << std::endl;
+
+  if (key.compare("Version") == 0) {
+    _data->version = value;
+    return Vapi::ROUTER_API_OK;
+  }
+  else if (key.compare("Friendly name") == 0) {
+    _data->name = value;
+    return Vapi::ROUTER_API_OK;
+  }
+  else if (key.compare("Video inputs") == 0) {
+    _data->source_count = std::stoi(value);
+    return Vapi::ROUTER_API_OK;
+  }
+  else if (key.compare("Video outputs") == 0) {
+    _data->destination_count = std::stoi(value);
+    return Vapi::ROUTER_API_OK;
+  }
 
   return Vapi::ROUTER_API_OK;
 }
+
 
 int Vapi::GetStatus(std::string ip, std::unique_ptr<device_data> &_data) {
   int result;
@@ -126,10 +173,10 @@ int Vapi::GetStatus(std::string ip, std::unique_ptr<device_data> &_data) {
 
   // TODO: remove mockup values
   _data->ip = ip;
-  _data->name = "MOCKUP_NAME";
-  _data->version = "2.586735892";
-  _data->source_count = 999;
-  _data->destination_count = 999;
+  // _data->name = "MOCKUP_NAME";
+  // _data->version = "2.586735892";
+  // _data->source_count = 999;
+  // _data->destination_count = 999;
   _data->source_labels = "SOURCE_LABELS";
   _data->destination_labels = "DESTINATION_LABELS";
   _data->routing = "ROUTING";
@@ -137,6 +184,11 @@ int Vapi::GetStatus(std::string ip, std::unique_ptr<device_data> &_data) {
 
   return ROUTER_API_OK;
 }
+
+
+
+
+
 
 int Vapi::AddRouter(std::string ip) {
 
@@ -187,7 +239,6 @@ int Vapi::GetSources(std::string &callback, std::string &errmsg) {
   return ROUTER_API_NOT_OK;
 }
 
-// Switch order of arguments: 1. Channelnumber, 2. New Name
 int Vapi::RenameDestination(int channel_number, const std::string new_name, std::string &errmsg) {
   errmsg = "ROUTER_API: Not implemented yet";
   return ROUTER_API_NOT_OK;
