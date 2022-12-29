@@ -79,16 +79,16 @@ int Vapi::ExtractInformation(std::string info, std::unique_ptr<device_data> &_da
         result = GetDeviceInformation(line, _data);
         break;
       case information_type::inputs_labels:
-        // TODO GetInputLabels()
+        _data->source_labels += line + "\\n";
         break;
       case information_type::outputs_labels:
-      // TODO GetOutputLabels()
+        _data->destination_labels += line + "\\n";
         break;
       case information_type::routing:
-      // TODO GetRouting()
+        _data->routing += line + "\\n";
         break;
       case information_type::locks:
-      // TODO GetLocks()
+        _data->locks += line + "\\n";
         break;
 
       default:
@@ -162,8 +162,6 @@ int Vapi::GetStatus(std::string ip, std::unique_ptr<device_data> &_data) {
     return ROUTER_API_NOT_OK;
   }
 
-  // TODO: create method to get information out of response string to fill in router fields
-  // std::cout << response << std::endl;
   result = ExtractInformation(response, _data);
   if (result != Vapi::ROUTER_API_OK)
   {
@@ -171,16 +169,7 @@ int Vapi::GetStatus(std::string ip, std::unique_ptr<device_data> &_data) {
     return Vapi::ROUTER_API_NOT_OK;
   }
 
-  // TODO: remove mockup values
   _data->ip = ip;
-  // _data->name = "MOCKUP_NAME";
-  // _data->version = "2.586735892";
-  // _data->source_count = 999;
-  // _data->destination_count = 999;
-  _data->source_labels = "SOURCE_LABELS";
-  _data->destination_labels = "DESTINATION_LABELS";
-  _data->routing = "ROUTING";
-  _data->locks = "LOCKS";
 
   return ROUTER_API_OK;
 }
@@ -218,10 +207,14 @@ int Vapi::AddRouter(std::string ip) {
   m_sqlite.insert_device_into_db(router_data);
   return ROUTER_API_OK;
 }
+
+// TODO select router in database
 int Vapi::SelectRouter(std::string ip, std::string &errmsg) {
   errmsg = "ROUTER_API: Not implemented yet";
   return ROUTER_API_NOT_OK;
 }
+
+// TODO Remove router from database
 int Vapi::RemoveSelectedRouter(std::string &errmsg) {
   errmsg = "ROUTER_API: Not implemented yet";
   return ROUTER_API_NOT_OK;
