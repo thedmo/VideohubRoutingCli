@@ -207,9 +207,19 @@ int Vapi::AddRouter(std::string ip) {
 }
 
 // TODO select router in database
-int Vapi::SelectRouter(std::string ip, std::string &errmsg) {
-  errmsg = "ROUTER_API: Not implemented yet";
+int Vapi::SelectRouter(std::string ip) {
+  int result = m_database.select_device(ip);
+  if (result != vdb::SQL_OK)
+  {
+    for (std::string s : vdb::GetErrorMessages())
+    {
+      m_err_msgs.push_back(s);
+    }
+    AddToTrace("could not select router...");
   return ROUTER_API_NOT_OK;
+  }
+
+  return ROUTER_API_OK;
 }
 
 // TODO Remove router from database

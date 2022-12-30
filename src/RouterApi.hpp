@@ -21,8 +21,8 @@ public:
   ~Vapi() {};
 
   static int AddRouter(std::string ip);
-  static int SelectRouter(std::string ip, std::string &errmsg);
-  static int RemoveSelectedRouter(std::string &errmsg);
+  static int SelectRouter(std::string ip);
+  static int RemoveSelectedRouter();
   static int GetDevices(std::string &callback, std::string &errmsg);
   static int RenameSource(int channel_number, const std::string new_name, std::string &errmsg);
   static int GetSources(std::string &callback, std::string &errmsg);
@@ -51,4 +51,6 @@ private:
   static int ExtractInformation(std::string, std::unique_ptr<device_data> &_data);
 
   static int GetDeviceInformation(std::string, std::unique_ptr<device_data> &_data);
+
+  static vdb m_database;
 };

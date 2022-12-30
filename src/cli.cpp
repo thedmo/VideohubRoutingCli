@@ -59,13 +59,14 @@ void cli::SelectRouter(int argc, const char *argv[], int &current_argument_index
   if (CheckArgCount(argc, current_argument_index, m_err_msg) != OK) {
     std::cout << "Error: " << m_err_msg << '\n';
     return;
-  }
 
-  if (Vapi::SelectRouter(argv[++current_argument_index], m_err_msg) != Vapi::ROUTER_API_OK) {
-    std::cout << "Error: " << m_err_msg << '\n';
+  };
+  
+  if (Vapi::SelectRouter(argv[++current_argument_index]) != Vapi::ROUTER_API_OK) {
+    PrintErrors(Vapi::GetErrorMessages());
     return;
   }
-};
+}
 
 void cli::ListDevices() {
   std::string device_list;

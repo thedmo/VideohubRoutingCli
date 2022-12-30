@@ -55,27 +55,8 @@ int vdb::sql_query(std::string query, int &rows) {
 }
 
 int vdb::sql_query(std::string query) {
-  sqlite3_stmt *statement;
-  int result;
 
-  result = sqlite3_prepare_v2(m_db, query.c_str(), -1, &statement, nullptr);
-  if (result != SQLITE_OK) {
-    AddToTrace("Error: " + std::string(sqlite3_errmsg(m_db)));
-    return 1;
-  }
-
-  result = sqlite3_step(statement);
-  if (result != SQLITE_OK) {
-    AddToTrace("Error: " + std::string(sqlite3_errmsg(m_db)));
-    return 1;
-  }
-
-  result = sqlite3_finalize(statement);
-  if (result != SQLITE_OK) {
-    AddToTrace("Error: " + std::string(sqlite3_errmsg(m_db)));
-    return 1;
-  }
-
+  int result = sqlite3_exec(m_db, query.c_str(), 0,0, nullptr);
   if (result != SQLITE_OK) {
     AddToTrace("Error: " + std::string(sqlite3_errmsg(m_db)));
     return 1;
@@ -97,7 +78,7 @@ int vdb::check_if_exists(std::string ip) {
 
 
   if (rows == 1) {
-    AddToTrace("Device was already in list");
+    AddToTrace("Device found in list");
     return 1;
   }
   return SQL_OK;
@@ -125,18 +106,28 @@ int vdb::insert_device_into_db(std::unique_ptr<device_data> &data) {
 
 int vdb::select_device(std::string ip) {
   int result = check_if_exists(ip);
-  if (result != SQL_OK)
+  if (result == 0)
   {
     AddToTrace("Device with ip: " + ip + " does not exist in database. Add it first before selecting.");
     return 1;
   }
 
 // deselect currently selected router
-  std::string query = "UPDATE " + DEVICES_TABLE + " SET selected_router=NULL WHERE selected_router='x';";
+  std::string query = "UPDATE " + DEVICES_TABLE + " SET selected_router='o';";
+  result = sql_query(query);
+  if (result != SQL_OK)
+  {
+    AddToTrace(std::to_string(result) + ": could not reset router selection...");
+    return 1;
+  }
 
-
-
-  query = "UPDATE " + DEVICES_TABLE + " SET selected_router=x WHERE ip='" + ip + "';";
+  query = "UPDATE " + DEVICES_TABLE + " SET selected_router='x' WHERE ip='" + ip + "';";
+  result = sql_query(query);
+  if (result != SQL_OK)
+  {
+    AddToTrace("could not select router...");
+    return 1;
+  }
 
   return SQL_OK;
 }
