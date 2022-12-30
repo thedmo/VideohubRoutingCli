@@ -19,10 +19,10 @@ vdb::~vdb() {
   sqlite3_close_v2(m_db);
 }
 
-int vdb::sql_query(std::string query) {
+int vdb::sql_query(std::string query, int &rows) {
   sqlite3_stmt *statement;
   int result;
-  int rows = 0;
+  rows = 0;
 
   result = sqlite3_prepare_v2(m_db, query.c_str(), -1, &statement, nullptr);
   if (result != SQLITE_OK) {
@@ -48,16 +48,17 @@ int vdb::sql_query(std::string query) {
 
   if (result != SQLITE_OK) {
     AddToTrace("Error: " + std::string(sqlite3_errmsg(m_db)));
+    return 1;
   }
 
-  return rows;
+  sqlite3_stmt *statement;
 }
 
 int vdb::check_if_exists(std::string ip) {
   int rows;
   std::string query = "SELECT ip FROM " + DEVICES_TABLE + " WHERE ip = '" + ip + "';";
 
-  rows = sql_query(query);
+  if (result != SQL_OK)
 
   if (rows == 1) {
     AddToTrace("Device was already in list");
@@ -66,7 +67,7 @@ int vdb::check_if_exists(std::string ip) {
   return SQL_OK;
 }
 
-void vdb::insert_device_into_db(std::unique_ptr<device_data> &data) {
+int vdb::insert_device_into_db(std::unique_ptr<device_data> &data) {
   std::string query = "INSERT INTO " + DEVICES_TABLE + "(ip, name, version, source_count, destination_count, source_labels, destination_labels, routing, locks) VALUES ('" + data->ip + "','" + data->name + "','" + data->version + "'," + std::to_string(data->source_count) + "," + std::to_string(data->destination_count) + ",'" + data->source_labels + "','" + data->destination_labels + "','" + data->routing + "','" + data->locks + "');";
 
   sql_query(query);
