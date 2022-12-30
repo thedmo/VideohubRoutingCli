@@ -26,7 +26,10 @@ public:
   ~vdb();
 
   int check_if_exists(std::string ip);
-  void insert_device_into_db(std::unique_ptr<device_data> &data);
+  int insert_device_into_db(std::unique_ptr<device_data> &data);
+  int select_device(std::string ip);
+  int remove_selected_device_from_db();
+
 
   static std::vector<std::string> GetErrorMessages();
 
@@ -39,6 +42,7 @@ private:
   char *m_err;
   sqlite3 *m_db;
 
+  int sql_query(std::string query, int &rows);
   int sql_query(std::string query);
 
   static std::vector<std::string> m_err_msgs;

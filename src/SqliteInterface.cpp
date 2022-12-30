@@ -51,14 +51,50 @@ int vdb::sql_query(std::string query, int &rows) {
     return 1;
   }
 
+  return SQL_OK;
+}
+
+int vdb::sql_query(std::string query) {
   sqlite3_stmt *statement;
+  int result;
+
+  result = sqlite3_prepare_v2(m_db, query.c_str(), -1, &statement, nullptr);
+  if (result != SQLITE_OK) {
+    AddToTrace("Error: " + std::string(sqlite3_errmsg(m_db)));
+    return 1;
+  }
+
+  result = sqlite3_step(statement);
+  if (result != SQLITE_OK) {
+    AddToTrace("Error: " + std::string(sqlite3_errmsg(m_db)));
+    return 1;
+  }
+
+  result = sqlite3_finalize(statement);
+  if (result != SQLITE_OK) {
+    AddToTrace("Error: " + std::string(sqlite3_errmsg(m_db)));
+    return 1;
+  }
+
+  if (result != SQLITE_OK) {
+    AddToTrace("Error: " + std::string(sqlite3_errmsg(m_db)));
+    return 1;
+  }
+
+  return SQL_OK;
 }
 
 int vdb::check_if_exists(std::string ip) {
   int rows;
   std::string query = "SELECT ip FROM " + DEVICES_TABLE + " WHERE ip = '" + ip + "';";
 
+  int result = sql_query(query, rows);
   if (result != SQL_OK)
+  {
+    AddToTrace("could not add device to list.");
+    return 1;
+  }
+
 
   if (rows == 1) {
     AddToTrace("Device was already in list");
@@ -70,7 +106,45 @@ int vdb::check_if_exists(std::string ip) {
 int vdb::insert_device_into_db(std::unique_ptr<device_data> &data) {
   std::string query = "INSERT INTO " + DEVICES_TABLE + "(ip, name, version, source_count, destination_count, source_labels, destination_labels, routing, locks) VALUES ('" + data->ip + "','" + data->name + "','" + data->version + "'," + std::to_string(data->source_count) + "," + std::to_string(data->destination_count) + ",'" + data->source_labels + "','" + data->destination_labels + "','" + data->routing + "','" + data->locks + "');";
 
-  sql_query(query);
+  int result = sql_query(query);
+  if (result != SQL_OK)
+  {
+    AddToTrace("could not insert new device into table");
+    return 1;
+  }
+
+  result = select_device(data->ip);
+  if (result != SQL_OK)
+  {
+    AddToTrace("Could not select device in table");
+    return 1;
+  }
+
+  return SQL_OK;
+}
+
+int vdb::select_device(std::string ip) {
+  int result = check_if_exists(ip);
+  if (result != SQL_OK)
+  {
+    AddToTrace("Device with ip: " + ip + " does not exist in database. Add it first before selecting.");
+    return 1;
+  }
+
+// deselect currently selected router
+  std::string query = "UPDATE " + DEVICES_TABLE + " SET selected_router=NULL WHERE selected_router='x';";
+
+
+
+  query = "UPDATE " + DEVICES_TABLE + " SET selected_router=x WHERE ip='" + ip + "';";
+
+  return SQL_OK;
+}
+
+int vdb::remove_selected_device_from_db() {
+
+
+  return SQL_OK;
 }
 
 std::vector<std::string> vdb::m_err_msgs;
