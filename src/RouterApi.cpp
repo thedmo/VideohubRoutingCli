@@ -216,15 +216,14 @@ int Vapi::SelectRouter(std::string ip) {
       m_err_msgs.push_back(s);
     }
     AddToTrace("could not select router...");
-  return ROUTER_API_NOT_OK;
+    return ROUTER_API_NOT_OK;
   }
 
   return ROUTER_API_OK;
 }
 
 // TODO Remove router from database
-int Vapi::RemoveSelectedRouter(std::string &errmsg) {
-  errmsg = "ROUTER_API: Not implemented yet";
+int Vapi::RemoveSelectedRouter() {
   return ROUTER_API_NOT_OK;
 }
 int Vapi::GetDevices(std::string &callback, std::string &errmsg) {

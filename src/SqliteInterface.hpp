@@ -3,6 +3,7 @@
 #include <vector>
 #include <memory>
 #include <whereami++.h>
+#include <iostream>
 
 struct device_data {
   std::string ip;
