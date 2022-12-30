@@ -5,6 +5,7 @@
 
 Vapi::Vapi() {
 }
+vdb Vapi::m_database;
 
 int Vapi::GetInformationType(std::string line, information_type &type) {
 
@@ -183,9 +184,6 @@ int Vapi::AddRouter(std::string ip) {
 
   std::unique_ptr<device_data> router_data = std::make_unique<device_data>();
 
-  // TODO: make sqlite object member of static class
-  vdb m_sqlite;
-
   int result = GetStatus(ip, router_data);
   if (result != ROUTER_API_OK)
   {
@@ -195,7 +193,7 @@ int Vapi::AddRouter(std::string ip) {
     return ROUTER_API_NOT_OK;
   }
 
-  result = m_sqlite.check_if_exists(ip);
+  result = m_database.check_if_exists(ip);
   if (result != vdb::SQL_OK) {
     for (std::string s : vdb::GetErrorMessages())
     {
@@ -204,7 +202,7 @@ int Vapi::AddRouter(std::string ip) {
     return ROUTER_API_NOT_OK;
   }
 
-  m_sqlite.insert_device_into_db(router_data);
+  m_database.insert_device_into_db(router_data);
   return ROUTER_API_OK;
 }
 
