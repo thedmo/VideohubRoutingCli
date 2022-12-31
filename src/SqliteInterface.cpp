@@ -56,7 +56,7 @@ int vdb::sql_query(std::string query, int &rows) {
 
 int vdb::sql_query(std::string query) {
 
-  int result = sqlite3_exec(m_db, query.c_str(), 0,0, nullptr);
+  int result = sqlite3_exec(m_db, query.c_str(), 0, 0, nullptr);
   if (result != SQLITE_OK) {
     AddToTrace("Error: " + std::string(sqlite3_errmsg(m_db)));
     return 1;
@@ -133,6 +133,14 @@ int vdb::select_device(std::string ip) {
 }
 
 int vdb::remove_selected_device_from_db() {
+  std::string query = "DELETE FROM " + DEVICES_TABLE + " WHERE selected_router='x'";
+
+  int result = sql_query(query);
+  if (result != SQL_OK)
+  {
+    AddToTrace("could not remove device from table");
+    return 1;
+  }
 
 
   return SQL_OK;
