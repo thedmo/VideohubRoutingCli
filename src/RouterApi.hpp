@@ -28,7 +28,7 @@ public:
   static int GetSources(std::string &callback, std::string &errmsg);
   static int RenameDestination(int channel_number, const std::string new_name, std::string &errmsg);
   static int GetDestinations(std::string &callback, std::string &errmsg);
-  static int PrepareNewRoute(unsigned int destination, unsigned int source, std::string &errmsg);
+  static int PrepareNewRoute(unsigned int destination, unsigned int source);
   static int TakePreparedRoutes(std::string &errmsg);
   static int LockRoutes(unsigned int destination, std::string &errmsg);
   static int GetRoutes(std::string &errmsg);
