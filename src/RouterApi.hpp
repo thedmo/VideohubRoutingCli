@@ -46,6 +46,7 @@ public:
 private:
   static std::vector<std::string> m_err_msgs;
   static void AddToTrace(std::string);
+  static void AddToTrace(std::string err, std::vector<std::string> err_list);
 
   static int Vapi::GetInformationType(std::string line, information_type &type);
   static int ExtractInformation(std::string, std::unique_ptr<device_data> &_data);

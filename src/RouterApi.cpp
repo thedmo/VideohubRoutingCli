@@ -227,11 +227,7 @@ int Vapi::RemoveSelectedRouter() {
   int result = m_database.remove_selected_device_from_db();
   if (result != vdb::SQL_OK)
   {
-    for (std::string s : vdb::GetErrorMessages())
-    {
-      m_err_msgs.push_back(s);
-    }
-    AddToTrace("removing device did not work.");
+    AddToTrace("removing device did not work.", vdb::GetErrorMessages());
     return ROUTER_API_NOT_OK;
   }
   
@@ -291,6 +287,14 @@ int Vapi::LoadRoutes(std::string name, std::string &errmsg) {
 std::vector<std::string> Vapi::m_err_msgs;
 void Vapi::AddToTrace(std::string s) {
   m_err_msgs.push_back("ROUTER_API: " + s);
+}
+
+void Vapi::AddToTrace(std::string err, std::vector<std::string> err_list) {
+  m_err_msgs.push_back("ROUTER_API: " + err);
+  for (std::string e : err_list)
+  {
+    m_err_msgs.push_back(e);
+  }
 }
 
 std::vector<std::string> Vapi::GetErrorMessages() {
