@@ -230,7 +230,7 @@ int Vapi::RemoveSelectedRouter() {
     AddToTrace("removing device did not work.", vdb::GetErrorMessages());
     return ROUTER_API_NOT_OK;
   }
-  
+
   return ROUTER_API_OK;
 }
 int Vapi::GetDevices(std::string &callback, std::string &errmsg) {
@@ -254,10 +254,17 @@ int Vapi::GetDestinations(std::string &callback, std::string &errmsg) {
   errmsg = "ROUTER_API: Not implemented yet";
   return ROUTER_API_NOT_OK;
 }
-int Vapi::PrepareNewRoute(unsigned int destination, unsigned int source, std::string &errmsg) {
-  errmsg = "ROUTER_API: Not implemented yet";
-  return ROUTER_API_NOT_OK;
+
+int Vapi::PrepareNewRoute(unsigned int destination, unsigned int source) {
+  int result = m_database.add_to_prepared_routes(destination, source);
+  if (result != vdb::SQL_OK)
+  {
+    AddToTrace("Could not add new route", vdb::GetErrorMessages());
+    return ROUTER_API_NOT_OK;
+  }
+  return ROUTER_API_OK;
 }
+
 int Vapi::TakePreparedRoutes(std::string &errmsg) {
   errmsg = "ROUTER_API: Not implemented yet";
   return ROUTER_API_NOT_OK;

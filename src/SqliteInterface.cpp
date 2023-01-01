@@ -19,6 +19,7 @@ vdb::~vdb() {
   sqlite3_close_v2(m_db);
 }
 
+// TODO: secure against sql injection with bind function --> change passed argument type to statement or create new overloaded function
 int vdb::sql_query(std::string query, int &rows) {
   sqlite3_stmt *statement;
   int result;
@@ -36,10 +37,42 @@ int vdb::sql_query(std::string query, int &rows) {
       break;
     }
     for (auto i = 0; i < sqlite3_data_count(statement); i++) {
+      const char *col_name = (const char *)sqlite3_column_name(statement, i);
+      std::string column(col_name);
+      int column_value_int = sqlite3_column_int(statement, i) ? sqlite3_column_int(statement, i) : 0;
+      const char *col_val = (const char *)sqlite3_column_text(statement, i) ? (char *)sqlite3_column_text(statement, i) : "";
+      std::string column_value_str(col_val);
       rows++;
-      if (sqlite3_column_type(statement, i) == SQLITE_INTEGER) {
+
+      if (column == "source_count") {
+        m_device.source_count = column_value_int;
       }
-      else if (sqlite3_column_type(statement, i) == SQLITE3_TEXT) {
+      else if (column == "destination_count") {
+        m_device.destination_count = column_value_int;
+      }
+      if (column == "ip") {
+        m_device.ip = column_value_str;
+      }
+      else if (column == "name") {
+        m_device.name = column_value_str;
+      }
+      else if (column == "version") {
+        m_device.version = column_value_str;
+      }
+      else if (column == "destination_labels") {
+        m_device.destination_labels = column_value_str;
+      }
+      else if (column == "source_labels") {
+        m_device.source_labels = column_value_str;
+      }
+      else if (column == "routing") {
+        m_device.routing = column_value_str;
+      }
+      else if (column == "prepared_routes") {
+        m_device.prepared_routes = column_value_str;
+      }
+      else if (column == "locks") {
+        m_device.locks = column_value_str;
       }
     }
   } while (result != SQLITE_DONE);
@@ -54,6 +87,7 @@ int vdb::sql_query(std::string query, int &rows) {
   return SQL_OK;
 }
 
+// TODO secure againtst sql injection with bind function
 int vdb::sql_query(std::string query) {
 
   int result = sqlite3_exec(m_db, query.c_str(), 0, 0, nullptr);
@@ -142,6 +176,45 @@ int vdb::remove_selected_device_from_db() {
     return 1;
   }
 
+
+  return SQL_OK;
+}
+
+int vdb::get_data_of_selected_device() {
+  std::string query = "SELECT * FROM " + DEVICES_TABLE + " WHERE selected_router='x';";
+
+  int rows = 0;
+
+  int result = sql_query(query, rows);
+  if (result != SQL_OK)
+  {
+    AddToTrace("no selected device found");
+    return 1;
+  }
+  return SQL_OK;
+}
+
+int vdb::add_to_prepared_routes(int destination, int source) {
+
+  int result = get_data_of_selected_device();
+  if (result != SQL_OK) {
+    AddToTrace("could not get data of selected device");
+    return 1;
+  }
+
+  std::string prepared_routes = m_device.prepared_routes;
+
+  std::string new_route = std::to_string(destination) + " " + std::to_string(source) + "\\n";
+
+  prepared_routes += new_route;
+
+  std::string query = "UPDATE " + DEVICES_TABLE + " SET prepared_routes='" + prepared_routes + "' WHERE selected_router='x';";
+  result = sql_query(query);
+  if (result != SQL_OK)
+  {
+    AddToTrace("could not add new route to prepared routes");
+    return 1;
+  }
 
   return SQL_OK;
 }

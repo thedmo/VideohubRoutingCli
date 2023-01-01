@@ -31,6 +31,7 @@ public:
   int select_device(std::string ip);
   int remove_selected_device_from_db();
 
+  int add_to_prepared_routes(int destination, int source);
 
   static std::vector<std::string> GetErrorMessages();
 
@@ -42,10 +43,13 @@ private:
 
   char *m_err;
   sqlite3 *m_db;
+  device_data m_device;
 
   int sql_query(std::string query, int &rows);
   int sql_query(std::string query);
 
   static std::vector<std::string> m_err_msgs;
   void AddToTrace(std::string s);
+
+  int get_data_of_selected_device();
 };
