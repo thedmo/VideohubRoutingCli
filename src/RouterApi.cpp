@@ -80,16 +80,16 @@ int Vapi::ExtractInformation(std::string info, std::unique_ptr<device_data> &_da
         result = GetDeviceInformation(line, _data);
         break;
       case information_type::inputs_labels:
-        _data->source_labels += line + "\\n";
+        _data->source_labels += line + "\n";
         break;
       case information_type::outputs_labels:
-        _data->destination_labels += line + "\\n";
+        _data->destination_labels += line + "\n";
         break;
       case information_type::routing:
-        _data->routing += line + "\\n";
+        _data->routing += line + "\n";
         break;
       case information_type::locks:
-        _data->locks += line + "\\n";
+        _data->locks += line + "\n";
         break;
 
       default:
@@ -221,7 +221,6 @@ int Vapi::SelectRouter(std::string ip) {
   return ROUTER_API_OK;
 }
 
-// TODO Remove router from database
 int Vapi::RemoveSelectedRouter() {
 
   int result = m_database.remove_selected_device_from_db();
@@ -265,9 +264,26 @@ int Vapi::PrepareNewRoute(unsigned int destination, unsigned int source) {
   return ROUTER_API_OK;
 }
 
-int Vapi::TakePreparedRoutes(std::string &errmsg) {
-  errmsg = "ROUTER_API: Not implemented yet";
-  return ROUTER_API_NOT_OK;
+int Vapi::TakePreparedRoutes() {
+
+  std::string response;
+  int result;
+
+  std::unique_ptr<device_data> current_device = std::make_unique<device_data>();
+
+  m_database.GetSelectedDeviceData(current_device);
+
+  TelnetClient tc(current_device->ip, VIDEOHUB_TELNET_PORT, response, result);
+  if (result) return AddToTrace("Could not take prepared routes", tc.GetErrorMessages());
+
+  std::string msg = "VIDEO OUTPUT ROUTING:\n" + current_device->prepared_routes + '\n';
+  result = tc.SendMsgToServer(msg);
+  if (result) return AddToTrace("Could not take prepared routes", tc.GetErrorMessages());
+
+  response = tc.GetLastDataDump();
+  // TODO update values of selected router, reset prepared routes
+
+  return ROUTER_API_OK;
 }
 int Vapi::LockRoutes(unsigned int destination, std::string &errmsg) {
   errmsg = "ROUTER_API: Not implemented yet";
@@ -292,16 +308,19 @@ int Vapi::LoadRoutes(std::string name, std::string &errmsg) {
 
 //Error Handling
 std::vector<std::string> Vapi::m_err_msgs;
-void Vapi::AddToTrace(std::string s) {
+int Vapi::AddToTrace(std::string s) {
   m_err_msgs.push_back("ROUTER_API: " + s);
+  return 1;
 }
 
-void Vapi::AddToTrace(std::string err, std::vector<std::string> err_list) {
+// TODO reduce errorcheck to if(result) return AddToTrace(err, err_list);
+int Vapi::AddToTrace(std::string err, std::vector<std::string> err_list) {
   m_err_msgs.push_back("ROUTER_API: " + err);
   for (std::string e : err_list)
   {
     m_err_msgs.push_back(e);
   }
+  return ROUTER_API_NOT_OK;
 }
 
 std::vector<std::string> Vapi::GetErrorMessages() {

@@ -22,7 +22,6 @@ class vdb {
 public:
   static const int SQL_OK = 0;
 
-
   vdb();
   ~vdb();
 
@@ -30,10 +29,13 @@ public:
   int insert_device_into_db(std::unique_ptr<device_data> &data);
   int select_device(std::string ip);
   int remove_selected_device_from_db();
-
   int add_to_prepared_routes(int destination, int source);
 
   static std::vector<std::string> GetErrorMessages();
+
+  // int get_prepared_routes(std::string &routes);
+
+  int GetSelectedDeviceData(std::unique_ptr<device_data> &device);
 
 private:
 
@@ -49,7 +51,7 @@ private:
   int sql_query(std::string query);
 
   static std::vector<std::string> m_err_msgs;
-  void AddToTrace(std::string s);
+  int AddToTrace(std::string s);
 
   int get_data_of_selected_device();
 };

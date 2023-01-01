@@ -29,7 +29,7 @@ public:
   static int RenameDestination(int channel_number, const std::string new_name, std::string &errmsg);
   static int GetDestinations(std::string &callback, std::string &errmsg);
   static int PrepareNewRoute(unsigned int destination, unsigned int source);
-  static int TakePreparedRoutes(std::string &errmsg);
+  static int TakePreparedRoutes();
   static int LockRoutes(unsigned int destination, std::string &errmsg);
   static int GetRoutes(std::string &errmsg);
   static int SaveRoutes(const std::string destinations, std::string &errmsg);
@@ -45,8 +45,8 @@ public:
 
 private:
   static std::vector<std::string> m_err_msgs;
-  static void AddToTrace(std::string);
-  static void AddToTrace(std::string err, std::vector<std::string> err_list);
+  static int AddToTrace(std::string);
+  static int AddToTrace(std::string err, std::vector<std::string> err_list);
 
   static int Vapi::GetInformationType(std::string line, information_type &type);
   static int ExtractInformation(std::string, std::unique_ptr<device_data> &_data);

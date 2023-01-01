@@ -194,6 +194,8 @@ int vdb::get_data_of_selected_device() {
   return SQL_OK;
 }
 
+// TODO Add public function to reset prepared routes
+
 int vdb::add_to_prepared_routes(int destination, int source) {
 
   int result = get_data_of_selected_device();
@@ -204,7 +206,7 @@ int vdb::add_to_prepared_routes(int destination, int source) {
 
   std::string prepared_routes = m_device.prepared_routes;
 
-  std::string new_route = std::to_string(destination) + " " + std::to_string(source) + "\\n";
+  std::string new_route = std::to_string(destination) + " " + std::to_string(source) + "\n";
 
   prepared_routes += new_route;
 
@@ -219,9 +221,31 @@ int vdb::add_to_prepared_routes(int destination, int source) {
   return SQL_OK;
 }
 
+// TODO Add function to update values of selected router
+
+// int vdb::get_prepared_routes(std::string &routes) {
+//   int result = get_data_of_selected_device();
+//   if (result != SQL_OK) {
+//     AddToTrace("could not get data of selected device");
+//     return 1;
+//   }
+
+//   routes = m_device.prepared_routes;
+//   return SQL_OK;
+// }
+
+int vdb::GetSelectedDeviceData(std::unique_ptr<device_data> &device){
+  int result = get_data_of_selected_device();
+  if(result) return AddToTrace("could not get data from selected device");
+  
+  *device = m_device;
+  return SQL_OK;
+}
+
 std::vector<std::string> vdb::m_err_msgs;
-void vdb::AddToTrace(std::string s) {
+int vdb::AddToTrace(std::string s) {
   m_err_msgs.push_back("SQLITE_INTERFACE: " + s);
+  return 1;
 }
 
 std::vector<std::string> vdb::GetErrorMessages() {

@@ -193,8 +193,8 @@ void cli::PrepareNewRoute(int argc, const char *argv[], int &current_argument_in
 };
 
 void cli::TakePreparedRoutes() {
-  if (Vapi::TakePreparedRoutes(m_err_msg) != Vapi::ROUTER_API_OK) {
-    std::cout << "Error: " << m_err_msg << '\n';
+  if (Vapi::TakePreparedRoutes() != Vapi::ROUTER_API_OK) {
+    PrintErrors(Vapi::GetErrorMessages());
     return;
   }
 };
