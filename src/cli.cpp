@@ -186,8 +186,8 @@ void cli::PrepareNewRoute(int argc, const char *argv[], int &current_argument_in
   catch (const std::invalid_argument &exception) {
     std::cout << "Error, not a valid integer: " << exception.what() << std::endl;
   }
-  if (Vapi::PrepareNewRoute(temp_destination, temp_source, m_err_msg) != Vapi::ROUTER_API_OK) {
-    std::cout << "Error: " << m_err_msg << '\n';
+  if (Vapi::PrepareNewRoute(temp_destination, temp_source) != Vapi::ROUTER_API_OK) {
+    PrintErrors(Vapi::GetErrorMessages());
     return;
   }
 };
