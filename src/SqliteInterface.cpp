@@ -1,5 +1,7 @@
 #include <SqliteInterface.hpp>
 
+int vdb::last_row_num;
+
 vdb::vdb() {
 
   std::string path = whereami::getExecutablePath().dirname();
@@ -20,10 +22,10 @@ vdb::~vdb() {
 }
 
 // TODO: secure against sql injection with bind function --> change passed argument type to statement or create new overloaded function
-int vdb::sql_query(std::string query, int &rows) {
+int vdb::sql_query(std::string query) {
   sqlite3_stmt *statement;
   int result;
-  rows = 0;
+  last_row_num = 0;
 
   result = sqlite3_prepare_v2(m_db, query.c_str(), -1, &statement, nullptr);
   if (result != SQLITE_OK) {
@@ -42,7 +44,7 @@ int vdb::sql_query(std::string query, int &rows) {
       int column_value_int = sqlite3_column_int(statement, i) ? sqlite3_column_int(statement, i) : 0;
       const char *col_val = (const char *)sqlite3_column_text(statement, i) ? (char *)sqlite3_column_text(statement, i) : "";
       std::string column_value_str(col_val);
-      rows++;
+      last_row_num++;
 
       if (column == "source_count") {
         m_device.source_count = column_value_int;
@@ -87,23 +89,10 @@ int vdb::sql_query(std::string query, int &rows) {
   return SQL_OK;
 }
 
-// TODO secure againtst sql injection with bind function
-int vdb::sql_query(std::string query) {
-
-  int result = sqlite3_exec(m_db, query.c_str(), 0, 0, nullptr);
-  if (result != SQLITE_OK) {
-    AddToTrace("Error: " + std::string(sqlite3_errmsg(m_db)));
-    return 1;
-  }
-
-  return SQL_OK;
-}
-
 int vdb::check_if_exists(std::string ip) {
-  int rows;
   std::string query = "SELECT ip FROM " + DEVICES_TABLE + " WHERE ip = '" + ip + "';";
 
-  int result = sql_query(query, rows);
+  int result = sql_query(query);
   if (result != SQL_OK)
   {
     AddToTrace("could not add device to list.");
@@ -111,7 +100,7 @@ int vdb::check_if_exists(std::string ip) {
   }
 
 
-  if (rows == 1) {
+  if (last_row_num == 1) {
     AddToTrace("Device found in list");
     return 1;
   }
@@ -183,9 +172,9 @@ int vdb::remove_selected_device_from_db() {
 int vdb::get_data_of_selected_device() {
   std::string query = "SELECT * FROM " + DEVICES_TABLE + " WHERE selected_router='x';";
 
-  int rows = 0;
+  last_row_num = 0;
 
-  int result = sql_query(query, rows);
+  int result = sql_query(query);
   if (result != SQL_OK)
   {
     AddToTrace("no selected device found");
@@ -193,8 +182,6 @@ int vdb::get_data_of_selected_device() {
   }
   return SQL_OK;
 }
-
-// TODO Add public function to reset prepared routes
 
 int vdb::add_to_prepared_routes(int destination, int source) {
 
@@ -220,6 +207,16 @@ int vdb::add_to_prepared_routes(int destination, int source) {
 
   return SQL_OK;
 }
+
+// TODO Add public function to reset prepared routes
+int vdb::clean_prepared_routes() {
+  int result = get_data_of_selected_device();
+
+  std::string query = "UPDATE FROM " + DEVICES_TABLE + " SET prepared_routes='' WHERE ip='" + m_device.ip + "';";
+
+  return SQL_OK;
+}
+
 
 // TODO Add function to update values of selected router
 
