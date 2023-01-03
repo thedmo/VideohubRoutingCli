@@ -1,5 +1,7 @@
 #include "TelnetClient.hpp"
 
+
+// TODO extend or change library to support other platforms than windows
 TelnetClient::TelnetClient(std::string ip, int port, std::string &init_response, int &result)
     : m_ip_address(ip), m_port(port)
 {
@@ -24,9 +26,19 @@ TelnetClient::~TelnetClient() { CloseConnection(); }
 
 int TelnetClient::SendMsgToServer(std::string msg) {
 
-    int sendResult = send(m_sock, msg.c_str(), msg.size(), 0);
+    send(m_sock, msg.c_str(), msg.size(), 0);
+    if (WSAGetLastError())
+    {
+        AddToTrace("could not send message: " + std::to_string(WSAGetLastError()));
+        return 1;
+    }
 
     ReceiveMsgFromServer(m_last_data_dump);
+    if (WSAGetLastError())
+    {
+        AddToTrace("could not receive any data: " + std::to_string(WSAGetLastError()));
+        return 1;
+    }
 
     return 0;
 }
@@ -100,7 +112,7 @@ int TelnetClient::OpenConnection()
     int wsResult = WSAStartup(ver, &data);
     if (wsResult != 0)
     {
-        AddToTrace("Can't start Winsock, err #" + WSAGetLastError());
+        AddToTrace("Can't start Winsock, err #" + std::to_string(WSAGetLastError()));
         return 1;
     }
 
@@ -108,7 +120,7 @@ int TelnetClient::OpenConnection()
     if (m_sock == INVALID_SOCKET)
     {
         WSACleanup();
-        AddToTrace("Can't Create socket, ERR #" + WSAGetLastError());
+        AddToTrace("Can't Create socket, ERR #" + std::to_string(WSAGetLastError()));
         return 1;
     }
 
@@ -118,7 +130,7 @@ int TelnetClient::OpenConnection()
     int ipresult = inet_pton(AF_INET, m_ip_address.c_str(), &hint.sin_addr);
     if (ipresult == 0)
     {
-        AddToTrace("Format of Ip Wrong! Err #: " + WSAGetLastError());
+        AddToTrace("Format of Ip Wrong! Err #: " + std::to_string(WSAGetLastError()));
         return 1;
     }
 
@@ -127,8 +139,7 @@ int TelnetClient::OpenConnection()
     {
         closesocket(m_sock);
         WSACleanup();
-        AddToTrace("Can't connect to server. Wrong IP? Err #" + WSAGetLastError());
-        // m_err_msgs.push_back("Can't connect to server. Wrong IP? Err #" + WSAGetLastError());
+        AddToTrace("Can't connect to server. Wrong IP? Err #" + std::to_string(WSAGetLastError()));
         return 1;
     }
 
