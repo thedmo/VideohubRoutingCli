@@ -33,8 +33,12 @@ int Vapi::GetInformationType(std::string line, information_type &type) {
   {
     type = information_type::locks;
   }
+  else if (line == ("ACK"))
+  {
+    type = information_type::ack;
+  }
   else {
-    AddToTrace("Type could not be extracted from: " + line);
+    AddToTrace("Type could not be extracted from: " + line + ".");
     return Vapi::ROUTER_API_NOT_OK;
   }
   return Vapi::ROUTER_API_OK;
