@@ -272,26 +272,40 @@ int Vapi::TakePreparedRoutes() {
 
   std::string response;
   int result;
-
   std::unique_ptr<device_data> current_device = std::make_unique<device_data>();
 
+  // Get device data with prepared routes from database
   result = m_database.GetSelectedDeviceData(current_device);
   if (result) return AddToTrace("Could not not get prepared routes", m_database.GetErrorMessages());
 
+  // Create socket
   TelnetClient tc(current_device->ip, VIDEOHUB_TELNET_PORT, response, result);
   if (result) return AddToTrace("Could not take prepared routes", tc.GetErrorMessages());
 
+  // send Command to take routes to connected device
   std::string msg = "VIDEO OUTPUT ROUTING:\n" + current_device->prepared_routes + '\n';
   result = tc.SendMsgToServer(msg);
   if (result) return AddToTrace("Could not take prepared routes", tc.GetErrorMessages());
 
-  response = tc.GetLastDataDump();
-
+  // reset entry for prepared routes in database
   result = m_database.clean_prepared_routes();
   if (result) return AddToTrace("could not reset prepared routes", m_database.GetErrorMessages());
 
-  // TODO update values of selected router
+  // get current routes from connected device (response gets saved in member variable)
+  msg = "VIDEO OUTPUT ROUTING:\n\n";
+  result = tc.SendMsgToServer(msg);
+  if (result) return AddToTrace("Could not get routing from device", tc.GetErrorMessages());
 
+  // get response from member variable and fill in routing of device data
+  response = tc.GetLastDataDump();
+  current_device->routing = "";
+  result = ExtractInformation(response, current_device);
+  if (result) return AddToTrace("Could extract routing from response");
+
+  // update values in database with device data
+  // TODO update values of selected router
+  result = m_database.update_selected_device_data(current_device);
+  if (result) return AddToTrace("Could not update device data of selected router in database", m_database.GetErrorMessages());
 
   return ROUTER_API_OK;
 }

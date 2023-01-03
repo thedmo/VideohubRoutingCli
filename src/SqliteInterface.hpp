@@ -37,8 +37,6 @@ public:
 
   static std::vector<std::string> GetErrorMessages();
 
-  // int get_prepared_routes(std::string &routes);
-
   int GetSelectedDeviceData(std::unique_ptr<device_data> &device);
 
 private:
@@ -52,10 +50,8 @@ private:
   device_data m_device;
   static int last_row_num;
 
-  // int sql_query(std::string query, int &rows);
   int SetLocalDeviceData(device_data &device, sqlite3_stmt *statement);
 
-  // int sql_prepare(std::string query, sqlite3_stmt *&statement);
   int sql_query(std::string query);
   int sql_query(sqlite3_stmt *statement);
 

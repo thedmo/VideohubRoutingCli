@@ -189,7 +189,6 @@ int vdb::select_device(std::string ip) {
     return 1;
   }
 
-// deselect currently selected router
   std::string query = "UPDATE " + DEVICES_TABLE + " SET selected_router='o';";
   result = sql_query(query);
   if (result) return AddToTrace(std::to_string(result) + ": could not reset router selection...");
@@ -265,10 +264,20 @@ int vdb::clean_prepared_routes() {
   return SQL_OK;
 }
 
-
-// TODO Add function to update values of selected router
 int vdb::update_selected_device_data(std::unique_ptr<device_data> &data) {
-  std::string query = "UPDATE FROM " + DEVICES_TABLE + " SET ;";
+  int result = get_data_of_selected_device();
+  if (result) return AddToTrace("could not get data of selected device");
+
+  std::string query = "UPDATE " + DEVICES_TABLE + " SET version=?, source_labels=?, destination_labels=?, routing='" + data->routing + "', locks = '" + data->locks + "';";
+  sqlite3_stmt *statement;
+  result = sqlite3_prepare_v2(m_db, query.c_str(), -1, &statement, nullptr);
+  sqlite3_bind_text(statement, 1, data->version.c_str(), -1, SQLITE_TRANSIENT);
+  sqlite3_bind_text(statement, 2, data->source_labels.c_str(), -1, SQLITE_TRANSIENT);
+  sqlite3_bind_text(statement, 3, data->destination_labels.c_str(), -1, SQLITE_TRANSIENT);
+  if (result != SQLITE_OK) return AddToTrace("Error: " + std::string(sqlite3_errmsg(m_db)));
+
+  result = sql_query(statement);
+  if (result) return AddToTrace("Query did not work: " + std::string(sqlite3_errmsg(m_db)));
 
   return SQL_OK;
 }
