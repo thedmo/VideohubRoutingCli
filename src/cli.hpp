@@ -4,14 +4,14 @@
 #include <vector>
 
 class cli {
- public:
-  cli(){};
-  ~cli(){};
+public:
+  cli() {};
+  ~cli() {};
 
-  int Evaluate(const int argc, const char* argv[]);
+  int Evaluate(const int argc, const char *argv[]);
 
- private:
- // TODO: Add desciption with examples
+private:
+// TODO: Add desciption with examples
   struct Option {
     int option_number;
     std::string short_name, long_name;
@@ -52,27 +52,27 @@ class cli {
       {Flags::list_routes, "-Lr", "--list_routes"},
       {Flags::save_routing, "-sr", "--save_routes"},
       {Flags::list_saved_routes, "-lsr", "--list_saved_routings"},
-      {Flags::load_routes, "-lr", "--load_routes"}};
+      {Flags::load_routes, "-lr", "--load_routes"} };
 
   void PrintHelp();
   int CompareToOptions(std::string comp_str);
-  int CheckArgCount(const int argc, const int current_index, std::string& err_msg);
+  int CheckArgCount(const int argc, const int current_index, std::string &err_msg);
 
-  void AddRouter(int argc, const char* argv[], int& current_argument_index);
+  void AddRouter(int argc, const char *argv[], int &current_argument_index);
   void RemoveRouter();
-  void SelectRouter(int argc, const char* argv[], int& current_argument_index);
+  void SelectRouter(int argc, const char *argv[], int &current_argument_index);
   void ListDevices();
-  void RenameSource(int argc, const char* argv[], int& current_argument_index);
+  void RenameSource(int argc, const char *argv[], int &current_argument_index);
   void ListSources();
-  void RenameDestination(int argc, const char* argv[], int& current_argument_index);
+  void RenameDestination(int argc, const char *argv[], int &current_argument_index);
   void ListDestinations();
-  void PrepareNewRoute(int argc, const char* argv[], int& current_argument_index);
+  void PrepareNewRoute(int argc, const char *argv[], int &current_argument_index);
   void TakePreparedRoutes();
-  void LockRoute(int argc, const char* argv[], int& current_argument_index);
+  void LockRoute(int argc, const char *argv[], int &current_argument_index);
   void ListRoutes();
-  void SaveRouting(int argc, const char* argv[], int& current_argument_index);
+  void SaveRouting(int argc, const char *argv[], int &current_argument_index);
   void ListSavedRoutings();
-  void LoadRouting(int argc, const char* argv[], int& current_argument_index);
+  void LoadRouting(int argc, const char *argv[], int &current_argument_index);
 
   std::string m_err_msg;
   int m_result;

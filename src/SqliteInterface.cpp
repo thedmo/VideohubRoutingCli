@@ -234,10 +234,10 @@ int vdb::add_to_prepared_routes(int destination, int source) {
 //   return SQL_OK;
 // }
 
-int vdb::GetSelectedDeviceData(std::unique_ptr<device_data> &device){
+int vdb::GetSelectedDeviceData(std::unique_ptr<device_data> &device) {
   int result = get_data_of_selected_device();
-  if(result) return AddToTrace("could not get data from selected device");
-  
+  if (result) return AddToTrace("could not get data from selected device");
+
   *device = m_device;
   return SQL_OK;
 }

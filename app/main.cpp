@@ -2,7 +2,7 @@
 
 int main(const int argc, const char *argv[])
 {
-    cli * commandlinelinterface = new cli();
+    cli *commandlinelinterface = new cli();
 
-    commandlinelinterface -> Evaluate(argc, argv);
+    commandlinelinterface->Evaluate(argc, argv);
 }

@@ -60,7 +60,7 @@ void cli::SelectRouter(int argc, const char *argv[], int &current_argument_index
     return;
 
   };
-  
+
   if (Vapi::SelectRouter(argv[++current_argument_index]) != Vapi::ROUTER_API_OK) {
     PrintErrors(Vapi::GetErrorMessages());
     return;

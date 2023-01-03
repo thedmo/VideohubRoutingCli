@@ -7,8 +7,8 @@ Goal is to make it so that routings from known devices can be saved and loaded w
 As of now, the tool is not yet very functional, as i am working on it in my free time and am learning a lot about programming in C++.
 
 ## Future features
-  - Adding/removing devices to local database
-  - Saving/loading routings
-  - renaming channels
-  - locking channels
-  - GUI with a matrix like interface (e.g. Dante interface; top: Sources, left: Destinations)
+
+- Saving/loading routings
+- renaming channels
+- locking channels
+- GUI with a matrix like interface (e.g. Dante interface; top: Sources, left: Destinations)
