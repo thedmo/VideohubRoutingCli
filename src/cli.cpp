@@ -50,6 +50,7 @@ void cli::AddRouter(int argc, const char *argv[], int &current_argument_index) {
 
 void cli::RemoveRouter() {
   if (Vapi::RemoveSelectedRouter() != Vapi::ROUTER_API_OK) {
+    PrintErrors(Vapi::GetErrorMessages());
     return;
   }
 }

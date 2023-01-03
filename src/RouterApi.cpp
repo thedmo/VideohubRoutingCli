@@ -193,7 +193,7 @@ int Vapi::AddRouter(std::string ip) {
     return ROUTER_API_NOT_OK;
   }
 
-  result = m_database.check_if_exists(ip);
+  result = m_database.check_if_device_exists(ip);
   if (result != vdb::SQL_OK) {
     for (std::string s : vdb::GetErrorMessages())
     {
@@ -271,7 +271,8 @@ int Vapi::TakePreparedRoutes() {
 
   std::unique_ptr<device_data> current_device = std::make_unique<device_data>();
 
-  m_database.GetSelectedDeviceData(current_device);
+  result = m_database.GetSelectedDeviceData(current_device);
+  if (result) return AddToTrace("Could not not get prepared routes", m_database.GetErrorMessages());
 
   TelnetClient tc(current_device->ip, VIDEOHUB_TELNET_PORT, response, result);
   if (result) return AddToTrace("Could not take prepared routes", tc.GetErrorMessages());
@@ -281,7 +282,12 @@ int Vapi::TakePreparedRoutes() {
   if (result) return AddToTrace("Could not take prepared routes", tc.GetErrorMessages());
 
   response = tc.GetLastDataDump();
-  // TODO update values of selected router, reset prepared routes
+
+  result = m_database.clean_prepared_routes();
+  if (result) return AddToTrace("could not reset prepared routes", m_database.GetErrorMessages());
+
+  // TODO update values of selected router
+
 
   return ROUTER_API_OK;
 }

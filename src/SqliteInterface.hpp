@@ -25,8 +25,11 @@ public:
   vdb();
   ~vdb();
 
-  int check_if_exists(std::string ip);
+  int check_if_device_exists(std::string ip);
+  int check_if_devicetable_empty();
   int insert_device_into_db(std::unique_ptr<device_data> &data);
+  int update_selected_device_data(std::unique_ptr<device_data> &data);
+
   int select_device(std::string ip);
   int remove_selected_device_from_db();
   int add_to_prepared_routes(int destination, int source);
@@ -50,7 +53,11 @@ private:
   static int last_row_num;
 
   // int sql_query(std::string query, int &rows);
+  int SetLocalDeviceData(device_data &device, sqlite3_stmt *statement);
+
+  // int sql_prepare(std::string query, sqlite3_stmt *&statement);
   int sql_query(std::string query);
+  int sql_query(sqlite3_stmt *statement);
 
   static std::vector<std::string> m_err_msgs;
   int AddToTrace(std::string s);
