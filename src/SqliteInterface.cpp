@@ -3,7 +3,6 @@
 int vdb::last_row_num;
 
 vdb::vdb() {
-
   std::string path = whereami::getExecutablePath().dirname();
 
   path = path + "/router.db";
@@ -22,7 +21,6 @@ vdb::~vdb() {
 }
 
 int vdb::SetLocalDeviceData(device_data &device, sqlite3_stmt *statement) {
-
   for (auto i = 0; i < sqlite3_data_count(statement); i++) {
     const char *col_name = (const char *)sqlite3_column_name(statement, i);
     std::string column(col_name);
@@ -36,32 +34,24 @@ int vdb::SetLocalDeviceData(device_data &device, sqlite3_stmt *statement) {
 
     if (column == "source_count") {
       device.source_count = column_value_int;
-    }
-    else if (column == "destination_count") {
+    } else if (column == "destination_count") {
       device.destination_count = column_value_int;
     }
     if (column == "ip") {
       device.ip = column_value_str;
-    }
-    else if (column == "name") {
+    } else if (column == "name") {
       device.name = column_value_str;
-    }
-    else if (column == "version") {
+    } else if (column == "version") {
       device.version = column_value_str;
-    }
-    else if (column == "destination_labels") {
+    } else if (column == "destination_labels") {
       device.destination_labels = column_value_str;
-    }
-    else if (column == "source_labels") {
+    } else if (column == "source_labels") {
       device.source_labels = column_value_str;
-    }
-    else if (column == "routing") {
+    } else if (column == "routing") {
       device.routing = column_value_str;
-    }
-    else if (column == "prepared_routes") {
+    } else if (column == "prepared_routes") {
       device.prepared_routes = column_value_str;
-    }
-    else if (column == "locks") {
+    } else if (column == "locks") {
       device.locks = column_value_str;
     }
   }
@@ -139,10 +129,7 @@ int vdb::check_if_device_exists(std::string ip) {
   result = sql_query(statement);
   if (result != SQL_OK) return AddToTrace("Error: " + std::string(sqlite3_errmsg(m_db)));
 
-  if (last_row_num == 1) {
-    AddToTrace("Device with ip: '" + ip + "' already in list");
-    return 1;
-  }
+  if (last_row_num == 1) return AddToTrace("Device with ip: '" + ip + "' already in list");
   return SQL_OK;
 }
 
@@ -165,16 +152,13 @@ int vdb::insert_device_into_db(std::unique_ptr<device_data> &data) {
   sqlite3_bind_text(statement, 3, data->destination_labels.c_str(), -1, SQLITE_TRANSIENT);
   int result = sql_query(statement);
 
-  int result = sql_query(query);
-  if (result != SQL_OK)
-  {
+  if (result != SQL_OK) {
     AddToTrace("could not insert new device into table");
     return 1;
   }
 
   result = select_device(data->ip);
-  if (result != SQL_OK)
-  {
+  if (result != SQL_OK) {
     AddToTrace("Could not select device in table");
     return 1;
   }
@@ -184,11 +168,7 @@ int vdb::insert_device_into_db(std::unique_ptr<device_data> &data) {
 
 int vdb::select_device(std::string ip) {
   int result = check_if_device_exists(ip);
-  if (result == 0)
-  {
-    AddToTrace("Device with ip: " + ip + " does not exist in database. Add it first before selecting.");
-    return 1;
-  }
+  if (result == 0) return AddToTrace("Device with ip: " + ip + " does not exist in database. Add it first before selecting.");
 
   std::string query = "UPDATE " + DEVICES_TABLE + " SET selected_router='o';";
   sqlite3_stmt *statement = GetStatement(query);
@@ -222,8 +202,7 @@ int vdb::get_data_of_selected_device() {
   std::string query = "SELECT * FROM " + DEVICES_TABLE + " WHERE selected_router='x';";
 
   int result = sql_query(query);
-  if (result != SQL_OK)
-  {
+  if (result != SQL_OK) {
     AddToTrace("no selected device found");
     return 1;
   }
@@ -231,7 +210,6 @@ int vdb::get_data_of_selected_device() {
 }
 
 int vdb::add_to_prepared_routes(int destination, int source) {
-
   int result = get_data_of_selected_device();
   if (result != SQL_OK) {
     AddToTrace("could not get data of selected device");
@@ -246,8 +224,7 @@ int vdb::add_to_prepared_routes(int destination, int source) {
 
   std::string query = "UPDATE " + DEVICES_TABLE + " SET prepared_routes='" + prepared_routes + "' WHERE selected_router='x';";
   result = sql_query(query);
-  if (result != SQL_OK)
-  {
+  if (result != SQL_OK) {
     AddToTrace("could not add new route to prepared routes");
     return 1;
   }
