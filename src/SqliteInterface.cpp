@@ -131,15 +131,13 @@ int vdb::sql_query(sqlite3_stmt *statement) {
 }
 
 int vdb::check_if_device_exists(std::string ip) {
-  std::string query = "SELECT ip FROM " + DEVICES_TABLE + " WHERE ip = '" + ip + "';";
+  sqlite3_stmt *statement = GetStatement("SELECT ip FROM " + DEVICES_TABLE + " WHERE ip =?;");
 
-  int result = sql_query(query);
-  if (result != SQL_OK)
-  {
-    AddToTrace("could not add device to list.");
-    return 1;
-  }
+  int result = sqlite3_bind_text(statement, 1, ip.c_str(), -1, SQLITE_TRANSIENT);
+  if (result != SQL_OK) return AddToTrace("Error: " + std::string(sqlite3_errmsg(m_db)));
 
+  result = sql_query(statement);
+  if (result != SQL_OK) return AddToTrace("Error: " + std::string(sqlite3_errmsg(m_db)));
 
   if (last_row_num == 1) {
     AddToTrace("Device with ip: '" + ip + "' already in list");
@@ -159,7 +157,13 @@ int vdb::check_if_devicetable_empty() {
 }
 
 int vdb::insert_device_into_db(std::unique_ptr<device_data> &data) {
-  std::string query = "INSERT INTO " + DEVICES_TABLE + "(ip, name, version, source_count, destination_count, source_labels, destination_labels, routing, locks) VALUES ('" + data->ip + "','" + data->name + "','" + data->version + "'," + std::to_string(data->source_count) + "," + std::to_string(data->destination_count) + ",'" + data->source_labels + "','" + data->destination_labels + "','" + data->routing + "','" + data->locks + "');";
+  // std::string query = "INSERT INTO " + DEVICES_TABLE + "(ip, name, version, source_count, destination_count, source_labels, destination_labels, routing, locks) VALUES ('" + data->ip + "','" + data->name + "','" + data->version + "'," + std::to_string(data->source_count) + "," + std::to_string(data->destination_count) + ",'" + data->source_labels + "','" + data->destination_labels + "','" + data->routing + "','" + data->locks + "');";
+  std::string query = "INSERT INTO " + DEVICES_TABLE + "(ip, name, version, source_count, destination_count, source_labels, destination_labels, routing, locks) VALUES (?,'" + data->name + "','" + data->version + "'," + std::to_string(data->source_count) + "," + std::to_string(data->destination_count) + ",?,?,'" + data->routing + "','" + data->locks + "');";
+  sqlite3_stmt *statement = GetStatement(query);
+  sqlite3_bind_text(statement, 1, data->ip.c_str(), -1, SQLITE_TRANSIENT);
+  sqlite3_bind_text(statement, 2, data->source_labels.c_str(), -1, SQLITE_TRANSIENT);
+  sqlite3_bind_text(statement, 3, data->destination_labels.c_str(), -1, SQLITE_TRANSIENT);
+  int result = sql_query(statement);
 
   int result = sql_query(query);
   if (result != SQL_OK)
@@ -187,11 +191,16 @@ int vdb::select_device(std::string ip) {
   }
 
   std::string query = "UPDATE " + DEVICES_TABLE + " SET selected_router='o';";
-  result = sql_query(query);
+  sqlite3_stmt *statement = GetStatement(query);
+  result = sql_query(statement);
   if (result) return AddToTrace(std::to_string(result) + ": could not reset router selection...");
 
-  query = "UPDATE " + DEVICES_TABLE + " SET selected_router='x' WHERE ip='" + ip + "';";
-  result = sql_query(query);
+  query = "UPDATE " + DEVICES_TABLE + " SET selected_router='x' WHERE ip=?;";
+  statement = GetStatement(query);
+  result = sqlite3_bind_text(statement, 1, ip.c_str(), -1, SQLITE_TRANSIENT);
+  if (result) return AddToTrace("Error: " + std::string(sqlite3_errmsg(m_db)));
+
+  result = sql_query(statement);
   if (result) return AddToTrace("could not select router...");
 
   return SQL_OK;
@@ -250,11 +259,7 @@ int vdb::clean_prepared_routes() {
   int result = check_if_devicetable_empty();
   if (result) return AddToTrace("no devices in router table");
 
-  std::string query = "UPDATE " + DEVICES_TABLE + " SET prepared_routes='' WHERE selected_router='x';";
-  sqlite3_stmt *statement;
-  result = sqlite3_prepare_v2(m_db, query.c_str(), -1, &statement, nullptr);
-  if (result != SQLITE_OK) return AddToTrace("Error: " + std::string(sqlite3_errmsg(m_db)));
-
+  sqlite3_stmt *statement = GetStatement("UPDATE " + DEVICES_TABLE + " SET prepared_routes='' WHERE selected_router='x';");
   result = sql_query(statement);
   if (result) return AddToTrace("query did not work");
 
@@ -265,9 +270,7 @@ int vdb::update_selected_device_data(std::unique_ptr<device_data> &data) {
   int result = get_data_of_selected_device();
   if (result) return AddToTrace("could not get data of selected device");
 
-  std::string query = "UPDATE " + DEVICES_TABLE + " SET version=?, source_labels=?, destination_labels=?, routing='" + data->routing + "', locks = '" + data->locks + "';";
-  sqlite3_stmt *statement;
-  result = sqlite3_prepare_v2(m_db, query.c_str(), -1, &statement, nullptr);
+  sqlite3_stmt *statement = GetStatement("UPDATE " + DEVICES_TABLE + " SET version=?, source_labels=?, destination_labels=?, routing='" + data->routing + "', locks = '" + data->locks + "';");
   sqlite3_bind_text(statement, 1, data->version.c_str(), -1, SQLITE_TRANSIENT);
   sqlite3_bind_text(statement, 2, data->source_labels.c_str(), -1, SQLITE_TRANSIENT);
   sqlite3_bind_text(statement, 3, data->destination_labels.c_str(), -1, SQLITE_TRANSIENT);
