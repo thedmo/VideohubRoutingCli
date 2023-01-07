@@ -100,14 +100,11 @@ int vdb::sql_query(std::string query) {
   return SQL_OK;
 }
 
-// int vdb::sql_prepare(std::string query, sqlite3_stmt *&statement) {
-//   int result = sqlite3_prepare_v2(m_db, query.c_str(), -1, &statement, nullptr);
-//   if (result != SQLITE_OK) {
-//     return AddToTrace("Error: " + std::string(sqlite3_errmsg(m_db)));
-//   }
-
-//   return SQL_OK;
-// }
+sqlite3_stmt *vdb::GetStatement(std::string query) {
+  sqlite3_stmt *statement;
+  sqlite3_prepare_v2(m_db, query.c_str(), -1, &statement, 0);
+  return statement;
+}
 
 int vdb::sql_query(sqlite3_stmt *statement) {
   int result;

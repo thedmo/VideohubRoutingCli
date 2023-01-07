@@ -53,6 +53,7 @@ private:
   int SetLocalDeviceData(device_data &device, sqlite3_stmt *statement);
 
   int sql_query(std::string query);
+  sqlite3_stmt* GetStatement(std::string query);
   int sql_query(sqlite3_stmt *statement);
 
   static std::vector<std::string> m_err_msgs;
