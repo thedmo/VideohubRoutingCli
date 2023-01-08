@@ -97,18 +97,34 @@ sqlite3_stmt *vdb::GetStatement(std::string query) {
 }
 
 int vdb::sql_query(sqlite3_stmt *statement) {
+  m_last_query_result.clear();
   int result;
   last_row_num = 0;
+  std::vector<std::string> row_content;
 
   do {
+    row_content.clear();
     result = sqlite3_step(statement);
 
     if (result != SQLITE_ROW) {
       break;
     }
 
+    for (size_t j = 0; j < sqlite3_data_count(statement); j++) {
+      row_content.push_back((char *)(sqlite3_column_text(statement, j)));
+    }
+
+    m_last_query_result.push_back(row_content);
     result = SetLocalDeviceData(m_device, statement);
   } while (result != SQLITE_DONE);
+
+  // for (auto l : m_last_query_result) {
+  //   for (auto f : l) {
+  //     std::cout << f;
+  //   }
+
+  //   std::cout << '\n';
+  // }
 
   result = sqlite3_finalize(statement);
 
@@ -264,6 +280,22 @@ int vdb::GetSelectedDeviceData(std::unique_ptr<device_data> &device) {
   if (result) return AddToTrace("could not get data from selected device");
 
   *device = m_device;
+  return SQL_OK;
+}
+
+int vdb::GetDevices(std::string &device_str) {
+  sqlite3_stmt *statement = GetStatement("SELECT ip, name, version FROM " + DEVICES_TABLE + ";");
+  int result = sql_query(statement);
+  if (result) return AddToTrace("could not get Devices List");
+  
+  for(auto row : m_last_query_result){
+    for(auto field : row){
+      device_str += field + " ";
+    }
+
+    device_str += '\n';
+  }
+
   return SQL_OK;
 }
 

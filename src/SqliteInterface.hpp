@@ -38,6 +38,7 @@ public:
   static std::vector<std::string> GetErrorMessages();
 
   int GetSelectedDeviceData(std::unique_ptr<device_data> &device);
+  int GetDevices(std::string &device_str);
 
 private:
 
@@ -49,6 +50,7 @@ private:
   sqlite3 *m_db;
   device_data m_device;
   static int last_row_num;
+  std::vector<std::vector<std::string>> m_last_query_result;
 
   int SetLocalDeviceData(device_data &device, sqlite3_stmt *statement);
 
