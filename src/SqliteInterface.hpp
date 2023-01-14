@@ -25,6 +25,7 @@ public:
   vdb();
   ~vdb();
 
+
   int check_if_device_exists(std::string ip);
   int check_if_devicetable_empty();
   int insert_device_into_db(std::unique_ptr<device_data> &data);
@@ -55,7 +56,7 @@ private:
   int SetLocalDeviceData(device_data &device, sqlite3_stmt *statement);
 
   int sql_query(std::string query);
-  sqlite3_stmt* GetStatement(std::string query);
+  sqlite3_stmt *GetStatement(std::string query);
   int sql_query(sqlite3_stmt *statement);
 
   static std::vector<std::string> m_err_msgs;

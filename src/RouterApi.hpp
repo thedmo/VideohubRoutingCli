@@ -26,7 +26,7 @@ public:
   static int RemoveSelectedRouter();
   static int GetDevices(std::string &callback);
   static int RenameSource(int channel_number, const std::string new_name, std::string &errmsg);
-  static int GetSources(std::string &callback, std::string &errmsg);
+  static int GetSources(std::string &callback);
   static int RenameDestination(int channel_number, const std::string new_name, std::string &errmsg);
   static int GetDestinations(std::string &callback, std::string &errmsg);
   static int PrepareNewRoute(unsigned int destination, unsigned int source);

@@ -20,6 +20,7 @@ vdb::~vdb() {
   sqlite3_close_v2(m_db);
 }
 
+// Todo: replace with method to extract from Vector
 int vdb::SetLocalDeviceData(device_data &device, sqlite3_stmt *statement) {
   for (auto i = 0; i < sqlite3_data_count(statement); i++) {
     const char *col_name = (const char *)sqlite3_column_name(statement, i);
@@ -34,24 +35,32 @@ int vdb::SetLocalDeviceData(device_data &device, sqlite3_stmt *statement) {
 
     if (column == "source_count") {
       device.source_count = column_value_int;
-    } else if (column == "destination_count") {
+    }
+    else if (column == "destination_count") {
       device.destination_count = column_value_int;
     }
     if (column == "ip") {
       device.ip = column_value_str;
-    } else if (column == "name") {
+    }
+    else if (column == "name") {
       device.name = column_value_str;
-    } else if (column == "version") {
+    }
+    else if (column == "version") {
       device.version = column_value_str;
-    } else if (column == "destination_labels") {
+    }
+    else if (column == "destination_labels") {
       device.destination_labels = column_value_str;
-    } else if (column == "source_labels") {
+    }
+    else if (column == "source_labels") {
       device.source_labels = column_value_str;
-    } else if (column == "routing") {
+    }
+    else if (column == "routing") {
       device.routing = column_value_str;
-    } else if (column == "prepared_routes") {
+    }
+    else if (column == "prepared_routes") {
       device.prepared_routes = column_value_str;
-    } else if (column == "locks") {
+    }
+    else if (column == "locks") {
       device.locks = column_value_str;
     }
   }
@@ -118,20 +127,9 @@ int vdb::sql_query(sqlite3_stmt *statement) {
     result = SetLocalDeviceData(m_device, statement);
   } while (result != SQLITE_DONE);
 
-  // for (auto l : m_last_query_result) {
-  //   for (auto f : l) {
-  //     std::cout << f;
-  //   }
-
-  //   std::cout << '\n';
-  // }
-
   result = sqlite3_finalize(statement);
 
-  if (result != SQLITE_OK) {
-    AddToTrace("Error: " + std::string(sqlite3_errmsg(m_db)));
-    return 1;
-  }
+  if (result != SQLITE_OK) return AddToTrace("Error: " + std::string(sqlite3_errmsg(m_db)));
 
   return SQL_OK;
 }
@@ -160,7 +158,6 @@ int vdb::check_if_devicetable_empty() {
 }
 
 int vdb::insert_device_into_db(std::unique_ptr<device_data> &data) {
-  // std::string query = "INSERT INTO " + DEVICES_TABLE + "(ip, name, version, source_count, destination_count, source_labels, destination_labels, routing, locks) VALUES ('" + data->ip + "','" + data->name + "','" + data->version + "'," + std::to_string(data->source_count) + "," + std::to_string(data->destination_count) + ",'" + data->source_labels + "','" + data->destination_labels + "','" + data->routing + "','" + data->locks + "');";
   std::string query = "INSERT INTO " + DEVICES_TABLE + "(ip, name, version, source_count, destination_count, source_labels, destination_labels, routing, locks) VALUES (?,'" + data->name + "','" + data->version + "'," + std::to_string(data->source_count) + "," + std::to_string(data->destination_count) + ",?,?,'" + data->routing + "','" + data->locks + "');";
   sqlite3_stmt *statement = GetStatement(query);
   sqlite3_bind_text(statement, 1, data->ip.c_str(), -1, SQLITE_TRANSIENT);
@@ -287,9 +284,9 @@ int vdb::GetDevices(std::string &device_str) {
   sqlite3_stmt *statement = GetStatement("SELECT ip, name, version FROM " + DEVICES_TABLE + ";");
   int result = sql_query(statement);
   if (result) return AddToTrace("could not get Devices List");
-  
-  for(auto row : m_last_query_result){
-    for(auto field : row){
+
+  for (auto row : m_last_query_result) {
+    for (auto field : row) {
       device_str += field + " ";
     }
 

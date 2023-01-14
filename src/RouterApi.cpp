@@ -9,19 +9,26 @@ vdb Vapi::m_database;
 int Vapi::GetInformationType(std::string line, information_type &type) {
   if (line == "PROTOCOL PREAMBLE:") {
     type = information_type::preamble;
-  } else if (line == ("VIDEOHUB DEVICE:")) {
+  }
+  else if (line == ("VIDEOHUB DEVICE:")) {
     type = information_type::device;
-  } else if (line == ("INPUT LABELS:")) {
+  }
+  else if (line == ("INPUT LABELS:")) {
     type = information_type::inputs_labels;
-  } else if (line == ("OUTPUT LABELS:")) {
+  }
+  else if (line == ("OUTPUT LABELS:")) {
     type = information_type::outputs_labels;
-  } else if (line == ("VIDEO OUTPUT ROUTING:")) {
+  }
+  else if (line == ("VIDEO OUTPUT ROUTING:")) {
     type = information_type::routing;
-  } else if (line == ("VIDEO OUTPUT LOCKS:")) {
+  }
+  else if (line == ("VIDEO OUTPUT LOCKS:")) {
     type = information_type::locks;
-  } else if (line == ("ACK")) {
+  }
+  else if (line == ("ACK")) {
     type = information_type::ack;
-  } else {
+  }
+  else {
     AddToTrace("Type could not be extracted from: " + line + ".");
     return Vapi::ROUTER_API_NOT_OK;
   }
@@ -113,13 +120,16 @@ int Vapi::GetDeviceInformation(std::string line, std::unique_ptr<device_data> &_
   if (key.compare("Version") == 0) {
     _data->version = value;
     return Vapi::ROUTER_API_OK;
-  } else if (key.compare("Friendly name") == 0) {
+  }
+  else if (key.compare("Friendly name") == 0) {
     _data->name = value;
     return Vapi::ROUTER_API_OK;
-  } else if (key.compare("Video inputs") == 0) {
+  }
+  else if (key.compare("Video inputs") == 0) {
     _data->source_count = std::stoi(value);
     return Vapi::ROUTER_API_OK;
-  } else if (key.compare("Video outputs") == 0) {
+  }
+  else if (key.compare("Video outputs") == 0) {
     _data->destination_count = std::stoi(value);
     return Vapi::ROUTER_API_OK;
   }
@@ -205,9 +215,8 @@ int Vapi::RenameSource(int channel_number, const std::string new_name, std::stri
   errmsg = "ROUTER_API: Not implemented yet";
   return ROUTER_API_NOT_OK;
 }
-int Vapi::GetSources(std::string &callback, std::string &errmsg) {
-  errmsg = "ROUTER_API: Not implemented yet";
-  return ROUTER_API_NOT_OK;
+int Vapi::GetSources(std::string &callback) {
+  return AddToTrace("Not Implemented yet");
 }
 
 int Vapi::RenameDestination(int channel_number, const std::string new_name, std::string &errmsg) {
