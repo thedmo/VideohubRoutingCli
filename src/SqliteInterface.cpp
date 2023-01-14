@@ -68,7 +68,51 @@ int vdb::SetLocalDeviceData(device_data &device, sqlite3_stmt *statement) {
   return SQL_OK;
 }
 
-// TODO: secure against sql injection with bind function --> change passed argument type to statement or create new overloaded function
+// Todo hier weiter
+int vdb::SetLocalDeviceDataNew(std::vector<std::vector<std::string>> query_result) {
+  // iterating through cols
+  for (auto i = 0; i < query_result[0].size(); i++) {
+
+    std::string column = query_result[0][i];
+    std::string field = query_result[1][i];
+
+    if (column == "source_count") {
+      m_device.source_count = std::stoi(field);
+    }
+    else if (column == "destination_count") {
+      m_device.destination_count = std::stoi(field);
+    }
+    if (column == "ip") {
+      m_device.ip = field;
+    }
+    else if (column == "name") {
+      m_device.name = field;
+    }
+    else if (column == "version") {
+      m_device.version = field;
+    }
+    else if (column == "destination_labels") {
+      m_device.destination_labels = field;
+    }
+    else if (column == "source_labels") {
+      m_device.source_labels = field;
+    }
+    else if (column == "routing") {
+      m_device.routing = field;
+    }
+    else if (column == "prepared_routes") {
+      m_device.prepared_routes = field;
+    }
+    else if (column == "locks") {
+      m_device.locks = field;
+
+    }
+  }
+
+  return SQL_OK;
+}
+
+// DEPRECATED do not use anymore
 int vdb::sql_query(std::string query) {
   sqlite3_stmt *statement;
   int result;
@@ -85,8 +129,9 @@ int vdb::sql_query(std::string query) {
     if (result != SQLITE_ROW) {
       break;
     }
+    last_row_num++;
 
-    result = SetLocalDeviceData(m_device, statement);
+    // result = SetLocalDeviceData(m_device, statement);
   } while (result != SQLITE_DONE);
 
   result = sqlite3_finalize(statement);
@@ -118,13 +163,14 @@ int vdb::sql_query(sqlite3_stmt *statement) {
     if (result != SQLITE_ROW) {
       break;
     }
+    last_row_num++;
 
     for (size_t j = 0; j < sqlite3_data_count(statement); j++) {
       row_content.push_back((char *)(sqlite3_column_text(statement, j)));
     }
 
     m_last_query_result.push_back(row_content);
-    result = SetLocalDeviceData(m_device, statement);
+    // result = SetLocalDeviceData(m_device, statement);
   } while (result != SQLITE_DONE);
 
   result = sqlite3_finalize(statement);
@@ -215,10 +261,11 @@ int vdb::get_data_of_selected_device() {
   std::string query = "SELECT * FROM " + DEVICES_TABLE + " WHERE selected_router='x';";
 
   int result = sql_query(query);
-  if (result != SQL_OK) {
-    AddToTrace("no selected device found");
-    return 1;
-  }
+  if (result) return AddToTrace("no selected device found");
+
+  result = SetLocalDeviceDataNew(m_last_query_result);
+  if (result) return AddToTrace("could not set devicedata");
+
   return SQL_OK;
 }
 

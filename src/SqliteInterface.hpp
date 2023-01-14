@@ -43,7 +43,6 @@ public:
 
 private:
 
-
   const std::string DEVICES_TABLE = "routers";
   const std::string ROUTINGS_TABLE = "routings";
 
@@ -54,6 +53,7 @@ private:
   std::vector<std::vector<std::string>> m_last_query_result;
 
   int SetLocalDeviceData(device_data &device, sqlite3_stmt *statement);
+  int SetLocalDeviceDataNew(std::vector<std::vector<std::string>> query_result);
 
   int sql_query(std::string query);
   sqlite3_stmt *GetStatement(std::string query);
