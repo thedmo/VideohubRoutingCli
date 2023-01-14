@@ -20,56 +20,55 @@ vdb::~vdb() {
   sqlite3_close_v2(m_db);
 }
 
-// Todo: replace with method to extract from Vector
-int vdb::SetLocalDeviceData(device_data &device, sqlite3_stmt *statement) {
-  for (auto i = 0; i < sqlite3_data_count(statement); i++) {
-    const char *col_name = (const char *)sqlite3_column_name(statement, i);
-    std::string column(col_name);
+// // Todo: replace with method to extract from Vector
+// int vdb::SetLocalDeviceData(device_data &device, sqlite3_stmt *statement) {
+//   for (auto i = 0; i < sqlite3_data_count(statement); i++) {
+//     const char *col_name = (const char *)sqlite3_column_name(statement, i);
+//     std::string column(col_name);
 
-    int column_value_int = sqlite3_column_int(statement, i) ? sqlite3_column_int(statement, i) : 0;
+//     int column_value_int = sqlite3_column_int(statement, i) ? sqlite3_column_int(statement, i) : 0;
 
-    const char *col_val = (const char *)sqlite3_column_text(statement, i) ? (char *)sqlite3_column_text(statement, i) : "";
-    std::string column_value_str(col_val);
+//     const char *col_val = (const char *)sqlite3_column_text(statement, i) ? (char *)sqlite3_column_text(statement, i) : "";
+//     std::string column_value_str(col_val);
 
-    last_row_num++;
+//     last_row_num++;
 
-    if (column == "source_count") {
-      device.source_count = column_value_int;
-    }
-    else if (column == "destination_count") {
-      device.destination_count = column_value_int;
-    }
-    if (column == "ip") {
-      device.ip = column_value_str;
-    }
-    else if (column == "name") {
-      device.name = column_value_str;
-    }
-    else if (column == "version") {
-      device.version = column_value_str;
-    }
-    else if (column == "destination_labels") {
-      device.destination_labels = column_value_str;
-    }
-    else if (column == "source_labels") {
-      device.source_labels = column_value_str;
-    }
-    else if (column == "routing") {
-      device.routing = column_value_str;
-    }
-    else if (column == "prepared_routes") {
-      device.prepared_routes = column_value_str;
-    }
-    else if (column == "locks") {
-      device.locks = column_value_str;
-    }
-  }
+//     if (column == "source_count") {
+//       device.source_count = column_value_int;
+//     }
+//     else if (column == "destination_count") {
+//       device.destination_count = column_value_int;
+//     }
+//     if (column == "ip") {
+//       device.ip = column_value_str;
+//     }
+//     else if (column == "name") {
+//       device.name = column_value_str;
+//     }
+//     else if (column == "version") {
+//       device.version = column_value_str;
+//     }
+//     else if (column == "destination_labels") {
+//       device.destination_labels = column_value_str;
+//     }
+//     else if (column == "source_labels") {
+//       device.source_labels = column_value_str;
+//     }
+//     else if (column == "routing") {
+//       device.routing = column_value_str;
+//     }
+//     else if (column == "prepared_routes") {
+//       device.prepared_routes = column_value_str;
+//     }
+//     else if (column == "locks") {
+//       device.locks = column_value_str;
+//     }
+//   }
 
-  return SQL_OK;
-}
+//   return SQL_OK;
+// }
 
-// Todo hier weiter
-int vdb::SetLocalDeviceDataNew(std::vector<std::vector<std::string>> query_result) {
+int vdb::SetLocalDeviceDataNew(const std::vector<std::vector<std::string>> &query_result) {
   // iterating through cols
   for (auto i = 0; i < query_result[0].size(); i++) {
 
@@ -157,20 +156,37 @@ int vdb::sql_query(sqlite3_stmt *statement) {
   std::vector<std::string> row_content;
 
   do {
-    row_content.clear();
     result = sqlite3_step(statement);
 
     if (result != SQLITE_ROW) {
       break;
     }
-    last_row_num++;
 
-    for (size_t j = 0; j < sqlite3_data_count(statement); j++) {
-      row_content.push_back((char *)(sqlite3_column_text(statement, j)));
+    //column names
+    if (m_last_query_result.size() == 0)
+    {
+      row_content.clear();
+      for (int i = 0; i < sqlite3_data_count(statement); i++)
+      {
+        const char *col_name = (const char *)sqlite3_column_name(statement, i);
+        std::string column(col_name);
+
+        row_content.push_back(column);
+      }
+      m_last_query_result.push_back(row_content);
     }
 
+    row_content.clear();
+    //Fields
+    for (int j = 0; j < sqlite3_data_count(statement); j++) {
+      char *field = (char *)(sqlite3_column_text(statement, j)) ? (char *)(sqlite3_column_text(statement, j)) : "";
+
+      row_content.push_back(field);
+    }
+
+
     m_last_query_result.push_back(row_content);
-    // result = SetLocalDeviceData(m_device, statement);
+    last_row_num++;
   } while (result != SQLITE_DONE);
 
   result = sqlite3_finalize(statement);
@@ -259,8 +275,8 @@ int vdb::remove_selected_device_from_db() {
 
 int vdb::get_data_of_selected_device() {
   std::string query = "SELECT * FROM " + DEVICES_TABLE + " WHERE selected_router='x';";
-
-  int result = sql_query(query);
+  sqlite3_stmt *statement = GetStatement(query);
+  int result = sql_query(statement);
   if (result) return AddToTrace("no selected device found");
 
   result = SetLocalDeviceDataNew(m_last_query_result);
@@ -271,10 +287,7 @@ int vdb::get_data_of_selected_device() {
 
 int vdb::add_to_prepared_routes(int destination, int source) {
   int result = get_data_of_selected_device();
-  if (result != SQL_OK) {
-    AddToTrace("could not get data of selected device");
-    return 1;
-  }
+  if (result) return AddToTrace("could not get data of selected device");
 
   std::string prepared_routes = m_device.prepared_routes;
 
@@ -284,10 +297,7 @@ int vdb::add_to_prepared_routes(int destination, int source) {
 
   std::string query = "UPDATE " + DEVICES_TABLE + " SET prepared_routes='" + prepared_routes + "' WHERE selected_router='x';";
   result = sql_query(query);
-  if (result != SQL_OK) {
-    AddToTrace("could not add new route to prepared routes");
-    return 1;
-  }
+  if (result) return AddToTrace("could not add new route to prepared routes");
 
   return SQL_OK;
 }
