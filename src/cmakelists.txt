@@ -15,6 +15,7 @@ set(lib_includes
 FetchContent_Declare(
     sqlite3
     URL https://www.sqlite.org/2022/sqlite-amalgamation-3400000.zip
+    DOWNLOAD_EXTRACT_TIMESTAMP true
 )
 FetchContent_MakeAvailable(sqlite3)
 add_library(sqlite3_lib STATIC ${sqlite3_SOURCE_DIR}/sqlite3.c)
