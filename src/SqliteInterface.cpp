@@ -70,7 +70,7 @@ vdb::~vdb() {
 
 int vdb::SetLocalDeviceDataNew(const std::vector<std::vector<std::string>> &query_result) {
   // iterating through cols
-  for (auto i = 0; i < query_result[0].size(); i++) {
+  for (size_t i = 0; i < query_result[0].size(); i++) {
 
     std::string column = query_result[0][i];
     std::string field = query_result[1][i];
