@@ -165,16 +165,23 @@ int Vapi::GetDevices(std::string &callback) {
 
   return ROUTER_API_OK;
 }
+
+// TODO
 int Vapi::RenameSource(int channel_number, const std::string new_name) {
   return AddToTrace("Not implemented yet");
 }
+
+// TODO
 int Vapi::GetSources(std::string &callback) {
   return AddToTrace("Not Implemented yet");
 }
 
+// TODO
 int Vapi::RenameDestination(int channel_number, const std::string new_name) {
   return AddToTrace("Not implemented yet");
 }
+
+// TODO
 int Vapi::GetDestinations(std::string &callback) {
   return AddToTrace("Not implemented yet");
 }
@@ -225,18 +232,23 @@ int Vapi::TakePreparedRoutes() {
 
   return ROUTER_API_OK;
 }
+// TODO
 int Vapi::LockRoutes(unsigned int destination) {
   return AddToTrace("ROUTER_API: Not implemented yet");
 }
+// TODO
 int Vapi::GetRoutes() {
   return AddToTrace("ROUTER_API: Not implemented yet");
 }
+// TODO
 int Vapi::SaveRoutes(const std::string destinations) {
   return AddToTrace("ROUTER_API: Not implemented yet");
 }
+// TODO
 int Vapi::GetSavedRoutes() {
   return AddToTrace("ROUTER_API: Not implemented yet");
 }
+// TODO
 int Vapi::LoadRoutes(std::string name) {
   return AddToTrace("ROUTER_API: Not implemented yet");
 }
@@ -248,7 +260,6 @@ int Vapi::AddToTrace(std::string s) {
   return 1;
 }
 
-// TODO reduce errorcheck to if(result) return AddToTrace(err, err_list);
 int Vapi::AddToTrace(std::string err, std::vector<std::string> err_list) {
   m_err_msgs.push_back("ROUTER_API: " + err);
   for (std::string e : err_list) {

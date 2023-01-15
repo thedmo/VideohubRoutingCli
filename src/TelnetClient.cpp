@@ -1,7 +1,7 @@
 #include "TelnetClient.hpp"
 
 
-// TODO extend or change library to support other platforms than windows
+// TODO extend library with Curl for crosscompatibility
 TelnetClient::TelnetClient(std::string ip, int port, std::string &init_response, int &result)
     : m_ip_address(ip), m_port(port)
 {
