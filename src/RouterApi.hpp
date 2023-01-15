@@ -25,17 +25,17 @@ public:
   static int SelectRouter(std::string ip);
   static int RemoveSelectedRouter();
   static int GetDevices(std::string &callback);
-  static int RenameSource(int channel_number, const std::string new_name, std::string &errmsg);
+  static int RenameSource(int channel_number, const std::string new_name);
   static int GetSources(std::string &callback);
-  static int RenameDestination(int channel_number, const std::string new_name, std::string &errmsg);
-  static int GetDestinations(std::string &callback, std::string &errmsg);
+  static int RenameDestination(int channel_number, const std::string new_name);
+  static int GetDestinations(std::string &callback);
   static int PrepareNewRoute(unsigned int destination, unsigned int source);
   static int TakePreparedRoutes();
-  static int LockRoutes(unsigned int destination, std::string &errmsg);
-  static int GetRoutes(std::string &errmsg);
-  static int SaveRoutes(const std::string destinations, std::string &errmsg);
-  static int GetSavedRoutes(std::string &errmsg);
-  static int LoadRoutes(std::string name, std::string &errmsg);
+  static int LockRoutes(unsigned int destination);
+  static int GetRoutes();
+  static int SaveRoutes(const std::string destinations);
+  static int GetSavedRoutes();
+  static int LoadRoutes(std::string name);
 
   static int GetStatus(std::string ip, std::unique_ptr<device_data> &_data);
 
