@@ -240,6 +240,13 @@ int Vapi::LockRoutes(unsigned int destination) {
 int Vapi::GetRoutes() {
   return AddToTrace("ROUTER_API: Not implemented yet");
 }
+// TODO Hier weiter: Route Markieren zum Speichern 
+int Vapi::MarkRouteForSaving(int destination){
+  
+  // TODO Connect call function in Sqlite library
+
+  return ROUTER_API_OK;
+}
 // TODO
 int Vapi::SaveRoutes(const std::string destinations) {
   return AddToTrace("ROUTER_API: Not implemented yet");

@@ -4,14 +4,14 @@
 #include <vector>
 
 class cli {
-public:
-  cli() {};
-  ~cli() {};
+ public:
+  cli(){};
+  ~cli(){};
 
   int Evaluate(const int argc, const char *argv[]);
 
-private:
-// TODO: Add desciption with examples
+ private:
+  // TODO: Add desciption with examples
   struct Option {
     int option_number;
     std::string short_name, long_name;
@@ -31,6 +31,7 @@ private:
     take_routes,
     lock_route,
     list_routes,
+    mark_route_for_saving,
     save_routing,
     list_saved_routes,
     load_routes
@@ -50,9 +51,10 @@ private:
       {Flags::take_routes, "-t", "--take"},
       {Flags::lock_route, "-l", "--lock"},
       {Flags::list_routes, "-Lr", "--list_routes"},
+      {Flags::mark_route_for_saving, "-m", "--mark"},
       {Flags::save_routing, "-sr", "--save_routes"},
       {Flags::list_saved_routes, "-lsr", "--list_saved_routings"},
-      {Flags::load_routes, "-lr", "--load_routes"} };
+      {Flags::load_routes, "-lr", "--load_routes"}};
 
   void PrintHelp();
   int CompareToOptions(std::string comp_str);
@@ -70,6 +72,7 @@ private:
   void TakePreparedRoutes();
   void LockRoute(int argc, const char *argv[], int &current_argument_index);
   void ListRoutes();
+  void MarkRoutForSaving(int argc, const char *argv[], int &current_argument_index);
   void SaveRouting(int argc, const char *argv[], int &current_argument_index);
   void ListSavedRoutings();
   void LoadRouting(int argc, const char *argv[], int &current_argument_index);

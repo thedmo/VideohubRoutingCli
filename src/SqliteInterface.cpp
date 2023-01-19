@@ -9,7 +9,7 @@ vdb::vdb() {
 
   sqlite3_open(path.c_str(), &m_db);
 
-  std::string query = "CREATE TABLE IF NOT EXISTS " + DEVICES_TABLE + " (ip VARCHAR PRIMARY KEY, name VARCHAR, version VARCHAR, source_count INT, destination_count INT, source_labels VARCHAR, destination_labels VARCHAR, routing VARCHAR, prepared_routes VARCHAR, locks VARCHAR, selected_router VARCHAR)";
+  std::string query = "CREATE TABLE IF NOT EXISTS " + DEVICES_TABLE + " (ip VARCHAR PRIMARY KEY, name VARCHAR, version VARCHAR, source_count INT, destination_count INT, source_labels VARCHAR, destination_labels VARCHAR, routing VARCHAR, prepared_routes VARCHAR, locks VARCHAR, selected_router VARCHAR, marked_for_saving VARCHAR)";
   sql_query(query);
 
   query = "CREATE TABLE IF NOT EXISTS " + ROUTINGS_TABLE + " (ip VARCHAR, name VARCHAR, routing VARCHAR, FOREIGN KEY(ip) REFERENCES " + DEVICES_TABLE + "(ip))";
@@ -104,7 +104,9 @@ int vdb::SetLocalDeviceDataNew(const std::vector<std::vector<std::string>> &quer
     }
     else if (column == "locks") {
       m_device.locks = field;
-
+    }
+    else if (column == "marked_for_saving") {
+      m_device.marked_for_saving = field;
     }
   }
 
@@ -309,6 +311,16 @@ int vdb::clean_prepared_routes() {
   sqlite3_stmt *statement = GetStatement("UPDATE " + DEVICES_TABLE + " SET prepared_routes='' WHERE selected_router='x';");
   result = sql_query(statement);
   if (result) return AddToTrace("query did not work");
+
+  return SQL_OK;
+}
+
+int vdb::mark_route_for_saving(int destination){
+  int result = get_data_of_selected_device();
+  if (result) return AddToTrace("could not get data of selected device");
+  
+  // TODO hier weiter
+  sqlite3_stmt *statement = GetStatement("");
 
   return SQL_OK;
 }

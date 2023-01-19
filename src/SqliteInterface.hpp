@@ -16,6 +16,7 @@ struct device_data {
   std::string routing;
   std::string prepared_routes;
   std::string locks;
+  std::string marked_for_saving;
 };
 
 class vdb {
@@ -35,7 +36,7 @@ public:
   int remove_selected_device_from_db();
   int add_to_prepared_routes(int destination, int source);
   int clean_prepared_routes();
-
+  int mark_route_for_saving(int destination);
   static std::vector<std::string> GetErrorMessages();
 
   int GetSelectedDeviceData(std::unique_ptr<device_data> &device);

@@ -152,7 +152,7 @@ void cli::RenameDestination(int argc, const char *argv[], int &current_argument_
 void cli::ListDestinations() {
   std::string destination_list;
 
-  int result = Vapi::GetDestinations(destination_list); 
+  int result = Vapi::GetDestinations(destination_list);
   if (result) {
     PrintErrors(Vapi::GetErrorMessages());
     return;
@@ -212,7 +212,7 @@ void cli::LockRoute(int argc, const char *argv[], int &current_argument_index) {
   } catch (const std::invalid_argument &exception) {
     std::cout << "Error, not a valid integer: " << exception.what() << std::endl;
   }
-  int result = Vapi::LockRoutes(temp_destination); 
+  int result = Vapi::LockRoutes(temp_destination);
   if (result) {
     PrintErrors(Vapi::GetErrorMessages());
     return;
@@ -220,12 +220,30 @@ void cli::LockRoute(int argc, const char *argv[], int &current_argument_index) {
 };
 
 void cli::ListRoutes() {
-  int result = Vapi::GetRoutes(); 
+  int result = Vapi::GetRoutes();
   if (result) {
     PrintErrors(Vapi::GetErrorMessages());
     return;
   }
 };
+
+void cli::MarkRoutForSaving(int argc, const char *argv[], int &current_argument_index) {
+  int destination;
+
+  if (CheckArgCount(argc, current_argument_index, m_err_msg) != OK) {
+    std::cout << "Error: " << m_err_msg << '\n';
+    return;
+  }
+
+  try {
+    destination = std::stoi(argv[++current_argument_index]);
+  } catch (std::exception e) {
+    std::cout << e.what() << std::endl;
+  }
+
+  int result = Vapi::MarkRouteForSaving(destination);
+  if(result) PrintErrors(Vapi::GetErrorMessages());
+}
 
 void cli::SaveRouting(int argc, const char *argv[], int &current_argument_index) {
   std::string temp_routes;
@@ -237,7 +255,7 @@ void cli::SaveRouting(int argc, const char *argv[], int &current_argument_index)
 
   temp_routes = argv[++current_argument_index];
 
-  int result = Vapi::SaveRoutes(temp_routes); 
+  int result = Vapi::SaveRoutes(temp_routes);
   if (result) {
     PrintErrors(Vapi::GetErrorMessages());
     return;
@@ -245,7 +263,7 @@ void cli::SaveRouting(int argc, const char *argv[], int &current_argument_index)
 };
 
 void cli::ListSavedRoutings() {
-  int result = Vapi::GetSavedRoutes(); 
+  int result = Vapi::GetSavedRoutes();
   if (result) {
     PrintErrors(Vapi::GetErrorMessages());
     return;
@@ -262,7 +280,7 @@ void cli::LoadRouting(int argc, const char *argv[], int &current_argument_index)
 
   temp_argument = argv[++current_argument_index];
 
-  int result = Vapi::LoadRoutes(temp_argument); 
+  int result = Vapi::LoadRoutes(temp_argument);
   if (result) {
     PrintErrors(Vapi::GetErrorMessages());
     return;
@@ -337,6 +355,11 @@ int cli::Evaluate(const int argc, const char *argv[]) {
         case (Flags::list_routes): {
           std::cout << "listing routes\n";
           ListRoutes();
+          break;
+        }
+        case (Flags::mark_route_for_saving):{
+          std::cout << "Marking route for saving\n";
+          MarkRoutForSaving(argc, argv, i);
           break;
         }
         case (Flags::save_routing): {
