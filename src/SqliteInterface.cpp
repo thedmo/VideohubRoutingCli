@@ -20,54 +20,6 @@ vdb::~vdb() {
   sqlite3_close_v2(m_db);
 }
 
-// // Todo: replace with method to extract from Vector
-// int vdb::SetLocalDeviceData(device_data &device, sqlite3_stmt *statement) {
-//   for (auto i = 0; i < sqlite3_data_count(statement); i++) {
-//     const char *col_name = (const char *)sqlite3_column_name(statement, i);
-//     std::string column(col_name);
-
-//     int column_value_int = sqlite3_column_int(statement, i) ? sqlite3_column_int(statement, i) : 0;
-
-//     const char *col_val = (const char *)sqlite3_column_text(statement, i) ? (char *)sqlite3_column_text(statement, i) : "";
-//     std::string column_value_str(col_val);
-
-//     last_row_num++;
-
-//     if (column == "source_count") {
-//       device.source_count = column_value_int;
-//     }
-//     else if (column == "destination_count") {
-//       device.destination_count = column_value_int;
-//     }
-//     if (column == "ip") {
-//       device.ip = column_value_str;
-//     }
-//     else if (column == "name") {
-//       device.name = column_value_str;
-//     }
-//     else if (column == "version") {
-//       device.version = column_value_str;
-//     }
-//     else if (column == "destination_labels") {
-//       device.destination_labels = column_value_str;
-//     }
-//     else if (column == "source_labels") {
-//       device.source_labels = column_value_str;
-//     }
-//     else if (column == "routing") {
-//       device.routing = column_value_str;
-//     }
-//     else if (column == "prepared_routes") {
-//       device.prepared_routes = column_value_str;
-//     }
-//     else if (column == "locks") {
-//       device.locks = column_value_str;
-//     }
-//   }
-
-//   return SQL_OK;
-// }
-
 int vdb::SetLocalDeviceDataNew(const std::vector<std::vector<std::string>> &query_result) {
   // iterating through cols
   for (size_t i = 0; i < query_result[0].size(); i++) {
@@ -276,9 +228,13 @@ int vdb::remove_selected_device_from_db() {
 }
 
 int vdb::get_data_of_selected_device() {
+  int result;
+  result = check_if_devicetable_empty();
+  if (result) return AddToTrace("Could not get data:");
+
   std::string query = "SELECT * FROM " + DEVICES_TABLE + " WHERE selected_router='x';";
   sqlite3_stmt *statement = GetStatement(query);
-  int result = sql_query(statement);
+  result = sql_query(statement);
   if (result) return AddToTrace("no selected device found");
 
   result = SetLocalDeviceDataNew(m_last_query_result);
@@ -315,12 +271,48 @@ int vdb::clean_prepared_routes() {
   return SQL_OK;
 }
 
-int vdb::mark_route_for_saving(int destination){
+int vdb::mark_route_for_saving(int destination) {
   int result = get_data_of_selected_device();
   if (result) return AddToTrace("could not get data of selected device");
-  
+
+  std::string marked_routes_str = m_device.marked_for_saving;
+  std::string marked_route;
+
+
+  std::stringstream routes_stream(m_device.routing);
+  std::string route_line;
+  char destination_char = std::to_string(destination).c_str()[0];
+
+  while (std::getline(routes_stream, route_line)) {
+    char route_line_destination_char = route_line.c_str()[0];
+
+    if (destination_char == route_line_destination_char)
+    {
+      marked_route = route_line;
+      break;
+    }
+  }
+
+  std::stringstream marked_routes_stream(marked_routes_str);
+  std::string marked_line;
+  while (std::getline(marked_routes_stream, marked_line)) {
+    char marked_line_destination_char = marked_line.c_str()[0];
+
+    if (destination_char == marked_line_destination_char)
+    {
+      return AddToTrace("Route already marked");
+      break;
+    }
+  }
+
+  marked_routes_str += marked_route + '\n';
   // TODO hier weiter
-  sqlite3_stmt *statement = GetStatement("");
+  sqlite3_stmt *statement = GetStatement("UPDATE " + DEVICES_TABLE + " SET marked_for_saving=? WHERE selected_router='x';");
+  result = sqlite3_bind_text(statement, 1, marked_routes_str.c_str(), -1, SQLITE_TRANSIENT);
+  if (result != SQLITE_OK) return AddToTrace("Error: " + std::string(sqlite3_errmsg(m_db)));
+
+  result = sql_query(statement);
+  if (result) return AddToTrace("Error: " + std::string(sqlite3_errmsg(m_db)));
 
   return SQL_OK;
 }

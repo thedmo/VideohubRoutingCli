@@ -4,6 +4,7 @@
 #include <memory>
 #include <whereami++.h>
 #include <iostream>
+#include <sstream>
 
 struct device_data {
   std::string ip;

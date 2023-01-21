@@ -251,8 +251,12 @@ int Vapi::GetRoutes() {
   return AddToTrace("ROUTER_API: Not implemented yet");
 }
 // TODO Hier weiter: Route Markieren zum Speichern 
-int Vapi::MarkRouteForSaving(int destination){
-  
+int Vapi::MarkRouteForSaving(int destination) {
+
+  int result;
+
+  result = m_database.mark_route_for_saving(destination);
+  if (result) return AddToTrace("could not mark route: ", vdb::GetErrorMessages());
   // TODO Connect call function in Sqlite library
 
   return ROUTER_API_OK;
