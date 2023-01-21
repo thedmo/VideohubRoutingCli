@@ -306,7 +306,6 @@ int vdb::mark_route_for_saving(int destination) {
   }
 
   marked_routes_str += marked_route + '\n';
-  // TODO hier weiter
   sqlite3_stmt *statement = GetStatement("UPDATE " + DEVICES_TABLE + " SET marked_for_saving=? WHERE selected_router='x';");
   result = sqlite3_bind_text(statement, 1, marked_routes_str.c_str(), -1, SQLITE_TRANSIENT);
   if (result != SQLITE_OK) return AddToTrace("Error: " + std::string(sqlite3_errmsg(m_db)));

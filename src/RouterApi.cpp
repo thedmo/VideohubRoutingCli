@@ -236,7 +236,6 @@ int Vapi::TakePreparedRoutes() {
   if (result) return AddToTrace("Could extract routing from response");
 
   // update values in database with device data
-  // TODO update values of selected router
   result = m_database.update_selected_device_data(current_device);
   if (result) return AddToTrace("Could not update device data of selected router in database", m_database.GetErrorMessages());
 
@@ -250,14 +249,12 @@ int Vapi::LockRoutes(unsigned int destination) {
 int Vapi::GetRoutes() {
   return AddToTrace("ROUTER_API: Not implemented yet");
 }
-// TODO Hier weiter: Route Markieren zum Speichern 
 int Vapi::MarkRouteForSaving(int destination) {
 
   int result;
 
   result = m_database.mark_route_for_saving(destination);
   if (result) return AddToTrace("could not mark route: ", vdb::GetErrorMessages());
-  // TODO Connect call function in Sqlite library
 
   return ROUTER_API_OK;
 }
