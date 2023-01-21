@@ -276,5 +276,7 @@ int Vapi::AddToTrace(std::string err, std::vector<std::string> err_list) {
 }
 
 std::vector<std::string> Vapi::GetErrorMessages() {
-  return m_err_msgs;
+  std::vector<std::string> temp = m_err_msgs;
+  m_err_msgs.clear();
+  return temp;
 }

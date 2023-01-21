@@ -158,5 +158,7 @@ void TelnetClient::AddToTrace(std::string s) {
 }
 
 std::vector<std::string> TelnetClient::GetErrorMessages() {
-    return m_err_msgs;
+    std::vector<std::string> temp = m_err_msgs;
+    m_err_msgs.clear();
+    return temp;
 }
