@@ -252,16 +252,16 @@ void cli::MarkRoutForSaving(int argc, const char *argv[], int &current_argument_
 }
 
 void cli::SaveRouting(int argc, const char *argv[], int &current_argument_index) {
-  std::string temp_routes;
+  std::string name;
 
   if (CheckArgCount(argc, current_argument_index, m_err_msg) != OK) {
     std::cout << "Error: " << m_err_msg << '\n';
     return;
   }
 
-  temp_routes = argv[++current_argument_index];
+  name = argv[++current_argument_index];
 
-  int result = Vapi::SaveRoutes(temp_routes);
+  int result = Vapi::SaveRoutes(name);
   if (result) {
     PrintErrors(Vapi::GetErrorMessages());
     return;
@@ -369,7 +369,6 @@ int cli::Evaluate(const int argc, const char *argv[]) {
             break;
           }
         case (Flags::save_routing): {
-  // TODO hier weiter
             std::cout << "saving routes\n";
             SaveRouting(argc, argv, i);
             break;

@@ -38,6 +38,9 @@ public:
   int add_to_prepared_routes(int destination, int source);
   int clean_prepared_routes();
   int mark_route_for_saving(int destination);
+  int clean_marked_routes();
+  int save_routing(const std::string name, std::unique_ptr<device_data> &data);
+
   static std::vector<std::string> GetErrorMessages();
 
   int GetSelectedDeviceData(std::unique_ptr<device_data> &device);
@@ -56,6 +59,8 @@ private:
 
   int SetLocalDeviceData(device_data &device, sqlite3_stmt *statement);
   int SetLocalDeviceDataNew(const std::vector<std::vector<std::string>> &query_result);
+
+  int get_saved_routing_names(std::string ip, std::vector<std::string> &names);
 
   int sql_query(std::string query);
   sqlite3_stmt *GetStatement(std::string query);

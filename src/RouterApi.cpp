@@ -259,8 +259,22 @@ int Vapi::MarkRouteForSaving(int destination) {
   return ROUTER_API_OK;
 }
 // TODO
-int Vapi::SaveRoutes(const std::string destinations) {
-  return AddToTrace("ROUTER_API: Not implemented yet");
+int Vapi::SaveRoutes(std::string routing_name) {
+  // Get marked routes of selected device from database
+  int result;
+  std::unique_ptr<device_data> current_device = std::make_unique<device_data>();
+
+  // Get device data with prepared routes from database
+  result = m_database.GetSelectedDeviceData(current_device);
+  if (result) return AddToTrace("Could not not get marked routes", m_database.GetErrorMessages());
+
+  if (current_device->marked_for_saving.empty()) return AddToTrace("No marked route to save present in selected device");
+
+  // Insert new row for routing of selected device in routings table: ip, name of routing, routing as text
+  result = m_database.save_routing(routing_name, current_device);
+  if (result) return AddToTrace("Could not save routing: ", m_database.GetErrorMessages());
+
+  return ROUTER_API_OK;
 }
 // TODO
 int Vapi::GetSavedRoutes() {

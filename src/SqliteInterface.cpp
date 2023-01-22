@@ -293,6 +293,7 @@ int vdb::mark_route_for_saving(int destination) {
     }
   }
 
+
   std::stringstream marked_routes_stream(marked_routes_str);
   std::string marked_line;
   while (std::getline(marked_routes_stream, marked_line)) {
@@ -308,10 +309,69 @@ int vdb::mark_route_for_saving(int destination) {
   marked_routes_str += marked_route + '\n';
   sqlite3_stmt *statement = GetStatement("UPDATE " + DEVICES_TABLE + " SET marked_for_saving=? WHERE selected_router='x';");
   result = sqlite3_bind_text(statement, 1, marked_routes_str.c_str(), -1, SQLITE_TRANSIENT);
-  if (result != SQLITE_OK) return AddToTrace("Error: " + std::string(sqlite3_errmsg(m_db)));
+  if (result) return AddToTrace("Error: " + std::string(sqlite3_errmsg(m_db)));
 
   result = sql_query(statement);
   if (result) return AddToTrace("Error: " + std::string(sqlite3_errmsg(m_db)));
+
+  return SQL_OK;
+}
+
+int vdb::clean_marked_routes() {
+  int result;
+  sqlite3_stmt *statement = GetStatement("UPDATE " + DEVICES_TABLE + " SET marked_for_saving='' WHERE selected_router='x';");
+  result = sql_query(statement);
+  if (result) return AddToTrace("Error: " + std::string(sqlite3_errmsg(m_db)));
+
+  return SQL_OK;
+}
+
+int vdb::get_saved_routing_names(std::string ip, std::vector<std::string> &names) {
+  int result;
+
+  std::string query = "SELECT name FROM " + ROUTINGS_TABLE + " WHERE ip='" + ip + "';";
+  sqlite3_stmt *statement = GetStatement(query);
+  result = sql_query(statement);
+  if (result) return AddToTrace("Error: " + std::string(sqlite3_errmsg(m_db)));
+
+  for (unsigned int i = 1; i < m_last_query_result.size(); i++)
+  {
+    std::string current_name = m_last_query_result[i][0];
+    names.push_back(current_name);
+  }
+
+  return SQL_OK;
+}
+
+int vdb::save_routing(const std::string name, std::unique_ptr<device_data> &data) {
+  int result;
+
+  std::vector<std::string> saved_routing_names;
+  result = get_saved_routing_names(data->ip, saved_routing_names);
+
+  for (auto saved_routing_name : saved_routing_names) {
+    if (name == saved_routing_name)
+    {
+      return AddToTrace("Routing with name: " + name + " already in list of saved routings");
+    }
+  }
+
+  sqlite3_stmt *statement = GetStatement("INSERT INTO " + ROUTINGS_TABLE + "(ip, name, routing) VALUES (?,?,?);");
+
+  result = sqlite3_bind_text(statement, 1, data->ip.c_str(), -1, SQLITE_TRANSIENT);
+  if (result) return AddToTrace("Error: " + std::string(sqlite3_errmsg(m_db)));
+
+  result = sqlite3_bind_text(statement, 2, name.c_str(), -1, SQLITE_TRANSIENT);
+  if (result) return AddToTrace("Error: " + std::string(sqlite3_errmsg(m_db)));
+
+  result = sqlite3_bind_text(statement, 3, data->marked_for_saving.c_str(), -1, SQLITE_TRANSIENT);
+  if (result) return AddToTrace("Error: " + std::string(sqlite3_errmsg(m_db)));
+
+  result = sql_query(statement);
+  if (result) return AddToTrace("Error: " + std::string(sqlite3_errmsg(m_db)));
+
+  result = clean_marked_routes();
+  if (result) return AddToTrace("Could not clean marked routes: ");
 
   return SQL_OK;
 }

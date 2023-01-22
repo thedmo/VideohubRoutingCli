@@ -34,7 +34,7 @@ public:
   static int LockRoutes(unsigned int destination);
   static int GetRoutes();
   static int MarkRouteForSaving(int destination);
-  static int SaveRoutes(const std::string destinations);
+  static int SaveRoutes(std::string routing_name);
   static int GetSavedRoutes();
   static int LoadRoutes(std::string name);
 

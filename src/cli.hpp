@@ -4,14 +4,14 @@
 #include <vector>
 
 class cli {
- public:
-  cli(){};
-  ~cli(){};
+public:
+  cli() {};
+  ~cli() {};
 
   int Evaluate(const int argc, const char *argv[]);
 
- private:
-  // TODO: Add desciption with examples
+private:
+ // TODO: Add desciption with examples
   struct Option {
     int option_number;
     std::string short_name, long_name;
@@ -54,7 +54,7 @@ class cli {
       {Flags::mark_route_for_saving, "-m", "--mark"},
       {Flags::save_routing, "-sr", "--save_routes"},
       {Flags::list_saved_routes, "-lsr", "--list_saved_routings"},
-      {Flags::load_routes, "-lr", "--load_routes"}};
+      {Flags::load_routes, "-lr", "--load_routes"} };
 
   void PrintHelp();
   int CompareToOptions(std::string comp_str);
