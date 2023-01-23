@@ -277,16 +277,16 @@ void cli::ListSavedRoutings() {
 };
 
 void cli::LoadRouting(int argc, const char *argv[], int &current_argument_index) {
-  std::string temp_argument;
+  std::string routing_name;
 
   if (CheckArgCount(argc, current_argument_index, m_err_msg) != OK) {
     std::cout << "Error: " << m_err_msg << '\n';
     return;
   }
 
-  temp_argument = argv[++current_argument_index];
+  routing_name = argv[++current_argument_index];
 
-  int result = Vapi::LoadRoutes(temp_argument);
+  int result = Vapi::LoadRoutes(routing_name);
   if (result) {
     PrintErrors(Vapi::GetErrorMessages());
     return;

@@ -258,7 +258,7 @@ int Vapi::MarkRouteForSaving(int destination) {
 
   return ROUTER_API_OK;
 }
-// TODO
+
 int Vapi::SaveRoutes(std::string routing_name) {
   // Get marked routes of selected device from database
   int result;
@@ -280,9 +280,46 @@ int Vapi::SaveRoutes(std::string routing_name) {
 int Vapi::GetSavedRoutes() {
   return AddToTrace("ROUTER_API: Not implemented yet");
 }
-// TODO
+
 int Vapi::LoadRoutes(std::string name) {
-  return AddToTrace("ROUTER_API: Not implemented yet");
+  std::unique_ptr<device_data> current_device = std::make_unique<device_data>();
+  std::string response;
+  std::string routes;
+  int result;
+
+  // send request to database api to get saved routes by name
+  result = m_database.get_routing_by_name(name, routes);
+  if (result) return AddToTrace("could not get saved routes:");
+
+  // Get device data from database
+  result = m_database.GetSelectedDeviceData(current_device);
+  if (result) return AddToTrace("Could not not get prepared routes", m_database.GetErrorMessages());
+
+  // Create socket
+  TelnetClient tc(current_device->ip, VIDEOHUB_TELNET_PORT, response, result);
+  if (result) return AddToTrace("Could not create socket", tc.GetErrorMessages());
+
+  // send Command to take routes to connected device
+  std::string route_command = "VIDEO OUTPUT ROUTING:\n" + routes + '\n';
+  result = tc.SendMsgToServer(route_command);
+  if (result) return AddToTrace("Could not load routes", tc.GetErrorMessages());
+
+  // get current routes from connected device (response gets saved in member variable)
+  route_command = "VIDEO OUTPUT ROUTING:\n\n";
+  result = tc.SendMsgToServer(route_command);
+  if (result) return AddToTrace("Could not get routing from device", tc.GetErrorMessages());
+
+  // get response from member variable and fill in routing of device data
+  response = tc.GetLastDataDump();
+  current_device->routing = "";
+  result = ExtractInformation(response, current_device);
+  if (result) return AddToTrace("Could extract routing from response");
+
+  // update values in database with device data
+  result = m_database.update_selected_device_data(current_device);
+  if (result) return AddToTrace("Could not update device data of selected router in database", m_database.GetErrorMessages());
+
+  return ROUTER_API_OK;
 }
 
 // Error Handling

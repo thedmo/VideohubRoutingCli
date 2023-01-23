@@ -329,14 +329,17 @@ int vdb::clean_marked_routes() {
 int vdb::get_saved_routing_names(std::string ip, std::vector<std::string> &names) {
   int result;
 
-  std::string query = "SELECT name FROM " + ROUTINGS_TABLE + " WHERE ip='" + ip + "';";
+  std::string query = "SELECT * FROM " + ROUTINGS_TABLE + " WHERE ip='" + ip + "';";
   sqlite3_stmt *statement = GetStatement(query);
   result = sql_query(statement);
   if (result) return AddToTrace("Error: " + std::string(sqlite3_errmsg(m_db)));
 
+  if (m_last_query_result.size() < 1) return AddToTrace("no routings in list");
+
+
   for (unsigned int i = 1; i < m_last_query_result.size(); i++)
   {
-    std::string current_name = m_last_query_result[i][0];
+    std::string current_name = m_last_query_result[i][1];
     names.push_back(current_name);
   }
 
@@ -374,6 +377,26 @@ int vdb::save_routing(const std::string name, std::unique_ptr<device_data> &data
   if (result) return AddToTrace("Could not clean marked routes: ");
 
   return SQL_OK;
+}
+
+int vdb::get_routing_by_name(const std::string name, std::string &routes_str) {
+  int result;
+  result = get_data_of_selected_device();
+  if (result) return AddToTrace("could not get routing names: ");
+
+  std::vector<std::string> saved_routing_names;
+  result = get_saved_routing_names(m_device.ip, saved_routing_names);
+  if (result) return AddToTrace("could not get routings list: ");
+
+  for (size_t i = 1; i < m_last_query_result.size(); i++) {
+    if (m_last_query_result[i][1] == name)
+    {
+      routes_str = m_last_query_result[i][2];
+      return SQL_OK;
+    }
+  }
+
+  return AddToTrace("routing with name: " + name + " does not exist for selected device.");
 }
 
 int vdb::update_selected_device_data(std::unique_ptr<device_data> &data) {

@@ -40,6 +40,7 @@ public:
   int mark_route_for_saving(int destination);
   int clean_marked_routes();
   int save_routing(const std::string name, std::unique_ptr<device_data> &data);
+  int get_routing_by_name(const std::string name, std::string &routes_str);
 
   static std::vector<std::string> GetErrorMessages();
 
