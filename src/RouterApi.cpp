@@ -253,6 +253,8 @@ int Vapi::MarkRouteForSaving(int destination) {
 
   int result;
 
+  // TODO update routing in database first: tool will save routes it reads from database instead of device
+
   result = m_database.mark_route_for_saving(destination);
   if (result) return AddToTrace("could not mark route: ", vdb::GetErrorMessages());
 
