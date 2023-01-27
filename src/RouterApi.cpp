@@ -207,11 +207,11 @@ int Vapi::TakePreparedRoutes() {
   int result;
   std::unique_ptr<device_data> current_device = std::make_unique<device_data>();
 
-  // Get device data with prepared routes from database
+  // Get device data from database
   result = m_database.GetSelectedDeviceData(current_device);
   if (result) return AddToTrace("Could not not get prepared routes", m_database.GetErrorMessages());
 
-  // Create socket
+  // Create socket send ip from acquired device data
   TelnetClient tc(current_device->ip, VIDEOHUB_TELNET_PORT, response, result);
   if (result) return AddToTrace("Could not create socket", tc.GetErrorMessages());
 
@@ -250,10 +250,32 @@ int Vapi::GetRoutes() {
   return AddToTrace("ROUTER_API: Not implemented yet");
 }
 int Vapi::MarkRouteForSaving(int destination) {
-
+  std::string response;
   int result;
+  std::unique_ptr<device_data> current_device = std::make_unique<device_data>();
 
-  // TODO update routing in database first: tool will save routes it reads from database instead of device
+  // Get device data from database
+  result = m_database.GetSelectedDeviceData(current_device);
+  if (result) return AddToTrace("Could not not get device data from database: ", m_database.GetErrorMessages());
+
+  // Create socket
+  TelnetClient tc(current_device->ip, VIDEOHUB_TELNET_PORT, response, result);
+  if (result) return AddToTrace("Could not create socket: ", tc.GetErrorMessages());
+
+  // get current routes from connected device (response gets saved in member variable)
+  std::string msg = "VIDEO OUTPUT ROUTING:\n\n";
+  result = tc.SendMsgToServer(msg);
+  if (result) return AddToTrace("Could not get routing from device: ", tc.GetErrorMessages());
+
+  // get response from member variable and fill in routing of device data
+  response = tc.GetLastDataDump();
+  current_device->routing = "";
+  result = ExtractInformation(response, current_device);
+  if (result) return AddToTrace("Could not extract routing from response: ");
+
+  // update values in database with device data
+  result = m_database.update_selected_device_data(current_device);
+  if (result) return AddToTrace("Could not update device data of selected router in database", m_database.GetErrorMessages());
 
   result = m_database.mark_route_for_saving(destination);
   if (result) return AddToTrace("could not mark route: ", vdb::GetErrorMessages());
