@@ -176,9 +176,29 @@ int Vapi::GetDevices(std::string &callback) {
   return ROUTER_API_OK;
 }
 
-// TODO
+// TODO hier weiter
 int Vapi::RenameSource(int channel_number, const std::string new_name) {
-  return AddToTrace("Not implemented yet");
+  int result;
+  
+  // Prüfen, ob Kanal Nummer nicht zu tief oder zu hoch --> neue private Funktion dafür erstellen
+  result = check_channel_number(channel_number);
+  if (result) return AddToTrace("Problem with channel number: ");
+  
+  // Command zusammensetzen
+
+
+  // Socket erstellen und öffnen
+
+
+  // Nachricht an Videohub schicken
+
+
+  // Liste mit Sourcenamen anfordern
+
+
+  // Namen in Datenkbank aktualisieren
+  
+  return ROUTER_API_OK;
 }
 
 // TODO
@@ -365,4 +385,23 @@ std::vector<std::string> Vapi::GetErrorMessages() {
   std::vector<std::string> temp = m_err_msgs;
   m_err_msgs.clear();
   return temp;
+}
+
+int Vapi::check_channel_number(int num){
+  int result;
+
+  // Device information von Datenbank anfordern
+  auto device_info = std::make_unique<device_data> ();
+  result = m_database.GetSelectedDeviceData(device_info);
+  if (result) return AddToTrace("could not acquire device information");
+
+  // Kanalnummer mit anzahl Kanäle in device information vergleichen
+  if (num > device_info->source_count){
+    return AddToTrace ("Channel number too high. Max value: " + std::to_string(device_info->destination_count-1));
+  } else if( num < 0){
+    return AddToTrace ("Channel number under 0 not possible. Min value: 0" );
+  }
+  return ROUTER_API_OK;
+
+
 }

@@ -55,5 +55,7 @@ private:
 
   static int GetDeviceInformation(std::string, std::unique_ptr<device_data> &_data);
 
+  static int check_channel_number(int num);
+
   static vdb m_database;
 };
