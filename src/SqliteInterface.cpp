@@ -403,7 +403,7 @@ int vdb::update_selected_device_data(std::unique_ptr<device_data> &data) {
   int result = get_data_of_selected_device();
   if (result) return AddToTrace("could not get data of selected device");
 
-  sqlite3_stmt *statement = GetStatement("UPDATE " + DEVICES_TABLE + " SET version=?, source_labels=?, destination_labels=?, routing='" + data->routing + "', locks = '" + data->locks + "';");
+  sqlite3_stmt *statement = GetStatement("UPDATE " + DEVICES_TABLE + " SET version=?, source_labels=?, destination_labels=?, routing='" + data->routing + "', locks = '" + data->locks + "' WHERE selected_router='x';");
   sqlite3_bind_text(statement, 1, data->version.c_str(), -1, SQLITE_TRANSIENT);
   sqlite3_bind_text(statement, 2, data->source_labels.c_str(), -1, SQLITE_TRANSIENT);
   sqlite3_bind_text(statement, 3, data->destination_labels.c_str(), -1, SQLITE_TRANSIENT);
