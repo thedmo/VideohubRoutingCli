@@ -45,6 +45,9 @@ public:
 
   int GetSelectedDeviceData(std::unique_ptr<device_data> &device);
   int GetDevices(std::string &device_str);
+  int get_routing_by_name(const std::string name, std::string &routes_str);
+
+  static std::vector<std::string> GetErrorMessages();
 
 private:
 
