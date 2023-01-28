@@ -260,6 +260,7 @@ int vdb::add_to_prepared_routes(int destination, int source) {
   return SQL_OK;
 }
 
+// TODO remove function, can be made with update_device_data function
 int vdb::clean_prepared_routes() {
   int result = check_if_devicetable_empty();
   if (result) return AddToTrace("no devices in router table");
@@ -317,6 +318,7 @@ int vdb::mark_route_for_saving(int destination) {
   return SQL_OK;
 }
 
+// TODO remove function, can be made with update_device_data function
 int vdb::clean_marked_routes() {
   int result;
   sqlite3_stmt *statement = GetStatement("UPDATE " + DEVICES_TABLE + " SET marked_for_saving='' WHERE selected_router='x';");
