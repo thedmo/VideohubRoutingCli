@@ -48,8 +48,6 @@ load routes for selected device by name
 
 ## Todo
 
-- rename destination
-- list destinations
 - lock route
 - list routes
 - list saved routings
