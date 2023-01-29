@@ -40,8 +40,8 @@ public:
   int mark_route_for_saving(int destination);
   int save_routing(const std::string name, std::unique_ptr<device_data> &data);
 
-  int clean_prepared_routes();
-  int clean_marked_routes();
+  int [[deprecated("use update_device_data instead")]]clean_prepared_routes();
+  int [[deprecated("use update_device_data instead")]]clean_marked_routes();
 
   int GetSelectedDeviceData(std::unique_ptr<device_data> &device);
   int GetDevices(std::string &device_str);
@@ -65,7 +65,7 @@ private:
 
   int get_saved_routing_names(std::string ip, std::vector<std::string> &names);
 
-  int sql_query(std::string query);
+  int [[deprecated("use new function instead to mitigate sql injection")]] sql_query(std::string query);
   sqlite3_stmt *GetStatement(std::string query);
   int sql_query(sqlite3_stmt *statement);
 
