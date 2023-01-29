@@ -176,7 +176,6 @@ int Vapi::GetDevices(std::string &callback) {
   return ROUTER_API_OK;
 }
 
-// TODO hier weiter
 int Vapi::RenameSource(int channel_number, const std::string new_name) {
   int result;
   
@@ -218,9 +217,28 @@ int Vapi::RenameSource(int channel_number, const std::string new_name) {
   return ROUTER_API_OK;
 }
 
-// TODO
 int Vapi::GetSources(std::string &callback) {
-  return AddToTrace("Not Implemented yet");
+  int result;
+
+    // get Device information for IP
+  auto current_device = std::make_unique<device_data>();
+  result = m_database.GetSelectedDeviceData(current_device);
+  if(result) AddToTrace("Could not get device data: "); 
+
+  // Socket erstellen und öffnen
+  std::string response;
+  TelnetClient tc(current_device->ip, VIDEOHUB_TELNET_PORT, response, result);
+  if (result) return AddToTrace("Could not establish conection to device:");
+
+  // Nachrich an socket schicken
+  std::string message = "INPUT LABELS:\n\n";
+  result = tc.SendMsgToServer(message);
+  if (result) return AddToTrace ("could not send message to device ");
+
+  // Letzte Anwort von socket anfordern und in string speichern
+  callback = tc.GetLastDataDump();
+
+  return ROUTER_API_OK;
 }
 
 // TODO
