@@ -182,7 +182,6 @@ int Vapi::RenameSource(int channel_number, const std::string new_name) {
   // Prüfen, ob Kanal Nummer nicht zu tief oder zu hoch --> neue private Funktion dafür erstellen
   result = check_channel_number(channel_number);
   if (result) return AddToTrace("Problem with channel number: ");
-  
 
   // get Device information for IP
   auto current_device = std::make_unique<device_data>();
@@ -241,9 +240,44 @@ int Vapi::GetSources(std::string &callback) {
   return ROUTER_API_OK;
 }
 
-// TODO
 int Vapi::RenameDestination(int channel_number, const std::string new_name) {
-  return AddToTrace("Not implemented yet");
+  int result;
+  
+  // Prüfen, ob Kanal Nummer nicht zu tief oder zu hoch --> neue private Funktion dafür erstellen
+  result = check_channel_number(channel_number);
+  if (result) return AddToTrace("Problem with channel number: ");
+
+  // get Device information for IP
+  auto current_device = std::make_unique<device_data>();
+  result = m_database.GetSelectedDeviceData(current_device);
+  if(result) AddToTrace("Could not get device data: "); 
+
+  // Socket erstellen und öffnen
+  std::string response;
+  TelnetClient tc(current_device->ip, VIDEOHUB_TELNET_PORT, response, result);
+  if (result) return AddToTrace("Could not establish conection to device:");
+
+  // Nachricht zusammenstellen und an Videohub schicken
+  std::string message = "OUTPUT LABELS:\n" + std::to_string(channel_number) + " " + new_name + "\n\n";
+  result = tc.SendMsgToServer(message);
+  if(result) return AddToTrace ("sending message did not work: ");
+
+  // Liste mit Sourcenamen anfordern
+  message = "OUTPUT LABELS:\n\n";
+  result = tc.SendMsgToServer(message);
+  if(result) return AddToTrace ("sending message did not work: ");
+
+  // get last response from socket and extract information
+  response = tc.GetLastDataDump();
+  current_device->destination_labels = "";
+  result = ExtractInformation(response, current_device);
+  if (result) return AddToTrace("Could extract data from response");
+
+  // update values in database with device data
+  result = m_database.update_selected_device_data(current_device);
+  if (result) return AddToTrace("Could not update device data of selected router in database", m_database.GetErrorMessages());
+
+  return ROUTER_API_OK;
 }
 
 // TODO
