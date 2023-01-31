@@ -178,7 +178,7 @@ int Vapi::GetDevices(std::string &callback) {
 
 int Vapi::RenameSource(int channel_number, const std::string new_name) {
   int result;
-  
+
   // Prüfen, ob Kanal Nummer nicht zu tief oder zu hoch --> neue private Funktion dafür erstellen
   result = check_channel_number(channel_number);
   if (result) return AddToTrace("Problem with channel number: ");
@@ -186,7 +186,7 @@ int Vapi::RenameSource(int channel_number, const std::string new_name) {
   // get Device information for IP
   auto current_device = std::make_unique<device_data>();
   result = m_database.GetSelectedDeviceData(current_device);
-  if(result) AddToTrace("Could not get device data: "); 
+  if (result) AddToTrace("Could not get device data: ");
 
   // Socket erstellen und öffnen
   std::string response;
@@ -196,12 +196,12 @@ int Vapi::RenameSource(int channel_number, const std::string new_name) {
   // Nachricht zusammenstellen und an Videohub schicken
   std::string message = "INPUT LABELS:\n" + std::to_string(channel_number) + " " + new_name + "\n\n";
   result = tc.SendMsgToServer(message);
-  if(result) return AddToTrace ("sending message did not work: ");
+  if (result) return AddToTrace("sending message did not work: ");
 
   // Liste mit Sourcenamen anfordern
   message = "INPUT LABELS:\n\n";
   result = tc.SendMsgToServer(message);
-  if(result) return AddToTrace ("sending message did not work: ");
+  if (result) return AddToTrace("sending message did not work: ");
 
   // get last response from socket and extract information
   response = tc.GetLastDataDump();
@@ -222,7 +222,7 @@ int Vapi::GetSources(std::string &callback) {
     // get Device information for IP
   auto current_device = std::make_unique<device_data>();
   result = m_database.GetSelectedDeviceData(current_device);
-  if(result) AddToTrace("Could not get device data: "); 
+  if (result) AddToTrace("Could not get device data: ");
 
   // Socket erstellen und öffnen
   std::string response;
@@ -232,7 +232,7 @@ int Vapi::GetSources(std::string &callback) {
   // Nachrich an socket schicken
   std::string message = "INPUT LABELS:\n\n";
   result = tc.SendMsgToServer(message);
-  if (result) return AddToTrace ("could not send message to device ");
+  if (result) return AddToTrace("could not send message to device ");
 
   // Letzte Anwort von socket anfordern und in string speichern
   callback = tc.GetLastDataDump();
@@ -242,7 +242,7 @@ int Vapi::GetSources(std::string &callback) {
 
 int Vapi::RenameDestination(int channel_number, const std::string new_name) {
   int result;
-  
+
   // Prüfen, ob Kanal Nummer nicht zu tief oder zu hoch --> neue private Funktion dafür erstellen
   result = check_channel_number(channel_number);
   if (result) return AddToTrace("Problem with channel number: ");
@@ -250,7 +250,7 @@ int Vapi::RenameDestination(int channel_number, const std::string new_name) {
   // get Device information for IP
   auto current_device = std::make_unique<device_data>();
   result = m_database.GetSelectedDeviceData(current_device);
-  if(result) AddToTrace("Could not get device data: "); 
+  if (result) AddToTrace("Could not get device data: ");
 
   // Socket erstellen und öffnen
   std::string response;
@@ -260,12 +260,12 @@ int Vapi::RenameDestination(int channel_number, const std::string new_name) {
   // Nachricht zusammenstellen und an Videohub schicken
   std::string message = "OUTPUT LABELS:\n" + std::to_string(channel_number) + " " + new_name + "\n\n";
   result = tc.SendMsgToServer(message);
-  if(result) return AddToTrace ("sending message did not work: ");
+  if (result) return AddToTrace("sending message did not work: ");
 
   // Liste mit Sourcenamen anfordern
   message = "OUTPUT LABELS:\n\n";
   result = tc.SendMsgToServer(message);
-  if(result) return AddToTrace ("sending message did not work: ");
+  if (result) return AddToTrace("sending message did not work: ");
 
   // get last response from socket and extract information
   response = tc.GetLastDataDump();
@@ -280,12 +280,13 @@ int Vapi::RenameDestination(int channel_number, const std::string new_name) {
   return ROUTER_API_OK;
 }
 
-int Vapi::GetDestinations(std::string &callback) {  int result;
+int Vapi::GetDestinations(std::string &callback) {
+  int result;
 
-    // get Device information for IP
+// get Device information for IP
   auto current_device = std::make_unique<device_data>();
   result = m_database.GetSelectedDeviceData(current_device);
-  if(result) AddToTrace("Could not get device data: "); 
+  if (result) AddToTrace("Could not get device data: ");
 
   // Socket erstellen und öffnen
   std::string response;
@@ -295,7 +296,7 @@ int Vapi::GetDestinations(std::string &callback) {  int result;
   // Nachrich an socket schicken
   std::string message = "OUTPUT LABELS:\n\n";
   result = tc.SendMsgToServer(message);
-  if (result) return AddToTrace ("could not send message to device ");
+  if (result) return AddToTrace("could not send message to device ");
 
   // Letzte Anwort von socket anfordern und in string speichern
   callback = tc.GetLastDataDump();
@@ -348,10 +349,79 @@ int Vapi::TakePreparedRoutes() {
 
   return ROUTER_API_OK;
 }
-// TODO
-int Vapi::LockRoutes(unsigned int destination) {
-  return AddToTrace("ROUTER_API: Not implemented yet");
+
+int Vapi::LockRoute(unsigned int destination) {
+  int result;
+
+  // Check Channelnumber
+  result = check_channel_number(destination);
+  if (result) return AddToTrace("something wrong with the channelnumber: ");
+
+  // get device data
+  auto current_device = std::make_unique<device_data>();
+  result = m_database.GetSelectedDeviceData(current_device);
+  if (result) return AddToTrace("could not get device data: ");
+
+  // create socket
+  std::string response;
+  TelnetClient tc(current_device->ip, VIDEOHUB_TELNET_PORT, response, result);
+  if (result) return AddToTrace("Could not create socket", tc.GetErrorMessages());
+
+  // generate message and send to device
+  std::string message = "VIDEO OUTPUT LOCKS:\n" + std::to_string(destination) + " L\n\n";
+  result = tc.SendMsgToServer(message);
+  if (result) return AddToTrace("Could not send message", tc.GetErrorMessages());
+
+  // get lock information from device
+  message = "VIDEO OUTPUT LOCKS:\n\n";
+  result = tc.SendMsgToServer(message);
+  if (result) return AddToTrace("Could not send message", tc.GetErrorMessages());
+
+  // update device data in database
+  current_device->locks = "";
+  response = tc.GetLastDataDump();
+  result = ExtractInformation(response, current_device);
+  m_database.update_selected_device_data(current_device);
+
+  return ROUTER_API_OK;
 }
+
+int Vapi::UnlockRoute(unsigned int destination) {
+  int result;
+
+  // Check Channelnumber
+  result = check_channel_number(destination);
+  if (result) return AddToTrace("something wrong with the channelnumber: ");
+
+  // get device data
+  auto current_device = std::make_unique<device_data>();
+  result = m_database.GetSelectedDeviceData(current_device);
+  if (result) return AddToTrace("could not get device data: ");
+
+  // create socket
+  std::string response;
+  TelnetClient tc(current_device->ip, VIDEOHUB_TELNET_PORT, response, result);
+  if (result) return AddToTrace("Could not create socket", tc.GetErrorMessages());
+
+  // generate message and send to device
+  std::string message = "VIDEO OUTPUT LOCKS:\n" + std::to_string(destination) + " U\n\n";
+  result = tc.SendMsgToServer(message);
+  if (result) return AddToTrace("Could not send message", tc.GetErrorMessages());
+
+  // get lock information from device
+  message = "VIDEO OUTPUT LOCKS:\n\n";
+  result = tc.SendMsgToServer(message);
+  if (result) return AddToTrace("Could not send message", tc.GetErrorMessages());
+
+  // update device data in database
+  current_device->locks = "";
+  response = tc.GetLastDataDump();
+  result = ExtractInformation(response, current_device);
+  m_database.update_selected_device_data(current_device);
+
+  return ROUTER_API_OK;
+}
+
 // TODO
 int Vapi::GetRoutes() {
   return AddToTrace("ROUTER_API: Not implemented yet");
@@ -474,19 +544,20 @@ std::vector<std::string> Vapi::GetErrorMessages() {
   return temp;
 }
 
-int Vapi::check_channel_number(int num){
+int Vapi::check_channel_number(int num) {
   int result;
 
   // Device information von Datenbank anfordern
-  auto device_info = std::make_unique<device_data> ();
+  auto device_info = std::make_unique<device_data>();
   result = m_database.GetSelectedDeviceData(device_info);
   if (result) return AddToTrace("could not acquire device information");
 
   // Kanalnummer mit anzahl Kanäle in device information vergleichen
-  if (num > device_info->source_count){
-    return AddToTrace ("Channel number too high. Max value: " + std::to_string(device_info->destination_count-1));
-  } else if( num < 0){
-    return AddToTrace ("Channel number under 0 not possible. Min value: 0" );
+  if (num > device_info->source_count) {
+    return AddToTrace("Channel number too high. Max value: " + std::to_string(device_info->destination_count - 1));
+  }
+  else if (num < 0) {
+    return AddToTrace("Channel number under 0 not possible. Min value: 0");
   }
   return ROUTER_API_OK;
 

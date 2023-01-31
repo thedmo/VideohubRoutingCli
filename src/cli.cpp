@@ -217,7 +217,28 @@ void cli::LockRoute(int argc, const char *argv[], int &current_argument_index) {
   catch (const std::invalid_argument &exception) {
     std::cout << "Error, not a valid integer: " << exception.what() << std::endl;
   }
-  int result = Vapi::LockRoutes(temp_destination);
+  int result = Vapi::LockRoute(temp_destination);
+  if (result) {
+    PrintErrors(Vapi::GetErrorMessages());
+    return;
+  }
+};
+
+void cli::UnlockRoute(int argc, const char *argv[], int &current_argument_index) {
+  int temp_destination;
+
+  if (CheckArgCount(argc, current_argument_index, m_err_msg) != OK) {
+    std::cout << "Error: " << m_err_msg << '\n';
+    return;
+  }
+
+  try {
+    temp_destination = std::stoi(argv[++current_argument_index]);
+  }
+  catch (const std::invalid_argument &exception) {
+    std::cout << "Error, not a valid integer: " << exception.what() << std::endl;
+  }
+  int result = Vapi::UnlockRoute(temp_destination);
   if (result) {
     PrintErrors(Vapi::GetErrorMessages());
     return;
@@ -356,6 +377,11 @@ int cli::Evaluate(const int argc, const char *argv[]) {
         case (Flags::lock_route): {
             std::cout << "locking route\n";
             LockRoute(argc, argv, i);
+            break;
+          }
+        case (Flags::unlock_route): {
+            std::cout << "unlocking route\n";
+            UnlockRoute(argc, argv, i);
             break;
           }
         case (Flags::list_routes): {
