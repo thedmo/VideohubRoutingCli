@@ -503,9 +503,16 @@ int Vapi::SaveRoutes(std::string routing_name) {
 
   return ROUTER_API_OK;
 }
+
 // TODO
-int Vapi::GetSavedRoutes() {
-  return AddToTrace("ROUTER_API: Not implemented yet");
+int Vapi::GetSavedRoutes(std::string &callback) {
+  int result;
+
+  // get routing
+  result = m_database.get_saved_routings(callback);
+  if (result) return AddToTrace("Could not not get saved routings: ", m_database.GetErrorMessages());
+
+  return ROUTER_API_OK;
 }
 
 int Vapi::LoadRoutes(std::string name) {

@@ -1,5 +1,4 @@
 #include <cli.hpp>
-#include <stdexcept>
 
 // Usage
 void cli::PrintHelp() {
@@ -294,11 +293,15 @@ void cli::SaveRouting(int argc, const char *argv[], int &current_argument_index)
 };
 
 void cli::ListSavedRoutings() {
-  int result = Vapi::GetSavedRoutes();
+  std::string callback;
+
+  int result = Vapi::GetSavedRoutes(callback);
   if (result) {
     PrintErrors(Vapi::GetErrorMessages());
     return;
   }
+
+  std::cout << callback << std::endl;
 };
 
 void cli::LoadRouting(int argc, const char *argv[], int &current_argument_index) {

@@ -430,10 +430,37 @@ int vdb::GetDevices(std::string &device_str) {
   int result = sql_query(statement);
   if (result) return AddToTrace("could not get Devices List");
 
-
+  // Compose response string
   for (auto row : m_last_query_result) {
     const auto line = std::format("| {0:<20} | {1:<20} | {2:<20} |\n", row[0], row[1], row[2]);
     device_str += line;
+  }
+
+  return SQL_OK;
+}
+
+int vdb::get_saved_routings(std::string &routings_str) {
+  int result;
+
+  // Get data of selected device
+  result = get_data_of_selected_device();
+  if (result) return AddToTrace("could not get data from selected device");
+
+  // query for saved routings of selected device
+  std::string ip_str = m_device.ip;
+  std::string query = std::format("SELECT * FROM {0} WHERE ip='{1}';", ROUTINGS_TABLE, ip_str);
+  sqlite3_stmt *statement = GetStatement(query);
+  if (result) return AddToTrace("could not get statement for query: ");
+
+  result = sql_query(statement);
+  if (result) return AddToTrace(std::format("query did not work: {}", sqlite3_errmsg(m_db)));
+
+  // Compose response string
+  for (size_t i = 1; i < m_last_query_result.size(); i++) {
+    auto row = m_last_query_result[i];
+    const auto line = std::format("IP: {0}\nName: {1}\nRouting:\n{2}\n", row[0], row[1], row[2]);
+    routings_str += line;
+    std::cout << line << std::endl;
   }
 
   return SQL_OK;

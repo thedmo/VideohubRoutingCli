@@ -36,7 +36,7 @@ public:
   static int GetRoutes(std::string &callback);
   static int MarkRouteForSaving(int destination);
   static int SaveRoutes(std::string routing_name);
-  static int GetSavedRoutes();
+  static int GetSavedRoutes(std::string &callback);
   static int LoadRoutes(std::string name);
 
   static int GetStatus(std::string ip, std::unique_ptr<device_data> &_data);
