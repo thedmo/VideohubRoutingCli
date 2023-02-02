@@ -48,9 +48,7 @@ load routes for selected device by name
 
 ## Todo
 
-- lock route
-- list routes
-- list saved routings
+- replace deprecated functions
 
 ## Future features
 
