@@ -422,10 +422,36 @@ int Vapi::UnlockRoute(unsigned int destination) {
   return ROUTER_API_OK;
 }
 
-// TODO
-int Vapi::GetRoutes() {
-  return AddToTrace("ROUTER_API: Not implemented yet");
+int Vapi::GetRoutes(std::string &callback) {
+  int result;
+
+// get Device information for IP
+  auto current_device = std::make_unique<device_data>();
+  result = m_database.GetSelectedDeviceData(current_device);
+  if (result) AddToTrace("Could not get device data: ");
+
+  // Socket erstellen und öffnen
+  std::string response;
+  TelnetClient tc(current_device->ip, VIDEOHUB_TELNET_PORT, response, result);
+  if (result) return AddToTrace("Could not establish conection to device:");
+
+  // Nachrich an socket schicken
+  std::string message = "VIDEO OUTPUT ROUTING:\n\n";
+  result = tc.SendMsgToServer(message);
+  if (result) return AddToTrace("could not send message to device ");
+
+  // Letzte Anwort von socket anfordern und in string speichern
+  callback = tc.GetLastDataDump();
+
+  // update device data in database
+  current_device->routing = "";
+  response = tc.GetLastDataDump();
+  result = ExtractInformation(response, current_device);
+  m_database.update_selected_device_data(current_device);
+
+  return ROUTER_API_OK;
 }
+
 int Vapi::MarkRouteForSaving(int destination) {
   std::string response;
   int result;

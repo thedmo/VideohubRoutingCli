@@ -33,7 +33,7 @@ public:
   static int TakePreparedRoutes();
   static int LockRoute(unsigned int destination);
   static int UnlockRoute(unsigned int destination);
-  static int GetRoutes();
+  static int GetRoutes(std::string &callback);
   static int MarkRouteForSaving(int destination);
   static int SaveRoutes(std::string routing_name);
   static int GetSavedRoutes();

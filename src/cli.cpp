@@ -246,11 +246,15 @@ void cli::UnlockRoute(int argc, const char *argv[], int &current_argument_index)
 };
 
 void cli::ListRoutes() {
-  int result = Vapi::GetRoutes();
+  std::string routes_str;
+
+  int result = Vapi::GetRoutes(routes_str);
   if (result) {
     PrintErrors(Vapi::GetErrorMessages());
     return;
   }
+
+  std::cout << routes_str << std::endl;
 };
 
 void cli::MarkRoutForSaving(int argc, const char *argv[], int &current_argument_index) {
