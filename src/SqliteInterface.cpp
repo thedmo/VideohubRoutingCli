@@ -133,7 +133,7 @@ int vdb::sql_query(sqlite3_stmt *statement) {
     row_content.clear();
     //Fields
     for (int j = 0; j < sqlite3_data_count(statement); j++) {
-      char *field = (char *)(sqlite3_column_text(statement, j)) ? (char *)(sqlite3_column_text(statement, j)) : "";
+      auto field = (const char *)(sqlite3_column_text(statement, j)) ? (const char *)(sqlite3_column_text(statement, j)) : "";
 
       row_content.push_back(field);
     }
@@ -430,12 +430,10 @@ int vdb::GetDevices(std::string &device_str) {
   int result = sql_query(statement);
   if (result) return AddToTrace("could not get Devices List");
 
-  for (auto row : m_last_query_result) {
-    for (auto field : row) {
-      device_str += field + " ";
-    }
 
-    device_str += '\n';
+  for (auto row : m_last_query_result) {
+    const auto line = std::format("| {0:<20} | {1:<20} | {2:<20} |\n", row[0], row[1], row[2]);
+    device_str += line;
   }
 
   return SQL_OK;
