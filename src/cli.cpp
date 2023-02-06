@@ -265,6 +265,7 @@ void cli::MarkRoutForSaving(int argc, const char *argv[], int &current_argument_
   }
 
   try {
+    // std::cout << "current argument: " << std::stoi(argv[1+ current_argument_index]) << std::endl;
     destination = std::stoi(argv[++current_argument_index]);
   }
   catch (std::exception e) {

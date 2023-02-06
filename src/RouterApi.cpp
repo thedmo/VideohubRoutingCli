@@ -9,25 +9,24 @@ vdb Vapi::m_database;
 int Vapi::GetInformationType(std::string line, information_type &type) {
   if (line == "PROTOCOL PREAMBLE:") {
     type = information_type::preamble;
-  }
-  else if (line == ("VIDEOHUB DEVICE:")) {
+  } else if (line == ("VIDEOHUB DEVICE:")) {
     type = information_type::device;
-  }
-  else if (line == ("INPUT LABELS:")) {
+  } else if (line == ("INPUT LABELS:")) {
     type = information_type::inputs_labels;
-  }
-  else if (line == ("OUTPUT LABELS:")) {
+  } else if (line == ("OUTPUT LABELS:")) {
     type = information_type::outputs_labels;
-  }
-  else if (line == ("VIDEO OUTPUT ROUTING:")) {
+  } else if (line == ("VIDEO OUTPUT ROUTING:")) {
     type = information_type::routing;
-  }
-  else if (line == ("VIDEO OUTPUT LOCKS:")) {
+  } else if (line == ("VIDEO OUTPUT LOCKS:")) {
     type = information_type::locks;
-  }
-  else if (line == ("ACK")) {
+  } else if (line == ("CONFIGURATION:")) {
+    type = information_type::configuration;
+  } else if (line == ("ACK")) {
     type = information_type::ack;
+  } else if (line == "END PRELUDE:"){
+    type = information_type::end_prelude;
   }
+  
   else {
     return AddToTrace("Type could not be extracted from: " + line + ".");
   }
@@ -79,6 +78,11 @@ int Vapi::ExtractInformation(std::string info, std::unique_ptr<device_data> &_da
       case information_type::locks:
         _data->locks += line + "\n";
         break;
+      case information_type::configuration:
+        // TODO Feature: configuration of device via library
+        break;
+      case information_type::end_prelude:
+        break;
 
       default:
         return AddToTrace("empty information type was passed");
@@ -111,16 +115,13 @@ int Vapi::GetDeviceInformation(std::string line, std::unique_ptr<device_data> &_
   if (key.compare("Version") == 0) {
     _data->version = value;
     return Vapi::ROUTER_API_OK;
-  }
-  else if (key.compare("Friendly name") == 0) {
+  } else if (key.compare("Friendly name") == 0) {
     _data->name = value;
     return Vapi::ROUTER_API_OK;
-  }
-  else if (key.compare("Video inputs") == 0) {
+  } else if (key.compare("Video inputs") == 0) {
     _data->source_count = std::stoi(value);
     return Vapi::ROUTER_API_OK;
-  }
-  else if (key.compare("Video outputs") == 0) {
+  } else if (key.compare("Video outputs") == 0) {
     _data->destination_count = std::stoi(value);
     return Vapi::ROUTER_API_OK;
   }
@@ -219,7 +220,7 @@ int Vapi::RenameSource(int channel_number, const std::string new_name) {
 int Vapi::GetSources(std::string &callback) {
   int result;
 
-    // get Device information for IP
+  // get Device information for IP
   auto current_device = std::make_unique<device_data>();
   result = m_database.GetSelectedDeviceData(current_device);
   if (result) AddToTrace("Could not get device data: ");
@@ -283,7 +284,7 @@ int Vapi::RenameDestination(int channel_number, const std::string new_name) {
 int Vapi::GetDestinations(std::string &callback) {
   int result;
 
-// get Device information for IP
+  // get Device information for IP
   auto current_device = std::make_unique<device_data>();
   result = m_database.GetSelectedDeviceData(current_device);
   if (result) AddToTrace("Could not get device data: ");
@@ -425,7 +426,7 @@ int Vapi::UnlockRoute(unsigned int destination) {
 int Vapi::GetRoutes(std::string &callback) {
   int result;
 
-// get Device information for IP
+  // get Device information for IP
   auto current_device = std::make_unique<device_data>();
   result = m_database.GetSelectedDeviceData(current_device);
   if (result) AddToTrace("Could not get device data: ");
@@ -456,7 +457,7 @@ int Vapi::MarkRouteForSaving(int destination) {
   std::string response;
   int result;
   std::unique_ptr<device_data> current_device = std::make_unique<device_data>();
-
+    // std::cout << "current argument: " << destination << std::endl;
   // Get device data from database
   result = m_database.GetSelectedDeviceData(current_device);
   if (result) return AddToTrace("Could not not get device data from database: ", m_database.GetErrorMessages());
@@ -588,11 +589,8 @@ int Vapi::check_channel_number(int num) {
   // Kanalnummer mit anzahl Kanäle in device information vergleichen
   if (num > device_info->source_count) {
     return AddToTrace("Channel number too high. Max value: " + std::to_string(device_info->destination_count - 1));
-  }
-  else if (num < 0) {
+  } else if (num < 0) {
     return AddToTrace("Channel number under 0 not possible. Min value: 0");
   }
   return ROUTER_API_OK;
-
-
 }

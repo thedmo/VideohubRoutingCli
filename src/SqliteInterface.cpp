@@ -23,41 +23,31 @@ vdb::~vdb() {
 int vdb::SetLocalDeviceDataNew(const std::vector<std::vector<std::string>> &query_result) {
   // iterating through cols
   for (size_t i = 0; i < query_result[0].size(); i++) {
-
     std::string column = query_result[0][i];
     std::string field = query_result[1][i];
 
     if (column == "source_count") {
       m_device.source_count = std::stoi(field);
-    }
-    else if (column == "destination_count") {
+    } else if (column == "destination_count") {
       m_device.destination_count = std::stoi(field);
     }
     if (column == "ip") {
       m_device.ip = field;
-    }
-    else if (column == "name") {
+    } else if (column == "name") {
       m_device.name = field;
-    }
-    else if (column == "version") {
+    } else if (column == "version") {
       m_device.version = field;
-    }
-    else if (column == "destination_labels") {
+    } else if (column == "destination_labels") {
       m_device.destination_labels = field;
-    }
-    else if (column == "source_labels") {
+    } else if (column == "source_labels") {
       m_device.source_labels = field;
-    }
-    else if (column == "routing") {
+    } else if (column == "routing") {
       m_device.routing = field;
-    }
-    else if (column == "prepared_routes") {
+    } else if (column == "prepared_routes") {
       m_device.prepared_routes = field;
-    }
-    else if (column == "locks") {
+    } else if (column == "locks") {
       m_device.locks = field;
-    }
-    else if (column == "marked_for_saving") {
+    } else if (column == "marked_for_saving") {
       m_device.marked_for_saving = field;
     }
   }
@@ -116,12 +106,10 @@ int vdb::sql_query(sqlite3_stmt *statement) {
       break;
     }
 
-    //column names
-    if (m_last_query_result.size() == 0)
-    {
+    // column names
+    if (m_last_query_result.size() == 0) {
       row_content.clear();
-      for (int i = 0; i < sqlite3_data_count(statement); i++)
-      {
+      for (int i = 0; i < sqlite3_data_count(statement); i++) {
         const char *col_name = (const char *)sqlite3_column_name(statement, i);
         std::string column(col_name);
 
@@ -131,13 +119,12 @@ int vdb::sql_query(sqlite3_stmt *statement) {
     }
 
     row_content.clear();
-    //Fields
+    // Fields
     for (int j = 0; j < sqlite3_data_count(statement); j++) {
       auto field = (const char *)(sqlite3_column_text(statement, j)) ? (const char *)(sqlite3_column_text(statement, j)) : "";
 
       row_content.push_back(field);
     }
-
 
     m_last_query_result.push_back(row_content);
     last_row_num++;
@@ -279,29 +266,33 @@ int vdb::mark_route_for_saving(int destination) {
   std::string marked_routes_str = m_device.marked_for_saving;
   std::string marked_route;
 
-
   std::stringstream routes_stream(m_device.routing);
   std::string route_line;
-  char destination_char = std::to_string(destination).c_str()[0];
+  std::string destination_string = std::to_string(destination);
+  const char *destination_char = destination_string.c_str();
 
+  // TODO Fix here, numbers higher than 9 are interpretet wrong
   while (std::getline(routes_stream, route_line)) {
-    char route_line_destination_char = route_line.c_str()[0];
+    // std::cout << "current route line: " << route_line << std::endl;
+    // auto route_line_destination_char = route_line.c_str();
+    // std::cout << "current route line char array: " << route_line_destination_char << std::endl;
 
-    if (destination_char == route_line_destination_char)
-    {
+    auto line_stream = std::stringstream{route_line};
+    std::string line_destination_string;
+    std::getline(line_stream, line_destination_string, ' ');
+
+    if (destination_string == line_destination_string) {
       marked_route = route_line;
       break;
     }
   }
 
-
   std::stringstream marked_routes_stream(marked_routes_str);
   std::string marked_line;
   while (std::getline(marked_routes_stream, marked_line)) {
-    char marked_line_destination_char = marked_line.c_str()[0];
+    // const char *marked_line_destination_char = marked_line.c_str();
 
-    if (destination_char == marked_line_destination_char)
-    {
+    if (destination_string == marked_line) {
       return AddToTrace("Route already marked");
       break;
     }
@@ -338,9 +329,7 @@ int vdb::get_saved_routing_names(std::string ip, std::vector<std::string> &names
 
   if (m_last_query_result.size() < 1) return AddToTrace("no routings in list");
 
-
-  for (unsigned int i = 1; i < m_last_query_result.size(); i++)
-  {
+  for (unsigned int i = 1; i < m_last_query_result.size(); i++) {
     std::string current_name = m_last_query_result[i][1];
     names.push_back(current_name);
   }
@@ -355,8 +344,7 @@ int vdb::save_routing(const std::string name, std::unique_ptr<device_data> &data
   result = get_saved_routing_names(data->ip, saved_routing_names);
 
   for (auto saved_routing_name : saved_routing_names) {
-    if (name == saved_routing_name)
-    {
+    if (name == saved_routing_name) {
       return AddToTrace("Routing with name: " + name + " already in list of saved routings");
     }
   }
@@ -391,8 +379,7 @@ int vdb::get_routing_by_name(const std::string name, std::string &routes_str) {
   if (result) return AddToTrace("could not get routings list: ");
 
   for (size_t i = 1; i < m_last_query_result.size(); i++) {
-    if (m_last_query_result[i][1] == name)
-    {
+    if (m_last_query_result[i][1] == name) {
       routes_str = m_last_query_result[i][2];
       return SQL_OK;
     }

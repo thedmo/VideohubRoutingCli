@@ -15,7 +15,9 @@ public:
     outputs_labels,
     routing,
     locks,
-    ack
+    configuration,
+    ack,
+    end_prelude
   };
 
   Vapi();
