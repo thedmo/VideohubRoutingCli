@@ -325,113 +325,111 @@ void cli::LoadRouting(int argc, const char *argv[], int &current_argument_index)
 //===============================
 
 int cli::Evaluate(const int argc, const char *argv[]) {
-  if (argc > 1) {
-    for (int i = 1; i < argc; ++i) {
-      // unsigned int increment = 0;
-      int option = CompareToOptions(argv[i]);
-
-      switch (option) {
-        case (Flags::add_router): {
-            std::cout << "Adding Router" << std::endl;
-            AddRouter(argc, argv, i);
-            break;
-          }
-        case (Flags::remove_router): {
-            std::cout << "Removing selected router" << std::endl;
-            RemoveRouter();
-            break;
-          }
-        case (Flags::select_router): {
-            std::cout << "selecting router\n";
-            SelectRouter(argc, argv, i);
-            break;
-          }
-        case (Flags::list_devices): {
-          // list routers
-            std::cout << "listing devices" << '\n';
-            ListDevices();
-            break;
-          }
-        case (Flags::rename_source): {
-            std::cout << "Renaming source\n";
-            RenameSource(argc, argv, i);
-            break;
-          }
-        case (Flags::list_sources): {
-            std::cout << "Listing sources\n";
-            ListSources();
-            break;
-          }
-        case (Flags::rename_destination): {
-            std::cout << "Renaming destination\n";
-            RenameDestination(argc, argv, i);
-            break;
-          }
-        case (Flags::list_destinations): {
-            std::cout << "Listing destination\n";
-            ListDestinations();
-            break;
-          }
-        case (Flags::new_route): {
-            std::cout << "Preparing new route\n";
-            PrepareNewRoute(argc, argv, i);
-            break;
-          }
-        case (Flags::take_routes): {
-            std::cout << "Taking prepared routes\n";
-            TakePreparedRoutes();
-            break;
-          }
-        case (Flags::lock_route): {
-            std::cout << "locking route\n";
-            LockRoute(argc, argv, i);
-            break;
-          }
-        case (Flags::unlock_route): {
-            std::cout << "unlocking route\n";
-            UnlockRoute(argc, argv, i);
-            break;
-          }
-        case (Flags::list_routes): {
-            std::cout << "listing routes\n";
-            ListRoutes();
-            break;
-          }
-        case (Flags::mark_route_for_saving): {
-            std::cout << "Marking route for saving\n";
-            MarkRoutForSaving(argc, argv, i);
-            break;
-          }
-        case (Flags::save_routing): {
-            std::cout << "saving routes\n";
-            SaveRouting(argc, argv, i);
-            break;
-          }
-        case (Flags::list_saved_routes): {
-            std::cout << "Listing saved routings\n";
-            ListSavedRoutings();
-            break;
-          }
-        case (Flags::load_routes): {
-            std::cout << "Loading saved routes\n";
-            LoadRouting(argc, argv, i);
-            break;
-          }
-        case (Flags::help): {
-          // help
-            PrintHelp();
-            break;
-          }
-        default:
-          PrintHelp();
-          break;
-      }
-    }
-  }
-  else {
- // helping
+  if (argc < 2) {
+     // helping
     std::cout << "No Argument passed." << std::endl;
     PrintHelp();
+  }
+  for (int i = 1; i < argc; ++i) {
+    // unsigned int increment = 0;
+    int option = CompareToOptions(argv[i]);
+
+    switch (option) {
+      case (Flags::add_router): {
+          std::cout << "Adding Router" << std::endl;
+          AddRouter(argc, argv, i);
+          break;
+        }
+      case (Flags::remove_router): {
+          std::cout << "Removing selected router" << std::endl;
+          RemoveRouter();
+          break;
+        }
+      case (Flags::select_router): {
+          std::cout << "selecting router\n";
+          SelectRouter(argc, argv, i);
+          break;
+        }
+      case (Flags::list_devices): {
+        // list routers
+          std::cout << "listing devices" << '\n';
+          ListDevices();
+          break;
+        }
+      case (Flags::rename_source): {
+          std::cout << "Renaming source\n";
+          RenameSource(argc, argv, i);
+          break;
+        }
+      case (Flags::list_sources): {
+          std::cout << "Listing sources\n";
+          ListSources();
+          break;
+        }
+      case (Flags::rename_destination): {
+          std::cout << "Renaming destination\n";
+          RenameDestination(argc, argv, i);
+          break;
+        }
+      case (Flags::list_destinations): {
+          std::cout << "Listing destination\n";
+          ListDestinations();
+          break;
+        }
+      case (Flags::new_route): {
+          std::cout << "Preparing new route\n";
+          PrepareNewRoute(argc, argv, i);
+          break;
+        }
+      case (Flags::take_routes): {
+          std::cout << "Taking prepared routes\n";
+          TakePreparedRoutes();
+          break;
+        }
+      case (Flags::lock_route): {
+          std::cout << "locking route\n";
+          LockRoute(argc, argv, i);
+          break;
+        }
+      case (Flags::unlock_route): {
+          std::cout << "unlocking route\n";
+          UnlockRoute(argc, argv, i);
+          break;
+        }
+      case (Flags::list_routes): {
+          std::cout << "listing routes\n";
+          ListRoutes();
+          break;
+        }
+      case (Flags::mark_route_for_saving): {
+          std::cout << "Marking route for saving\n";
+          MarkRoutForSaving(argc, argv, i);
+          break;
+        }
+      case (Flags::save_routing): {
+          std::cout << "saving routes\n";
+          SaveRouting(argc, argv, i);
+          break;
+        }
+      case (Flags::list_saved_routes): {
+          std::cout << "Listing saved routings\n";
+          ListSavedRoutings();
+          break;
+        }
+      case (Flags::load_routes): {
+          std::cout << "Loading saved routes\n";
+          LoadRouting(argc, argv, i);
+          break;
+        }
+      case (Flags::help): {
+        // help
+          PrintHelp();
+          break;
+        }
+      default:
+        PrintHelp();
+        break;
+    }
   }
 
   return 0;
