@@ -20,8 +20,8 @@ int cli::CompareToOptions(const std::string comp_str) {
     }
   }
 
-  std::cout << comp_str << " not found." << std::endl;
-  return Flags::help;
+  // std::cout << comp_str << " not found." << std::endl;
+  return Flags::value;
 }
 
 int cli::CheckArgCount(const int argc, const int current_index, std::string &err_msg) {
@@ -324,12 +324,9 @@ void cli::LoadRouting(int argc, const char *argv[], int &current_argument_index)
 
 //===============================
 
-int cli::Evaluate(const int argc, const char *argv[]) {
-  if (argc < 2) {
-     // helping
-    std::cout << "No Argument passed." << std::endl;
-    PrintHelp();
-  }
+
+ //TODO make functions compatible with new behaviour so multiple values can be evaluated at once
+void cli::invoke_methods(const int argc, const char *argv[]) {
   for (int i = 1; i < argc; ++i) {
     // unsigned int increment = 0;
     int option = CompareToOptions(argv[i]);
@@ -431,7 +428,163 @@ int cli::Evaluate(const int argc, const char *argv[]) {
         break;
     }
   }
+}
 
+//
+void cli::invoke_methods_2(const int argc, const char *argv[]) {
+  std::vector<std::vector<std::string>> lines;
+
+  int mode = -1;
+  int old_mode = mode;
+  for (int i = 1; i < argc; ++i)
+  {
+    std::string arg_str = argv[i];
+
+    mode = CompareToOptions(arg_str);
+
+  // Check, if mode is command
+    if (mode != Flags::value) {
+      std::vector<std::string> new_line;
+      lines.push_back(new_line);
+      old_mode = mode;
+    }
+
+    //add line if no line is present in vector
+    if (lines.empty())
+    {
+      lines.push_back(std::vector<std::string>());
+    }
+
+
+    // Add value to current command
+    lines[lines.size() - 1].push_back(arg_str);
+  }
+
+  // Cycle through lines to emit methods
+  for (auto line : lines) {
+    std::string line_string = "";
+    for (auto argument : line) {
+      line_string += argument + " ";
+    }
+
+    switch (mode) {
+      case (Flags::add_router): {
+          std::cout << "Adding Router" << ": " << line_string << std::endl;
+          // AddRouter(argc, argv, i);
+          break;
+        }
+      case (Flags::remove_router): {
+          std::cout << "Removing selected router" << "; " << line_string << std::endl;
+          // RemoveRouter();
+          break;
+        }
+      case (Flags::select_router): {
+          std::cout << "selecting router" << "; " << line_string << '\n';
+          // SelectRouter(argc, argv, i);
+          break;
+        }
+      case (Flags::list_devices): {
+        // list routers
+          std::cout << "listing devices" << "; " << line_string << '\n';
+          // ListDevices();
+          break;
+        }
+      case (Flags::rename_source): {
+          std::cout << "Renaming source" << "; " << line_string << '\n';
+          // RenameSource(argc, argv, i);
+          break;
+        }
+      case (Flags::list_sources): {
+          std::cout << "Listing sources" << "; " << line_string << '\n';
+          // ListSources();
+          break;
+        }
+      case (Flags::rename_destination): {
+          std::cout << "Renaming destination" << "; " << line_string << '\n';
+          // RenameDestination(argc, argv, i);
+          break;
+        }
+      case (Flags::list_destinations): {
+          std::cout << "Listing destination" << "; " << line_string << '\n';
+          // ListDestinations();
+          break;
+        }
+      case (Flags::new_route): {
+          std::cout << "Preparing new route" << "; " << line_string << '\n';
+          // PrepareNewRoute(argc, argv, i);
+          break;
+        }
+      case (Flags::take_routes): {
+          std::cout << "Taking prepared routes" << "; " << line_string << '\n';
+          // TakePreparedRoutes();
+          break;
+        }
+      case (Flags::lock_route): {
+          std::cout << "locking route" << "; " << line_string << '\n';
+          // LockRoute(argc, argv, i);
+          break;
+        }
+      case (Flags::unlock_route): {
+          std::cout << "unlocking route" << "; " << line_string << '\n';
+          // UnlockRoute(argc, argv, i);
+          break;
+        }
+      case (Flags::list_routes): {
+          std::cout << "listing routes" << "; " << line_string << '\n';
+          // ListRoutes();
+          break;
+        }
+      case (Flags::mark_route_for_saving): {
+          std::cout << "Marking route for saving" << "; " << line_string << '\n';
+          // MarkRoutForSaving(argc, argv, i);
+          break;
+        }
+      case (Flags::save_routing): {
+          std::cout << "saving routes" << "; " << line_string << '\n';
+          // SaveRouting(argc, argv, i);
+          break;
+        }
+      case (Flags::list_saved_routes): {
+          std::cout << "Listing saved routings" << "; " << line_string << '\n';
+          // ListSavedRoutings();
+          break;
+        }
+      case (Flags::load_routes): {
+          std::cout << "Loading saved routes" << "; " << line_string << '\n';
+          // LoadRouting(argc, argv, i);
+          break;
+        }
+      case (Flags::help): {
+        // help
+          PrintHelp();
+          break;
+        }
+      default:
+        PrintHelp();
+        break;
+    }
+
+  }
+}
+
+
+
+int cli::Evaluate(const int argc, const char *argv[]) {
+  if (argc < 2) {
+     // helping
+    std::cout << "No Argument passed." << std::endl;
+    PrintHelp();
+  }
+
+
+  // TODO: remove, when funcrtions are tested with new behaviour 
+  // new behaviour
+  invoke_methods(argc, argv); return 0; // Comment this line to use new behaviour
+
+
+  // TODO: test functions with new behaviour
+  // old behaviour
+  invoke_methods_2(argc, argv);
   return 0;
 }
 

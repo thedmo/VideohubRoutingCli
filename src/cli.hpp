@@ -19,6 +19,7 @@ private:
   };
 
   enum Flags {
+    value,
     help,
     add_router,
     remove_router,
@@ -34,6 +35,7 @@ private:
     unlock_route,
     list_routes,
     mark_route_for_saving,
+    mark_route_for_saving2,
     save_routing,
     list_saved_routes,
     load_routes
@@ -55,6 +57,7 @@ private:
       {Flags::unlock_route, "-u", "--unlock"},
       {Flags::list_routes, "-Lr", "--list_routes"},
       {Flags::mark_route_for_saving, "-m", "--mark"},
+      {Flags::mark_route_for_saving, "-m2", "--mark2"},
       {Flags::save_routing, "-sr", "--save_routes"},
       {Flags::list_saved_routes, "-lsr", "--list_saved_routings"},
       {Flags::load_routes, "-lr", "--load_routes"} };
@@ -62,6 +65,9 @@ private:
   void PrintHelp();
   int CompareToOptions(std::string comp_str);
   int CheckArgCount(const int argc, const int current_index, std::string &err_msg);
+
+  void [[deprecated("This behaviour only i valid for one argument at a time an thus very slow. use new method instead.")]] invoke_methods(const int argc, const char *argv[]);
+  void invoke_methods_2(const int argc, const char *argv[]);
 
   void AddRouter(int argc, const char *argv[], int &current_argument_index);
   void RemoveRouter();
