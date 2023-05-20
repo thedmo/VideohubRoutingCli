@@ -6,20 +6,7 @@
 #include <iostream>
 #include <sstream>
 #include <format>
-
-struct device_data {
-  std::string ip;
-  std::string name;
-  std::string version;
-  int source_count;
-  int destination_count;
-  std::string source_labels;
-  std::string destination_labels;
-  std::string routing;
-  std::string prepared_routes;
-  std::string locks;
-  std::string marked_for_saving;
-};
+#include <device_data.hpp>
 
 class vdb {
 public:
@@ -57,10 +44,20 @@ private:
   const std::string ROUTINGS_TABLE = "routings";
 
   char *m_err;
-  sqlite3 *m_db;
   device_data m_device;
+
+  // sql_access::sql_access _sql;
+
+  sqlite3 *m_db;
   static int last_row_num;
   std::vector<std::vector<std::string>> m_last_query_result;
+
+
+
+
+
+
+
 
   int SetLocalDeviceData(device_data &device, sqlite3_stmt *statement);
   int SetLocalDeviceDataNew(const std::vector<std::vector<std::string>> &query_result);
