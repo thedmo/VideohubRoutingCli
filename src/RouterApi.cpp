@@ -487,6 +487,15 @@ int Vapi::MarkRouteForSaving(int destination) {
   return ROUTER_API_OK;
 }
 
+// TODO Hier weiter
+int Vapi::MarkRoutes2(std::vector<int> destinations) {
+  device_data device;
+
+
+
+  return ROUTER_API_OK;
+}
+
 int Vapi::SaveRoutes(std::string routing_name) {
   // Get marked routes of selected device from database
   int result;
