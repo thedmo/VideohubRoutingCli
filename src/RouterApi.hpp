@@ -38,6 +38,7 @@ public:
   static int UnlockRoute(unsigned int destination);
   static int GetRoutes(std::string &callback);
   static int MarkRouteForSaving(int destination);
+  static int MarkRoutes2(std::vector<int> destinations);
   static int SaveRoutes(std::string routing_name);
   static int GetSavedRoutes(std::string &callback);
   static int LoadRoutes(std::string name);
