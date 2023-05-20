@@ -76,3 +76,28 @@ private:
 
   int get_data_of_selected_device();
 };
+
+class sql_access {
+public:
+  sql_access();
+  ~sql_access();
+
+  static const int SQL_ACCESS_OK = 0;
+
+  sqlite3_stmt *GetStatement(std::string query);
+  int Query(sqlite3_stmt *statement);
+
+  //TODO test
+  sqlite3_stmt *BindValues(std::vector<std::string> args, sqlite3_stmt *statement);
+
+  //TODO test
+  std::vector<std::vector<std::string>> GetLastQueryResult();
+
+  // TODO test
+  int GetLastRowNum();
+
+private:
+  sqlite3 *m_db;
+  std::vector<std::vector<std::string>> m_last_query_result;
+  static int last_row_num;
+};
