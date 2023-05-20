@@ -2,6 +2,7 @@
 #include <vector>
 
 #include <TelnetClient.hpp>
+#include <device_data.hpp>
 
 const int VIDEOHUB_TELNET_PORT = 9990;
 
