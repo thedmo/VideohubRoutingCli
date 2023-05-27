@@ -26,7 +26,7 @@ vdb::vdb() {
                                       "routing VARCHAR, "+
                                       "FOREIGN KEY(ip) REFERENCES " + 
                                       DEVICES_TABLE + "(ip))";
-                                      
+
   sqlite3_stmt *routing_table_statement = _sql.GetStatement(routing_query_str);
   _sql.Query(routing_table_statement);
 }
@@ -350,7 +350,15 @@ int vdb::update_selected_device_data(std::unique_ptr<device_data> &data) {
   int result = get_data_of_selected_device();
   if (result) return AddToTrace("could not get data of selected device");
 
-  std::string query_str = "UPDATE " + DEVICES_TABLE + " SET version=?, source_labels=?, destination_labels=?, routing='" + data->routing + "', locks = '" + data->locks + "' WHERE selected_router='x';";
+  std::string query_str = "UPDATE " + DEVICES_TABLE + " SET version=?, "+
+                                                            "source_labels=?, "+
+                                                            "destination_labels=?, "+
+                                                            "routing='" + data->routing +
+                                                            "', locks = '" + data->locks +
+                                                            "prepared_routes"+
+                                                            "marked_for_saving"+ 
+                                                            "' WHERE selected_router='x';";
+                                                            
   sql_access _sql;
   std::vector<std::string> args = {
     data->version, data->source_labels, 
