@@ -8,6 +8,12 @@
 #include <format>
 #include <device_data.hpp>
 
+// Aliases
+using QueryResult = std::vector<std::vector<std::string>>;
+
+
+
+// SQL Handler
 class vdb {
 public:
   static const int SQL_OK = 0;
@@ -48,10 +54,12 @@ private:
 
   // sql_access::sql_access _sql;
 
+
+
+
   sqlite3 *m_db;
   static int last_row_num;
   std::vector<std::vector<std::string>> m_last_query_result;
-
 
 
 
@@ -63,6 +71,7 @@ private:
   int SetLocalDeviceDataNew(const std::vector<std::vector<std::string>> &query_result);
 
   int get_saved_routing_names(std::string ip, std::vector<std::string> &names);
+  int get_saved_routing_names(std::string ip, std::vector<std::string> &names, QueryResult& query_result);
 
   int [[deprecated("use new function instead to mitigate sql injection")]] sql_query(std::string query);
   sqlite3_stmt *GetStatement(std::string query);
@@ -74,6 +83,8 @@ private:
   int get_data_of_selected_device();
 };
 
+
+// Database Communication
 class sql_access {
 public:
   sql_access();
@@ -88,13 +99,16 @@ public:
   sqlite3_stmt *BindValues(std::vector<std::string> args, sqlite3_stmt *statement);
 
   //TODO test
-  std::vector<std::vector<std::string>> GetLastQueryResult();
+  QueryResult GetLastQueryResult();
 
   // TODO test
   int GetLastRowNum();
 
+  // TODO test
+  std::string GetLastErrorMsg();
+
 private:
   sqlite3 *m_db;
-  std::vector<std::vector<std::string>> m_last_query_result;
+  QueryResult m_last_query_result;
   static int last_row_num;
 };
