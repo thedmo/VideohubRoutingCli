@@ -18,7 +18,14 @@ set(main_lib_name lib_vhub )
 
 add_subdirectory(src)
 add_subdirectory(app)
+add_subdirectory(Testing)
 
 set(CPACK_PROJECT_NAME ${PROJECT_NAME})
 set(CPACK_PROJECT_VERSION ${PROJECT_VERSION})
 include(CPack)
+
+add_custom_target(run_tests
+    COMMAND tests
+    DEPENDS tests
+    COMMENT "Running tests"
+)
