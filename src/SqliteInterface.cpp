@@ -5,11 +5,28 @@ int vdb::last_row_num;
 vdb::vdb() {
   sql_access _sql;
 
-  std::string device_query_str = "CREATE TABLE IF NOT EXISTS " + DEVICES_TABLE + " (ip VARCHAR PRIMARY KEY, name VARCHAR, version VARCHAR, source_count INT, destination_count INT, source_labels VARCHAR, destination_labels VARCHAR, routing VARCHAR, prepared_routes VARCHAR, locks VARCHAR, selected_router VARCHAR, marked_for_saving VARCHAR)";
-  sqlite3_stmt *device_table_statement = _sql.GetStatement(device_query_str);
-  _sql.Query(device_table_statement);
+  std::string device_query_str = "CREATE TABLE IF NOT EXISTS " + DEVICES_TABLE + 
+                                            " (ip VARCHAR PRIMARY KEY, "+
+                                            "name VARCHAR, "+ 
+                                            "version VARCHAR, "+ 
+                                            "source_count INT, "+ 
+                                            "destination_count INT, "+ 
+                                            "source_labels VARCHAR, "+
+                                            "destination_labels VARCHAR, "+
+                                            "routing VARCHAR, "+
+                                            "prepared_routes VARCHAR, "+
+                                            "locks VARCHAR, "+
+                                            "selected_router VARCHAR, "+
+                                            "marked_for_saving VARCHAR)";
 
-  std::string routing_query_str = "CREATE TABLE IF NOT EXISTS " + ROUTINGS_TABLE + " (ip VARCHAR, name VARCHAR, routing VARCHAR, FOREIGN KEY(ip) REFERENCES " + DEVICES_TABLE + "(ip))";
+  _sql.Query(_sql.GetStatement(device_query_str));
+
+  std::string routing_query_str = "CREATE TABLE IF NOT EXISTS " + ROUTINGS_TABLE + 
+                                      " (ip VARCHAR, name VARCHAR, "+
+                                      "routing VARCHAR, "+
+                                      "FOREIGN KEY(ip) REFERENCES " + 
+                                      DEVICES_TABLE + "(ip))";
+                                      
   sqlite3_stmt *routing_table_statement = _sql.GetStatement(routing_query_str);
   _sql.Query(routing_table_statement);
 }
@@ -335,7 +352,12 @@ int vdb::update_selected_device_data(std::unique_ptr<device_data> &data) {
 
   std::string query_str = "UPDATE " + DEVICES_TABLE + " SET version=?, source_labels=?, destination_labels=?, routing='" + data->routing + "', locks = '" + data->locks + "' WHERE selected_router='x';";
   sql_access _sql;
-  std::vector<std::string> args = {data->version, data->source_labels, data->destination_labels};
+  std::vector<std::string> args = {
+    data->version, data->source_labels, 
+    data->destination_labels, 
+    data->prepared_routes, 
+    data->marked_for_saving
+    };
 
   result = _sql.Query(_sql.BindValues(args, _sql.GetStatement(query_str)));
 
