@@ -177,18 +177,18 @@ int vdb::add_to_prepared_routes(int destination, int source) {
 }
 
 // TODO remove function, can be made with update_device_data function
-int vdb::clean_prepared_routes() {
-  int result = check_if_devicetable_empty();
-  if (result) return AddToTrace("no devices in router table");
+// int vdb::clean_prepared_routes() {
+//   int result = check_if_devicetable_empty();
+//   if (result) return AddToTrace("no devices in router table");
 
-  std::string query_str = "UPDATE " + DEVICES_TABLE + " SET prepared_routes='' WHERE selected_router='x';";
+//   std::string query_str = "UPDATE " + DEVICES_TABLE + " SET prepared_routes='' WHERE selected_router='x';";
 
-  sql_access _sql;
-  result = _sql.Query(_sql.GetStatement(query_str));
-  if (result) return AddToTrace("query did not work");
+//   sql_access _sql;
+//   result = _sql.Query(_sql.GetStatement(query_str));
+//   if (result) return AddToTrace("query did not work");
 
-  return SQL_OK;
-}
+//   return SQL_OK;
+// }
 
 int vdb::mark_route_for_saving(int destination) {
   int result = get_data_of_selected_device();
@@ -267,7 +267,7 @@ int vdb::get_saved_routing_names(std::string ip, std::vector<std::string> &names
   int result;
   std::string query_str = "SELECT * FROM " + ROUTINGS_TABLE + " WHERE ip='" + ip + "';";
   sql_access _sql;
-
+  
   result = _sql.Query(_sql.GetStatement(query_str));
   if (result) return AddToTrace("Error: " + _sql.GetLastErrorMsg());
   if (_sql.GetLastQueryResult().size() < 1) return AddToTrace("no routings in list");
@@ -276,7 +276,7 @@ int vdb::get_saved_routing_names(std::string ip, std::vector<std::string> &names
     std::string current_name = _sql.GetLastQueryResult()[i][1];
     names.push_back(current_name);
   }
-
+  
   query_result = _sql.GetLastQueryResult();  
   
   return SQL_OK;
@@ -381,7 +381,7 @@ int vdb::get_saved_routings(std::string &routings_str) {
   std::string ip_str = m_device.ip;
   std::string query = std::format("SELECT * FROM {0} WHERE ip='{1}';", ROUTINGS_TABLE, ip_str);
   sql_access _sql;
-
+  
   result = _sql.Query(_sql.GetStatement(query));
   if (result) return AddToTrace(std::format("query did not work: {}", _sql.GetLastErrorMsg()));
 

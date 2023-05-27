@@ -329,9 +329,10 @@ int Vapi::TakePreparedRoutes() {
   result = tc.SendMsgToServer(msg);
   if (result) return AddToTrace("Could not take prepared routes", tc.GetErrorMessages());
 
-  // reset entry for prepared routes in database
-  result = m_database.clean_prepared_routes();
-  if (result) return AddToTrace("could not reset prepared routes", m_database.GetErrorMessages());
+  // reset prepared routes in device_data
+  // result = m_database.clean_prepared_routes();
+  current_device->prepared_routes = "";
+  // if (result) return AddToTrace("could not reset prepared routes", m_database.GetErrorMessages());
 
   // get current routes from connected device (response gets saved in member variable)
   msg = "VIDEO OUTPUT ROUTING:\n\n";

@@ -34,7 +34,7 @@ public:
   int mark_route_for_saving(int destination);
   int save_routing(const std::string name, std::unique_ptr<device_data> &data);
 
-  int [[deprecated("use update_device_data instead")]] clean_prepared_routes();
+  // int [[deprecated("use update_device_data instead")]] clean_prepared_routes();
   int [[deprecated("use update_device_data instead")]] clean_marked_routes();
 
   int GetSelectedDeviceData(std::unique_ptr<device_data> &device);
