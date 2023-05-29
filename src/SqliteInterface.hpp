@@ -52,7 +52,7 @@ private:
   char *m_err;
   device_data m_device;
 
-  // sql_access::sql_access _sql;
+  std::shared_ptr<sql_access> _sql;
 
 
 
@@ -82,6 +82,9 @@ private:
 
   int get_data_of_selected_device();
 };
+
+
+
 
 
 // Database Communication

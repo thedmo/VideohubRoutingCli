@@ -3,7 +3,7 @@
 int vdb::last_row_num;
 
 vdb::vdb() {
-  sql_access _sql;
+  _sql = std::make_shared<sql_access>();
 
   std::string device_query_str = "CREATE TABLE IF NOT EXISTS " + DEVICES_TABLE + 
                                             " (ip VARCHAR PRIMARY KEY, "+
@@ -19,7 +19,7 @@ vdb::vdb() {
                                             "selected_router VARCHAR, "+
                                             "marked_for_saving VARCHAR)";
 
-  _sql.Query(_sql.GetStatement(device_query_str));
+  _sql->Query(_sql->GetStatement(device_query_str));
 
   std::string routing_query_str = "CREATE TABLE IF NOT EXISTS " + ROUTINGS_TABLE + 
                                       " (ip VARCHAR, name VARCHAR, "+
@@ -27,8 +27,8 @@ vdb::vdb() {
                                       "FOREIGN KEY(ip) REFERENCES " + 
                                       DEVICES_TABLE + "(ip))";
 
-  sqlite3_stmt *routing_table_statement = _sql.GetStatement(routing_query_str);
-  _sql.Query(routing_table_statement);
+  sqlite3_stmt *routing_table_statement = _sql->GetStatement(routing_query_str);
+  _sql->Query(routing_table_statement);
 }
 
 vdb::~vdb() {
@@ -82,23 +82,23 @@ int vdb::check_if_device_exists(std::string ip) {
   std::string query_str = "SELECT ip FROM " + DEVICES_TABLE + " WHERE ip =?;";
   std::vector<std::string> bind_values = { ip };
 
-  sql_access _sql;
-  int result = _sql.Query(_sql.BindValues(bind_values, _sql.GetStatement(query_str)));
+  // sql_access _sql;
+  int result = _sql->Query(_sql->BindValues(bind_values, _sql->GetStatement(query_str)));
 
-  if (result != SQL_OK) return AddToTrace("Error: " + _sql.GetLastErrorMsg());
+  if (result != SQL_OK) return AddToTrace("Error: " + _sql->GetLastErrorMsg());
 
-  if (_sql.GetLastRowNum() == 1) return AddToTrace("Device with ip: '" + ip + "' already in list");
+  if (_sql->GetLastRowNum() == 1) return AddToTrace("Device with ip: '" + ip + "' already in list");
   return SQL_OK;
 }
 
 int vdb::check_if_devicetable_empty() {
   std::string query_str = "SELECT * FROM " + DEVICES_TABLE + ";";
 
-  sql_access _sql;
-  int result = _sql.Query(_sql.GetStatement(query_str));
+  // sql_access _sql;
+  int result = _sql->Query(_sql->GetStatement(query_str));
   if (result) return AddToTrace("could not check devicetable");
 
-  if (_sql.GetLastRowNum() == 0) return AddToTrace("devices table is empty");
+  if (_sql->GetLastRowNum() == 0) return AddToTrace("devices table is empty");
 
   return SQL_OK;
 }
@@ -107,8 +107,8 @@ int vdb::insert_device_into_db(std::unique_ptr<device_data> &data) {
   std::string query_str = "INSERT INTO " + DEVICES_TABLE + "(ip, name, version, source_count, destination_count, source_labels, destination_labels, routing, locks) VALUES (?,'" + data->name + "','" + data->version + "'," + std::to_string(data->source_count) + "," + std::to_string(data->destination_count) + ",?,?,'" + data->routing + "','" + data->locks + "');";
   std::vector<std::string> args = { data->ip, data->source_labels, data->destination_labels };
 
-  sql_access _sql;
-  int result = _sql.Query(_sql.BindValues(args, _sql.GetStatement(query_str)));
+  // sql_access _sql;
+  int result = _sql->Query(_sql->BindValues(args, _sql->GetStatement(query_str)));
 
   if (result) {
     AddToTrace("could not insert new device into table");
@@ -130,15 +130,15 @@ int vdb::select_device(std::string ip) {
 
   std::string query = "UPDATE " + DEVICES_TABLE + " SET selected_router='o';";
 
-  sql_access _sql;
-  result = _sql.Query(_sql.GetStatement(query));
+  // sql_access _sql;
+  result = _sql->Query(_sql->GetStatement(query));
   if (result) return AddToTrace(std::to_string(result) + ": could not reset router selection...");
 
   query = "UPDATE " + DEVICES_TABLE + " SET selected_router='x' WHERE ip=?;";
 
   std::vector<std::string> args = { ip };
-  result = _sql.Query(_sql.BindValues(args, _sql.GetStatement(query)));
-  if (result) return AddToTrace("Error: " + _sql.GetLastErrorMsg());
+  result = _sql->Query(_sql->BindValues(args, _sql->GetStatement(query)));
+  if (result) return AddToTrace("Error: " + _sql->GetLastErrorMsg());
 
   return SQL_OK;
 }
@@ -148,10 +148,10 @@ int vdb::remove_selected_device_from_db() {
   if (result) return AddToTrace("could not remove device from table, seems to be empty");
 
 
-  sql_access _sql;
+  // sql_access _sql;
   std::string query_str = "DELETE FROM " + DEVICES_TABLE + " WHERE selected_router='x'";
 
-  result = _sql.Query(_sql.GetStatement(query_str));
+  result = _sql->Query(_sql->GetStatement(query_str));
   if (result) return AddToTrace("could not remove device from table");
 
   return SQL_OK;
@@ -164,11 +164,11 @@ int vdb::get_data_of_selected_device() {
 
   std::string query = "SELECT * FROM " + DEVICES_TABLE + " WHERE selected_router='x';";
 
-  sql_access _sql;
-  result = _sql.Query(_sql.GetStatement(query));
+  // sql_access _sql;
+  result = _sql->Query(_sql->GetStatement(query));
   if (result) return AddToTrace("no selected device found");
 
-  result = SetLocalDeviceDataNew(_sql.GetLastQueryResult());
+  result = SetLocalDeviceDataNew(_sql->GetLastQueryResult());
   if (result) return AddToTrace("could not set devicedata");
 
   return SQL_OK;
@@ -186,8 +186,8 @@ int vdb::add_to_prepared_routes(int destination, int source) {
 
   std::string query_str = "UPDATE " + DEVICES_TABLE + " SET prepared_routes='" + prepared_routes + "' WHERE selected_router='x';";
 
-  sql_access _sql;
-  result = _sql.Query(_sql.GetStatement(query_str));
+  // sql_access _sql;
+  result = _sql->Query(_sql->GetStatement(query_str));
   if (result) return AddToTrace("could not add new route to prepared routes");
 
   return SQL_OK;
@@ -200,8 +200,8 @@ int vdb::add_to_prepared_routes(int destination, int source) {
 
 //   std::string query_str = "UPDATE " + DEVICES_TABLE + " SET prepared_routes='' WHERE selected_router='x';";
 
-//   sql_access _sql;
-//   result = _sql.Query(_sql.GetStatement(query_str));
+//   // sql_access _sql;
+//   result = _sql->Query(_sql->GetStatement(query_str));
 //   if (result) return AddToTrace("query did not work");
 
 //   return SQL_OK;
@@ -241,12 +241,12 @@ int vdb::mark_route_for_saving(int destination) {
 
   marked_routes_str += marked_route + '\n';
 
-  sql_access _sql;
+  // sql_access _sql;
   std::string query_str = "UPDATE " + DEVICES_TABLE + " SET marked_for_saving=? WHERE selected_router='x';";
   std::vector<std::string> args = {marked_routes_str};
 
-  result = _sql.Query(_sql.BindValues(args, _sql.GetStatement(query_str)));
-  if (result) return AddToTrace("Error: " + _sql.GetLastErrorMsg());
+  result = _sql->Query(_sql->BindValues(args, _sql->GetStatement(query_str)));
+  if (result) return AddToTrace("Error: " + _sql->GetLastErrorMsg());
 
   return SQL_OK;
 }
@@ -255,10 +255,10 @@ int vdb::mark_route_for_saving(int destination) {
 int vdb::clean_marked_routes() {
   int result;
   std::string query_str = "UPDATE " + DEVICES_TABLE + " SET marked_for_saving='' WHERE selected_router='x';";
-  sql_access _sql;
+  // sql_access _sql;
 
-  result = _sql.Query(_sql.GetStatement(query_str));
-  if (result) return AddToTrace("Error: " + _sql.GetLastErrorMsg());
+  result = _sql->Query(_sql->GetStatement(query_str));
+  if (result) return AddToTrace("Error: " + _sql->GetLastErrorMsg());
 
   return SQL_OK;
 }
@@ -266,14 +266,14 @@ int vdb::clean_marked_routes() {
 int vdb::get_saved_routing_names(std::string ip, std::vector<std::string> &names) {
   int result;
   std::string query_str = "SELECT * FROM " + ROUTINGS_TABLE + " WHERE ip='" + ip + "';";
-  sql_access _sql;
+  // sql_access _sql;
   
-  result = _sql.Query(_sql.GetStatement(query_str));
-  if (result) return AddToTrace("Error: " + _sql.GetLastErrorMsg());
-  if (_sql.GetLastQueryResult().size() < 1) return AddToTrace("no routings in list");
+  result = _sql->Query(_sql->GetStatement(query_str));
+  if (result) return AddToTrace("Error: " + _sql->GetLastErrorMsg());
+  if (_sql->GetLastQueryResult().size() < 1) return AddToTrace("no routings in list");
 
-  for (unsigned int i = 1; i < _sql.GetLastQueryResult().size(); i++) {
-    std::string current_name = _sql.GetLastQueryResult()[i][1];
+  for (unsigned int i = 1; i < _sql->GetLastQueryResult().size(); i++) {
+    std::string current_name = _sql->GetLastQueryResult()[i][1];
     names.push_back(current_name);
   }
 
@@ -283,18 +283,18 @@ int vdb::get_saved_routing_names(std::string ip, std::vector<std::string> &names
 int vdb::get_saved_routing_names(std::string ip, std::vector<std::string> &names, QueryResult& query_result){
   int result;
   std::string query_str = "SELECT * FROM " + ROUTINGS_TABLE + " WHERE ip='" + ip + "';";
-  sql_access _sql;
+  // sql_access _sql;
   
-  result = _sql.Query(_sql.GetStatement(query_str));
-  if (result) return AddToTrace("Error: " + _sql.GetLastErrorMsg());
-  if (_sql.GetLastQueryResult().size() < 1) return AddToTrace("no routings in list");
+  result = _sql->Query(_sql->GetStatement(query_str));
+  if (result) return AddToTrace("Error: " + _sql->GetLastErrorMsg());
+  if (_sql->GetLastQueryResult().size() < 1) return AddToTrace("no routings in list");
 
-  for (unsigned int i = 1; i < _sql.GetLastQueryResult().size(); i++) {
-    std::string current_name = _sql.GetLastQueryResult()[i][1];
+  for (unsigned int i = 1; i < _sql->GetLastQueryResult().size(); i++) {
+    std::string current_name = _sql->GetLastQueryResult()[i][1];
     names.push_back(current_name);
   }
   
-  query_result = _sql.GetLastQueryResult();  
+  query_result = _sql->GetLastQueryResult();  
   
   return SQL_OK;
 }
@@ -312,12 +312,12 @@ int vdb::save_routing(const std::string name, std::unique_ptr<device_data> &data
     }
   }
 
-  sql_access _sql;
+  // sql_access _sql;
   std::string query_str = "INSERT INTO " + ROUTINGS_TABLE + "(ip, name, routing) VALUES (?,?,?);";
   std::vector<std::string> args = {data->ip, name, data->marked_for_saving};
-  result = _sql.Query(_sql.BindValues(args, _sql.GetStatement(query_str)));
+  result = _sql->Query(_sql->BindValues(args, _sql->GetStatement(query_str)));
 
-  if (result) return AddToTrace("Error: " + _sql.GetLastErrorMsg());
+  if (result) return AddToTrace("Error: " + _sql->GetLastErrorMsg());
 
   result = clean_marked_routes();
   if (result) return AddToTrace("Could not clean marked routes: ");
@@ -359,7 +359,8 @@ int vdb::update_selected_device_data(std::unique_ptr<device_data> &data) {
                                                             "marked_for_saving"+ 
                                                             "' WHERE selected_router='x';";
                                                             
-  sql_access _sql;
+
+  // sql_access _sql;
   std::vector<std::string> args = {
     data->version, data->source_labels, 
     data->destination_labels, 
@@ -367,9 +368,9 @@ int vdb::update_selected_device_data(std::unique_ptr<device_data> &data) {
     data->marked_for_saving
     };
 
-  result = _sql.Query(_sql.BindValues(args, _sql.GetStatement(query_str)));
+  result = _sql->Query(_sql->BindValues(args, _sql->GetStatement(query_str)));
 
-  if (result) return AddToTrace("Query did not work: " + _sql.GetLastErrorMsg());
+  if (result) return AddToTrace("Query did not work: " + _sql->GetLastErrorMsg());
 
   return SQL_OK;
 }
@@ -386,13 +387,13 @@ int vdb::GetDevices(std::string &device_str) {
   
   int result;
   std::string query_str = "SELECT ip, name, version FROM " + DEVICES_TABLE + ";";
-  sql_access _sql;
+  // sql_access _sql;
 
-  result = _sql.Query(_sql.GetStatement(query_str));
+  result = _sql->Query(_sql->GetStatement(query_str));
   if (result) return AddToTrace("could not get Devices List");
 
   // Compose response string
-  for (auto row : _sql.GetLastQueryResult()) {
+  for (auto row : _sql->GetLastQueryResult()) {
     const auto line = std::format("| {0:<20} | {1:<20} | {2:<20} |\n", row[0], row[1], row[2]);
     device_str += line;
   }
@@ -410,13 +411,13 @@ int vdb::get_saved_routings(std::string &routings_str) {
   // query for saved routings of selected device
   std::string ip_str = m_device.ip;
   std::string query = std::format("SELECT * FROM {0} WHERE ip='{1}';", ROUTINGS_TABLE, ip_str);
-  sql_access _sql;
+  // sql_access _sql;
   
-  result = _sql.Query(_sql.GetStatement(query));
-  if (result) return AddToTrace(std::format("query did not work: {}", _sql.GetLastErrorMsg()));
+  result = _sql->Query(_sql->GetStatement(query));
+  if (result) return AddToTrace(std::format("query did not work: {}", _sql->GetLastErrorMsg()));
 
   // Compose response string
-  for (size_t i = 1; i < _sql.GetLastQueryResult().size(); i++) {
+  for (size_t i = 1; i < _sql->GetLastQueryResult().size(); i++) {
     auto row = m_last_query_result[i];
     const auto line = std::format("IP: {0}\nName: {1}\nRouting:\n{2}\n", row[0], row[1], row[2]);
     routings_str += line;
