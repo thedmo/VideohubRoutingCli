@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.3.0)
+cmake_minimum_required(VERSION 3.26.0)
 project(vhub_cli VERSION 0.1.0)
 
 set(CMAKE_CXX_STANDARD 20)

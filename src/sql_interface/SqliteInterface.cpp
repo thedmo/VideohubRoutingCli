@@ -1,9 +1,7 @@
 #include <SqliteInterface.hpp>
 
-int vdb::last_row_num;
-
 vdb::vdb() {
-  _sql = std::make_shared<sql_access>();
+  _sql = std::make_shared<sql_access>("router");
 
   std::string device_query_str = "CREATE TABLE IF NOT EXISTS " + DEVICES_TABLE + 
                                             " (ip VARCHAR PRIMARY KEY, "+
@@ -27,8 +25,8 @@ vdb::vdb() {
                                       "FOREIGN KEY(ip) REFERENCES " + 
                                       DEVICES_TABLE + "(ip))";
 
-  sqlite3_stmt *routing_table_statement = _sql->GetStatement(routing_query_str);
-  _sql->Query(routing_table_statement);
+  // sqlite3_stmt *routing_table_statement = _sql->GetStatement(routing_query_str);
+  _sql->Query(_sql->GetStatement(routing_query_str));
 }
 
 vdb::~vdb() {
@@ -193,19 +191,6 @@ int vdb::add_to_prepared_routes(int destination, int source) {
   return SQL_OK;
 }
 
-// TODO remove function, can be made with update_device_data function
-// int vdb::clean_prepared_routes() {
-//   int result = check_if_devicetable_empty();
-//   if (result) return AddToTrace("no devices in router table");
-
-//   std::string query_str = "UPDATE " + DEVICES_TABLE + " SET prepared_routes='' WHERE selected_router='x';";
-
-//   // sql_access _sql;
-//   result = _sql->Query(_sql->GetStatement(query_str));
-//   if (result) return AddToTrace("query did not work");
-
-//   return SQL_OK;
-// }
 
 int vdb::mark_route_for_saving(int destination) {
   int result = get_data_of_selected_device();
@@ -337,8 +322,8 @@ int vdb::get_routing_by_name(const std::string name, std::string &routes_str) {
   if (result) return AddToTrace("could not get routings list: ");
 
   for (size_t i = 1; i < query_result.size(); i++) {
-    if (m_last_query_result[i][1] == name) {
-      routes_str = m_last_query_result[i][2];
+    if (query_result[i][1] == name) {
+      routes_str = query_result[i][2];
       return SQL_OK;
     }
   }
@@ -418,7 +403,7 @@ int vdb::get_saved_routings(std::string &routings_str) {
 
   // Compose response string
   for (size_t i = 1; i < _sql->GetLastQueryResult().size(); i++) {
-    auto row = m_last_query_result[i];
+    auto row = _sql->GetLastQueryResult()[i];
     const auto line = std::format("IP: {0}\nName: {1}\nRouting:\n{2}\n", row[0], row[1], row[2]);
     routings_str += line;
     std::cout << line << std::endl;
@@ -447,102 +432,4 @@ std::vector<std::string> vdb::GetErrorMessages() {
   std::vector<std::string> temp = m_err_msgs;
   m_err_msgs.clear();
   return temp;
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// SQL_ACCESS
-
-int sql_access::last_row_num;
-
-sql_access::sql_access() {
-  std::string path = whereami::getExecutablePath().dirname();
-  path = path + "/router.db";
-  sqlite3_open(path.c_str(), &m_db);
-}
-
-sql_access::~sql_access() {
-  sqlite3_close_v2(m_db);
-}
-
-sqlite3_stmt *sql_access::GetStatement(std::string query) {
-  sqlite3_stmt *statement;
-  sqlite3_prepare_v2(m_db, query.c_str(), -1, &statement, 0);
-  return statement;
-}
-
-int sql_access::Query(sqlite3_stmt *statement) {
-  m_last_query_result.clear();
-  int result;
-  last_row_num = 0;
-  std::vector<std::string> row_content;
-
-  do {
-    result = sqlite3_step(statement);
-
-    if (result != SQLITE_ROW) {
-      break;
-    }
-
-    // column names
-    if (m_last_query_result.size() == 0) {
-      row_content.clear();
-      for (int i = 0; i < sqlite3_data_count(statement); i++) {
-        const char *col_name = (const char *)sqlite3_column_name(statement, i);
-        std::string column(col_name);
-
-        row_content.push_back(column);
-      }
-      m_last_query_result.push_back(row_content);
-    }
-
-    row_content.clear();
-    // Fields
-    for (int j = 0; j < sqlite3_data_count(statement); j++) {
-      auto field = (const char *)(sqlite3_column_text(statement, j)) ? (const char *)(sqlite3_column_text(statement, j)) : "";
-
-      row_content.push_back(field);
-    }
-
-    m_last_query_result.push_back(row_content);
-    last_row_num++;
-  } while (result != SQLITE_DONE);
-
-  result = sqlite3_finalize(statement);
-  if (result != SQLITE_OK) return 1;
-
-  return SQL_ACCESS_OK;
-}
-
-
-sqlite3_stmt *sql_access::BindValues(std::vector<std::string> args, sqlite3_stmt *statement) {
-  for (size_t i = 0; i < args.size(); i++) {
-    sqlite3_bind_text(statement, i + 1, args[i].c_str(), -1, SQLITE_TRANSIENT);
-  }
-
-  return statement;
-}
-
-
-QueryResult sql_access::GetLastQueryResult() {
-  return m_last_query_result;
-}
-
-int sql_access::GetLastRowNum() {
-  return last_row_num;
-}
-
-std::string sql_access::GetLastErrorMsg(){
-  return sqlite3_errmsg(m_db);
 }
