@@ -78,9 +78,11 @@ QueryResult sql_access::GetLastQueryResult() {
   return m_last_query_result;
 }
 
+
 int sql_access::GetLastRowNum() {
   return last_row_num;
 }
+
 
 std::string sql_access::GetLastErrorMsg(){
   return sqlite3_errmsg(m_db);

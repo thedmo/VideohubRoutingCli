@@ -22,16 +22,12 @@ public:
   sqlite3_stmt *GetStatement(std::string query);
   int Query(sqlite3_stmt *statement);
 
-  // TODO test
   sqlite3_stmt *BindValues(std::vector<std::string> args, sqlite3_stmt *statement);
 
-  // TODO test
   QueryResult GetLastQueryResult();
 
-  // TODO test
   int GetLastRowNum();
 
-  // TODO test
   std::string GetLastErrorMsg();
 
 private:
