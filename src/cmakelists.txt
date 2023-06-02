@@ -1,25 +1,21 @@
-add_subdirectory(sql_interface)
+add_subdirectory(RouterApi)
 
 set(lib_sources
-    RouterApi.cpp
     cli.cpp
-    TelnetClient.cpp
     )
 
 set(lib_includes
     "./"
-    # "./sql_interface"
-    # "./sql_access"
-    "./headers/"
     )
 
 add_library(${main_lib_name} STATIC 
-    ${lib_sources} )
-
-target_link_libraries(${main_lib_name} PUBLIC
-    sql_interface_lib
-    ws2_32 
-)
+    ${lib_sources} 
+    )
 
 target_include_directories(${main_lib_name} PUBLIC
-    ${lib_includes} )
+    ${lib_includes} 
+    )
+
+target_link_libraries(${main_lib_name} PUBLIC
+    RouterApi_lib
+    )

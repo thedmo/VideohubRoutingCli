@@ -13,5 +13,4 @@ target_link_libraries(sql_interface_lib PUBLIC
 target_include_directories(sql_interface_lib PUBLIC
         "./"
         "../headers/"
-        # "../sql_access"
         )
