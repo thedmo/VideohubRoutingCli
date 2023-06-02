@@ -10,5 +10,5 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(catch2)
 
 add_executable(tests sqltests.cpp)
-target_link_libraries(tests PRIVATE Catch2::Catch2 ${main_lib_name})
+target_link_libraries(tests PRIVATE Catch2::Catch2 cli_lib)
 target_include_directories(tests PRIVATE ../src)
