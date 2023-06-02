@@ -3,5 +3,7 @@ bin
 lib
 
 .vscode
+.vs
 
 *.db
+/CMakeSettings.json
