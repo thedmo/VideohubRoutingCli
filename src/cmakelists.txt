@@ -1,21 +1,2 @@
 add_subdirectory(RouterApi)
-
-set(lib_sources
-    cli.cpp
-    )
-
-set(lib_includes
-    "./"
-    )
-
-add_library(${main_lib_name} STATIC 
-    ${lib_sources} 
-    )
-
-target_include_directories(${main_lib_name} PUBLIC
-    ${lib_includes} 
-    )
-
-target_link_libraries(${main_lib_name} PUBLIC
-    RouterApi_lib
-    )
+add_subdirectory(cli)

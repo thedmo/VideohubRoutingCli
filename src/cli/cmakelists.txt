@@ -1,0 +1,21 @@
+set(lib_sources
+    cli.cpp
+    )
+
+set(lib_includes
+    "./"
+    )
+
+link_directories(${CMAKE_SOURCE_DIR}/lib)
+
+add_library(cli_lib STATIC 
+    ${lib_sources} 
+    )
+
+target_include_directories(cli_lib PUBLIC
+    ${lib_includes} 
+    )
+
+target_link_libraries(cli_lib PUBLIC
+    RouterApi_lib
+    )

@@ -18,8 +18,6 @@ target_include_directories(sql_interface_lib PUBLIC
 
 install(
         TARGETS RouterApi_lib 
-        RUNTIME DESTINATION RouterApi
+        LIBRARY DESTINATION lib/RouterApi
         )
-
-install(FILES RouterApi.hpp DESTINATION RouterApi)
 

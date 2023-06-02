@@ -12,10 +12,9 @@ include(FetchContent)
 enable_testing()
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
-set(CMAKE_INSTALL_PREFIX ${CMAKE_SOURCE_DIR}/bin)
+set(CMAKE_INSTALL_PREFIX ${CMAKE_SOURCE_DIR})
 
 set(exec_name videohub_cli )
-set(main_lib_name lib_vhub )
 
 add_subdirectory(src)
 add_subdirectory(app)
