@@ -15,3 +15,11 @@ target_include_directories(sql_interface_lib PUBLIC
         "./"
         "../headers/"
         )
+
+install(
+        TARGETS RouterApi_lib 
+        RUNTIME DESTINATION RouterApi
+        )
+
+install(FILES RouterApi.hpp DESTINATION RouterApi)
+
