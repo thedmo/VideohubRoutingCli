@@ -1,11 +1,13 @@
 #ifndef TELNETCLIENT
 #define TELNETCLIENT
 
+#define _WINSOCK_DEPRECATED_NO_WARNINGS
+#include <WinSock2.h>
+#pragma comment(lib, "WS2_32.lib")
+
 #include <ws2tcpip.h>
 #include <string>
 #include <vector>
-
-
 
 class TelnetClient {
 public:
