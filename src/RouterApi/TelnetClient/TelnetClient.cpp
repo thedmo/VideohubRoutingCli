@@ -2,6 +2,14 @@
 
 
 // TODO extend library with Curl for crosscompatibility
+
+/// <summary>
+/// Creates a new Connection to a Server and connects to it.
+/// </summary>
+/// <param name="ip">IPv4 Address as string</param>
+/// <param name="port">portnumber as int</param>
+/// <param name="init_response">string to store initial response from server</param>
+/// <param name="result">int for errorcode</param>
 TelnetClient::TelnetClient(std::string ip, int port, std::string &init_response, int &result)
     : m_ip_address(ip), m_port(port)
 {
