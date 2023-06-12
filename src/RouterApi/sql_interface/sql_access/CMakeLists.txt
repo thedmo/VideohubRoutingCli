@@ -51,3 +51,24 @@ target_include_directories(sql_access_lib PUBLIC
     ${whereami_SOURCE_DIR}/src
     ${sqlite3_SOURCE_DIR}
     )
+
+
+
+# install library files
+install(TARGETS 
+        sqlite3_lib
+        whereami_lib
+        sql_access_lib
+        EXPORT SqlLib
+        ARCHIVE DESTINATION ${COMMON_LIB_DIR}/libs
+        LIBRARY DESTINATION ${COMMON_LIB_DIR}/libs)
+
+#install header files
+set(SQLACCESS_HEADERS 
+        sql_access.hpp
+        ${sqlite3_SOURCE_DIR}/sqlite3.h
+        ${whereami_SOURCE_DIR}/src/whereami++.h
+)
+
+install(FILES ${SQLACCESS_HEADERS}
+        DESTINATION ${COMMON_LIB_DIR}/includes)

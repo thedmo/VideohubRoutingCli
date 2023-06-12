@@ -14,3 +14,19 @@ target_include_directories(sql_interface_lib PUBLIC
         "./"
         "../headers/"
         )
+
+# install library files
+install(TARGETS 
+sql_interface_lib
+EXPORT SqlLib
+ARCHIVE DESTINATION ${COMMON_LIB_DIR}/libs
+LIBRARY DESTINATION ${COMMON_LIB_DIR}/libs
+)
+
+#install header files
+set(SQLITEINTERFACE_HEADERS 
+        SqliteInterface.hpp
+)
+
+install(FILES ${SQLITEINTERFACE_HEADERS} 
+DESTINATION ${COMMON_LIB_DIR}/includes)

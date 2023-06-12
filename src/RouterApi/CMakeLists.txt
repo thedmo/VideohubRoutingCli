@@ -16,8 +16,21 @@ target_include_directories(sql_interface_lib PUBLIC
         "../headers/"
         )
 
-install(
-        TARGETS RouterApi_lib 
-        LIBRARY DESTINATION lib/RouterApi
-        )
 
+# install library files
+install(TARGETS 
+        RouterApi_lib 
+        TelnetClient_lib
+        EXPORT RouterApiLib
+        ARCHIVE DESTINATION ${COMMON_LIB_DIR}/libs
+        LIBRARY DESTINATION ${COMMON_LIB_DIR}/libs)
+
+#install header files
+set(ROUTER_API_HEADERS 
+        RouterApi.hpp 
+        headers/device_data.hpp
+        TelnetClient/TelnetClient.hpp
+)
+
+install(FILES ${ROUTER_API_HEADERS}
+        DESTINATION ${COMMON_LIB_DIR}/includes)
