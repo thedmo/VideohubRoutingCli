@@ -37,7 +37,7 @@ add_custom_target(run_tests
 
 execute_process (
     COMMAND powershell.exe -ExecutionPolicy Bypass -File "${CMAKE_SOURCE_DIR}/scripts/GetSimulator.ps1"
-        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/build
+        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/bin
     RESULT_VARIABLE result
     OUTPUT_VARIABLE output
 )
