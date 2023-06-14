@@ -9,6 +9,23 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(catch2)
 
-add_executable(tests sqltests.cpp)
+set(TestIntegrationFiles 
+    "TelnetClientTests.cpp" 
+    "sqltests.cpp"
+)
+
+add_executable(tests ${TestIntegrationFiles})
 target_link_libraries(tests PRIVATE Catch2::Catch2 cli_lib)
 target_include_directories(tests PRIVATE ../src)
+
+execute_process (
+    COMMAND powershell.exe -ExecutionPolicy Bypass -File "${CMAKE_SOURCE_DIR}/scripts/GetSimulator.ps1"
+        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/bin
+    RESULT_VARIABLE result
+    OUTPUT_VARIABLE output
+)
+
+set(MOCK_PATH ${CMAKE_SOURCE_DIR}/bin/VideohubSimulator/debug)
+
+include_directories(${CMAKE_SOURCE_DIR}/Testing)
+configure_file(config.h.in ${CMAKE_SOURCE_DIR}/Testing/config.h)

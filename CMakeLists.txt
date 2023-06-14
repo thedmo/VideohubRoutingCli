@@ -35,14 +35,3 @@ add_custom_target(run_tests
     COMMENT "Running tests"
 )
 
-execute_process (
-    COMMAND powershell.exe -ExecutionPolicy Bypass -File "${CMAKE_SOURCE_DIR}/scripts/GetSimulator.ps1"
-        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/bin
-    RESULT_VARIABLE result
-    OUTPUT_VARIABLE output
-)
-if(result EQUAL 0)
-    message("Batch script executed successfully.")
-else()
-    message(FATAL_ERROR "Failed to execute the batch script.")
-endif()
