@@ -1,5 +1,4 @@
-$filePath = ".\VideohubSimulator"
-$targetFile = "BmdVideoHub.exe"
+$filePath = ".\VideohubSimulator\debug\BmdVideoHub.exe"
 $zipName = "VideohubSimulator_v1.0.1_debug.zip"
 $url = "https://github.com/thedmo/VideoHub-Simulator/releases/download/v1.0.1/debug.zip"
 
