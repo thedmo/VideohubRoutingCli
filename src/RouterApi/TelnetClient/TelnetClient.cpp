@@ -32,6 +32,11 @@ TelnetClient::TelnetClient(std::string ip, int port, std::string &init_response,
 
 TelnetClient::~TelnetClient() { CloseConnection(); }
 
+/// <summary>
+/// Send Message to Server and stores response in member variable accessible via GetLastDataDump()
+/// </summary>
+/// <param name="msg">message to be sent</param>
+/// <returns>result as int</returns>
 int TelnetClient::SendMsgToServer(std::string msg) {
 
     send(m_sock, msg.c_str(), msg.size(), 0);
@@ -51,6 +56,11 @@ int TelnetClient::SendMsgToServer(std::string msg) {
     return 0;
 }
 
+/// <summary>
+/// Awaits response from server and stores it in response
+/// </summary>
+/// <param name="response">handle to store response in</param>
+/// <returns>result as int</returns>
 int TelnetClient::ReceiveMsgFromServer(std::string &response)
 {
     Sleep(100);
@@ -70,6 +80,12 @@ int TelnetClient::ReceiveMsgFromServer(std::string &response)
     return 0;
 }
 
+/// <summary>
+/// Changes IP Address of the Client and reconnects to the server
+/// </summary>
+/// <param name="newAddress">IPv4 address as string</param>
+/// <param name="init_response">handle to store the initial response of the server</param>
+/// <returns>result as int</returns>
 int TelnetClient::ChangeIpAddress(std::string newAddress, std::string &init_response)
 {
 
@@ -108,10 +124,22 @@ int TelnetClient::ChangeIpAddress(std::string newAddress, std::string &init_resp
     return TELNET_OK;
 }
 
+/// <summary>
+/// Returns the current IP Address of the Client
+/// </summary>
+/// <returns>ip address as std::string</returns>
 std::string TelnetClient::GetIp() { return m_ip_address; }
 
+/// <summary>
+/// Returns the last response from the server
+/// </summary>
+/// <returns>response as std::string</returns>
 std::string TelnetClient::GetLastDataDump() { return m_last_data_dump; }
 
+/// <summary>
+/// Connects to the server
+/// </summary>
+/// <returns>result as int</returns>
 int TelnetClient::OpenConnection()
 {
     WSAData data;
@@ -154,6 +182,10 @@ int TelnetClient::OpenConnection()
     return TELNET_OK;
 }
 
+/// <summary>
+/// Closes the connection to the server and cleanup
+/// </summary>
+/// <returns></returns>
 int TelnetClient::CloseConnection()
 {
     closesocket(m_sock);
@@ -161,10 +193,18 @@ int TelnetClient::CloseConnection()
     return 0;
 }
 
+/// <summary>
+/// Adds a message to the error message vector when stuff gets wrong
+/// </summary>
+/// <param name="s">message to be added</param>
 void TelnetClient::AddToTrace(std::string s) {
     m_err_msgs.push_back("TELNET_CLIENT: " + s);
 }
 
+/// <summary>
+/// Returns vector with all error messages
+/// </summary>
+/// <returns>Collected messages as std::vector<std::string></returns>
 std::vector<std::string> TelnetClient::GetErrorMessages() {
     std::vector<std::string> temp = m_err_msgs;
     m_err_msgs.clear();
