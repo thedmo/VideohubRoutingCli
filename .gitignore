@@ -9,3 +9,4 @@ out
 
 *.db
 /CMakeSettings.json
+/Testing/config.h
