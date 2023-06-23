@@ -12,6 +12,7 @@ FetchContent_MakeAvailable(catch2)
 set(TestIntegrationFiles 
     "TelnetClientTests.cpp" 
     "sql_access_tests.cpp"
+    "sql_interface_tests.cpp"
 )
 
 add_executable(tests ${TestIntegrationFiles})
