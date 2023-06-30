@@ -1,8 +1,4 @@
-//#define CATCH_CONFIG_MAIN
-
 #include <catch2/catch.hpp>
-//#include <filesystem>
-//#include <config.h>
 
 #include <TelnetClient.hpp>
 #include <iostream>
