@@ -109,7 +109,8 @@ int vdb::insert_device_into_db(std::unique_ptr<device_data> &data) {
   int result = _sql->Query(_sql->BindValues(args, _sql->GetStatement(query_str)));
 
   if (result) {
-    AddToTrace("could not insert new device into table");
+      
+    AddToTrace("could not insert new device into table: " + _sql->GetLastErrorMsg());
     return 1;
   }
 
