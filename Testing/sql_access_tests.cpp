@@ -31,12 +31,11 @@ sql_access initializeDatabase() {
 }
 
 /// <summary>
-/// Deletes test database from filesystem
+/// Drops test table from database for clean start of next test
 /// </summary>
 void cleanUpDatabase() {
 	sql_access db(TEST_DB_NAME);
-	auto query = "DROP DATABASE IF EXISTS " + TEST_DB_NAME;
-	
+	std::string query = "DROP TABLE " + TEST_DB_NAME;
 	db.Query(db.GetStatement(query));
 }
 
