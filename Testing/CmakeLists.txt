@@ -13,7 +13,7 @@ set(TestIntegrationFiles
     "TelnetClientTests.cpp" 
     "sql_access_tests.cpp"
     "sql_interface_tests.cpp"
-)
+ "sql_access_handler_tests.cpp")
 
 add_executable(tests ${TestIntegrationFiles})
 target_link_libraries(tests PRIVATE Catch2::Catch2 cli_lib)
