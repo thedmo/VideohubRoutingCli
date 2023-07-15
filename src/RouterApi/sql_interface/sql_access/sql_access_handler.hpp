@@ -1,16 +1,157 @@
 #pragma once
 
 #include <sql_access.hpp>
+#include <istream>
+#include <iostream>
+
+
+using namespace sqlAccess;
 
 namespace SqliteHandler {
 	template<typename T>
 	using DataContainer = std::vector<T>;
 
+	class SqlCom {
+	private:
+		static inline sqlite3* m_database;
+		//static inline sql_access sql;
+
+	public:
+		/// <summary>
+		/// Connects to database located at same location as executable
+		/// </summary>
+		/// <param name="dbName">name of the database</param>
+		/// <param name="db">database object</param>
+		/// <returns>sqlite errorcode. 0 = SQLITE_OK</returns>
+		static int ConnectToDatabase(const std::string dbName) {
+			int result = 0;
+			std::string path = whereami::getExecutablePath().dirname();
+			path = path + "/" + dbName + ".db";
+			result = sqlite3_open(path.c_str(), &m_database);
+
+			return result;
+		}
+
+		/// <summary>
+		/// Close connection to database
+		/// </summary>
+		/// <param name="db">raw pointer of databasse to be closed</param>
+		/// <returns>sqlite errorcode. 0 = SQLITE_OK</returns>
+		static int CloseConnection() {
+			return sqlite3_close_v2(m_database);
+		}
+
+		static int Cleanup(sqlite3_stmt* statement) {
+			int result;
+			result = sqlite3_finalize(statement);
+			if (result) return 1;
+
+			return sqlite3_close_v2(m_database);
+		}
+
+	private:
+		/// <summary>
+		/// Query Database with prepared statement
+		/// </summary>
+		/// <param name="statement">prepared statement</param>
+		/// <returns>sqlite errcode. 0 = SQLITE_OK</returns>
+		static int query(sqlite3_stmt* statement, int& resultRowCount,  std::vector<std::string>& stringVec) {
+			resultRowCount = 0;
+
+			while (sqlite3_step(statement) == SQLITE_ROW) {
+
+				resultRowCount++;
+				int columnCount = sqlite3_column_count(statement);
+				if (columnCount < 1)
+				{
+					continue;
+				}
+
+				if (sqlite3_column_type(statement, 1) == SQLITE_TEXT)
+				{
+					auto chars = (char*)sqlite3_column_text(statement, 1);
+
+					std::string str(chars);
+
+					stringVec.push_back(str);
+				}
+			}
+			return sqlite3_finalize(statement);
+		}
+
+	public:
+		/// <summary>
+		/// Query database with prepared statement
+		/// </summary>
+		/// <param name="dbName">name of database</param>
+		/// <param name="statement">prepared statement</param>
+		/// <param name="resultRowCount">reference to int to retrieve rowcount of result set</param>
+		/// <returns>sqlite errcode. 0 = SQLITE_OK</returns>
+		static int Query(sqlite3_stmt* statement, int& rowCount) {
+			std::vector<std::string> tempStringVec;
+			return query(statement, rowCount, tempStringVec);
+		}
+
+		/// <summary>
+		/// Query database with prepared statement
+		/// </summary>
+		/// <param name="dbName">name of database</param>
+		/// <param name="statement">prepared statement</param>
+		/// <param name="stringVec">reference to vector to retrieve data as strings</param>
+		/// <returns>sqlite errcode. 0 = SQLITE_OK</returns>
+		static int Query(sqlite3_stmt* statement, std::vector<std::string>& stringVec) {
+			int tempInt;
+			return query(statement, tempInt, stringVec);
+		}
+
+		/// <summary>
+		/// Query database with prepared statement
+		/// </summary>
+		/// <param name="dbName">name of database</param>
+		/// <param name="statement">prepared statement</param>
+		/// <returns>sqlite errcode. 0 = SQLITE_OK</returns>
+		static int Query(sqlite3_stmt* statement) {
+			int tempInt;
+			std::vector<std::string> tempStringVec;
+
+			return query(statement, tempInt, tempStringVec);
+		}
+
+	private:
+		static sqlite3_stmt* getStatement(const std::string query, int& result) {
+			sqlite3_stmt* statement;
+			result = sqlite3_prepare_v2(m_database, query.c_str(), -1, &statement, 0);
+			return statement;
+		}
+
+	public:
+		/// <summary>
+		/// Get Statement for query string
+		/// </summary>
+		/// <param name="dbName">name of database statement is for</param>
+		/// <param name="queryStr">string with sql query</param>
+		/// <returns>sqlite3 statement pointer</returns>
+		static sqlite3_stmt* GetStatement(/*sqlite3* database, */std::string queryStr) {
+			int result;
+			return getStatement(queryStr, result);
+		}
+
+		/// <summary>
+		/// Get Statement for query string
+		/// </summary>
+		/// <param name="dbName">name of database statement is for</param>
+		/// <param name="queryStr">string with sql query</param>
+		/// <returns>sqlite3 statement pointer</returns>
+		static sqlite3_stmt* GetStatement(std::string queryStr, int& result) {
+			return getStatement(queryStr, result);
+		}
+	};
+
 	// Serialize containers to insert the into database
 	class DataSerializer {
 	public:
 		// Vector with strings
-		static std::vector<char> serializeVectorString(const std::vector<std::string>& vec) {
+		static std::vector<char> SerializeVectorString(const std::vector<std::string>& vec) {
 			std::string serializedData;
 			for (const std::string& str : vec) {
 				serializedData += str + '\n';  // Use a newline character as a delimiter
@@ -19,19 +160,30 @@ namespace SqliteHandler {
 		}
 
 		// Vector with ints
-		static std::vector<char> serializeVectorInt(const std::vector<int>& vec) {
+		static std::vector<char> SerializeVectorInt(const std::vector<int>& vec) {
 			const char* buffer = reinterpret_cast<const char*>(vec.data());
 			const size_t size = vec.size() * sizeof(int);
 			return std::vector<char>(buffer, buffer + size);
 		}
 
-		// Vector with tuples with ints
-		static std::vector<char> serializeVectorTuple(const std::vector<std::tuple<int, int>>& vec) {
+		// Vector with pairs of ints
+		static std::vector<char> SerializeVectorTuple(const std::vector<std::tuple<int, int>>& vec) {
 			std::vector<char> serializedData;
 			serializedData.reserve(vec.size() * sizeof(std::tuple<int, int>));
 			for (const auto& tuple : vec) {
 				const char* tupleData = reinterpret_cast<const char*>(&tuple);
-				serializedData.insert(serializedData.end(), tupleData, tupleData + sizeof(std::tuple<int, int>));
+				serializedData.insert(serializedData.end(), tupleData, tupleData + sizeof(std::pair<int, int>));
+			}
+			return serializedData;
+		}
+
+		// Vector with pairs of ints
+		static std::vector<char> SerializeVectorPair(const std::vector<std::pair<int, int>>& vec) {
+			std::vector<char> serializedData;
+			serializedData.reserve(vec.size() * sizeof(std::pair<int, int>));
+			for (const auto& pair : vec) {
+				const char* pairData = reinterpret_cast<const char*>(&pair);
+				serializedData.insert(serializedData.end(), pairData, pairData + sizeof(std::pair<int, int>));
 			}
 			return serializedData;
 		}
@@ -41,7 +193,7 @@ namespace SqliteHandler {
 	class DataDeserializer {
 	public:
 		// vector<string>
-		static std::vector<std::string> deserializeVectorString(const std::vector<char>& serializedData) {
+		static std::vector<std::string> DeserializeVectorString(const std::vector<char>& serializedData) {
 			std::vector<std::string> deserializedData;
 			std::string str(serializedData.begin(), serializedData.end());
 			std::istringstream iss(str);
@@ -53,22 +205,23 @@ namespace SqliteHandler {
 		}
 
 		// vector<int>
-		static std::vector<int> deserializeVectorInt(const std::vector<char>& serializedData) {
+		static std::vector<int> DeserializeVectorInt(const std::vector<char>& serializedData) {
 			const int* buffer = reinterpret_cast<const int*>(serializedData.data());
 			const size_t size = serializedData.size() / sizeof(int);
 			return std::vector<int>(buffer, buffer + size);
 		}
 
-		// vector<tuple<int,int>>
-		static std::vector<std::tuple<int, int>> deserializeVectorTuple(const std::vector<char>& serializedData) {
-			std::vector<std::tuple<int, int>> deserializedData;
+		// Deserialization for vector<pair<int, int>>
+		static std::vector<std::pair<int, int>> deserializeVectorPair(const std::vector<char>& serializedData) {
+			std::vector<std::pair<int, int>> deserializedData;
 			const char* data = serializedData.data();
-			const size_t size = serializedData.size();
-			const size_t tupleSize = sizeof(std::tuple<int, int>);
-			if (size % tupleSize == 0) {
-				for (size_t i = 0; i < size; i += tupleSize) {
-					const std::tuple<int, int>* tuple = reinterpret_cast<const std::tuple<int, int>*>(data + i);
-					deserializedData.push_back(*tuple);
+			const size_t dataSize = serializedData.size();
+			const size_t pairSize = sizeof(std::pair<int, int>);
+			if (dataSize % pairSize == 0) {
+				const std::pair<int, int>* pairs = reinterpret_cast<const std::pair<int, int>*>(data);
+				const size_t numPairs = dataSize / pairSize;
+				for (size_t i = 0; i < numPairs; ++i) {
+					deserializedData.push_back(pairs[i]);
 				}
 			}
 			return deserializedData;
@@ -76,97 +229,103 @@ namespace SqliteHandler {
 	};
 
 	// Bind values
-	class ValueBinder : DataSerializer{
+	class ValueBinder : private DataSerializer {
 	public:
 		// Bind an integer value
-		static void bindValue(sqlite3_stmt* stmt, int index, int value) {
-			sqlite3_bind_int(stmt, index, value);
+		static int Bind(sqlite3_stmt* stmt, int index, int value) {
+			return sqlite3_bind_int(stmt, index, value);
 		}
 
 		// Bind a string value
-		static void bindValue(sqlite3_stmt* stmt, int index, const std::string& value) {
-			sqlite3_bind_text(stmt, index, value.c_str(), -1, SQLITE_STATIC);
+		static int Bind(sqlite3_stmt* stmt, int index, const std::string& value) {
+			return sqlite3_bind_text(stmt, index, value.c_str(), -1, SQLITE_STATIC);
 		}
 
 		// Bind a vector of strings
-		static void bindValue(sqlite3_stmt* stmt, int index, const std::vector<std::string>& container) {
-			auto serializedData = serializeVectorString(container);
+		static int Bind(sqlite3_stmt* stmt, int index, const std::vector<std::string>& container) {
+			auto serializedData = SerializeVectorString(container);
 
-			sqlite3_bind_blob(stmt, index, serializedData.data(), static_cast<int>(serializedData.size()), SQLITE_TRANSIENT);
+			return sqlite3_bind_blob(stmt, index, serializedData.data(), static_cast<int>(serializedData.size()), SQLITE_TRANSIENT);
 		}
 
 		// Bind a vector of integers
-		static void bindValue(sqlite3_stmt* stmt, int index, const std::vector<int>& container) {
-			auto serializedData = serializeVectorInt(container);
+		static int Bind(sqlite3_stmt* stmt, int index, const std::vector<int>& container) {
+			auto serializedData = SerializeVectorInt(container);
 
-			sqlite3_bind_blob(stmt, index, serializedData.data(), static_cast<int>(serializedData.size()), SQLITE_TRANSIENT);
+			return sqlite3_bind_blob(stmt, index, serializedData.data(), static_cast<int>(serializedData.size()), SQLITE_TRANSIENT);
 		}
 
-		// Bind a vector of tuples of two integers
-		static void bindValue(sqlite3_stmt* stmt, int index, const std::vector<std::tuple<int, int>>& container) {
-			auto serializedData = serializeVectorTuple(container);
+		// Bind a vector of pair of two integers
+		static int Bind(sqlite3_stmt* stmt, int index, const std::vector<std::pair<int, int>>& container) {
+			auto serializedData = SerializeVectorPair(container);
 
-			sqlite3_bind_blob(stmt, index, serializedData.data(), static_cast<int>(serializedData.size()), SQLITE_TRANSIENT);
+			return sqlite3_bind_blob(stmt, index, serializedData.data(), static_cast<int>(serializedData.size()), SQLITE_TRANSIENT);
 		}
 	};
 
 
-	class SqliteDataSetter : ValueBinder {
+	class DataSetter : private ValueBinder, private SqlCom {
 	public:
-		static int insertRow(const std::string db_name, const std::string& tableName, const std::string& rowKeyColumnName, std::string rowKeyValue) {
+
+		DataSetter() {};
+		static int InsertRow(const std::string dbName, const std::string& table, const std::string& column, std::string value) {
 			int result;
-			sql_access db(db_name);
-			//std::string query = "INSERT INTO " + tableName + " (" + rowKeyColumnName + ") VALUES ('" + rowKeyValue + "')";
+			int rowCount;
+			std::string queryStr;
+			auto database = SqlCom::ConnectToDatabase(dbName);
 
-			std::string query = "INSERT INTO " + tableName + " (" + rowKeyColumnName + ") VALUES (?)";
-			auto statement = db.GetStatement(query);
+			queryStr = "INSERT OR IGNORE INTO " + table + " (" + column + ") VALUES (?)";
+			auto statement = SqlCom::GetStatement(queryStr);
 
-			bindValue(statement, 1, rowKeyValue);
+			Bind(statement, 1, value);
 
-			result = db.Query(statement);
-			if (result != 0)
-			{
-				return 1;
-			}
+			result = SqlCom::Query(statement);
+			if (result) return 1;
 
-			return 0;
+			return SqlCom::CloseConnection();
 		}
 
-		static int removeRow(const std::string db_name, const std::string& tableName, const std::string& rowKeyColumnName, std::string rowKeyValue) {
+		static int RemoveRow(const std::string dbName, const std::string& tableName, const std::string& rowKeyColumnName, std::string rowKeyValue) {
 			int result;
-			sql_access db(db_name);
+			auto database = SqlCom::ConnectToDatabase(dbName);
+
 			std::string query = "DELETE FROM " + tableName + " WHERE " + rowKeyColumnName + " = ?";
 
-			auto statement = db.GetStatement(query);
+			auto statement = SqlCom::GetStatement(query);
 
-			bindValue(statement, 1, rowKeyValue);
+			Bind(statement, 1, rowKeyValue);
 
-			result = db.Query(statement);
-			if (result != 0)
-			{
-				return 1;
-			}
-
-			return 0;
+			return SqlCom::Query(statement);
 		}
+
+	private:
+		// gibt kein Fehler zurück wenn typ nicht übereinstimmt (TODO: Funktionalität für column typecheck einbauen)
 
 		/// <summary>
 		/// Helperfunction that Stores Data into a Sqlite database. deduces datatype
 		/// </summary>
 		/// <returns>int, should be 0</returns>
 		template <typename ValueType, typename IdentifierType>
-		static int storeDataHelper(const std::string db_name, const std::string& tableName, const std::string& valueColumnName, const ValueType& value,
+		static int storeData(const std::string dbName, const std::string& tableName, const std::string& valueColumnName, const ValueType& value,
 			const std::string& identifierColumnName, const IdentifierType& identifierValue) {
 
 			int result;
-			sql_access db(db_name);
+			auto database = SqlCom::ConnectToDatabase(dbName);
 			std::string query = "UPDATE " + tableName + " SET " + valueColumnName + " = ? WHERE " + identifierColumnName + " = ?";
 
-			auto stmt = db.GetStatement(query);
-			bindValue(stmt, 1, value);  // Bind the value
-			bindValue(stmt, 2, identifierValue);  // Bind the identifier value
+			auto stmt = SqlCom::GetStatement(query, result);
+			if (result) return 1;
 
-			return result = db.Query(stmt);
+			result = Bind(stmt, 1, value);  // Bind the value
+			if (result) return 1;
+
+			result = Bind(stmt, 2, identifierValue);  // Bind the identifier value
+			if (result) return 1;
+
+			result = SqlCom::Query(stmt);
+			if (result) return 1;
+
+			return SqlCom::CloseConnection(/*database*/);
 		}
 
 	public:
@@ -177,9 +336,9 @@ namespace SqliteHandler {
 		/// </summary>
 		/// <param name="value">string</param>
 		/// <returns>int, should be 0</returns>
-		static int storeData(const std::string db_name, const std::string& tableName, const std::string& valueColumnName, const std::string& value,
+		static int StoreData(const std::string dbName, const std::string& tableName, const std::string& valueColumnName, const std::string& value,
 			const std::string& identifierColumnName, const std::string& identifierValue) {
-			return storeDataHelper(db_name, tableName, valueColumnName, value, identifierColumnName, identifierValue);
+			return storeData(dbName, tableName, valueColumnName, value, identifierColumnName, identifierValue);
 		}
 
 		/// <summary>
@@ -187,9 +346,9 @@ namespace SqliteHandler {
 		/// </summary>
 		/// <param name="value">int</param>
 		/// <returns>int, should be 0</returns>
-		static int storeData(const std::string db_name, const std::string& tableName, const std::string& valueColumnName, int value,
+		static int StoreData(const std::string dbName, const std::string& tableName, const std::string& valueColumnName, int value,
 			const std::string& identifierColumnName, const std::string& identifierValue) {
-			return storeDataHelper(db_name, tableName, valueColumnName, value, identifierColumnName, identifierValue);
+			return storeData(dbName, tableName, valueColumnName, value, identifierColumnName, identifierValue);
 		}
 
 		/// <summary>
@@ -197,9 +356,9 @@ namespace SqliteHandler {
 		/// </summary>
 		/// <param name="value">vector(string)</param>
 		/// <returns>int, should be 0</returns>
-		static int storeData(const std::string db_name, const std::string& tableName, const std::string& valueColumnName, const std::vector<std::string>& value,
+		static int StoreData(const std::string dbName, const std::string& tableName, const std::string& valueColumnName, const std::vector<std::string>& value,
 			const std::string& identifierColumnName, const std::string& identifierValue) {
-			return storeDataHelper(db_name, tableName, valueColumnName, value, identifierColumnName, identifierValue);
+			return storeData(dbName, tableName, valueColumnName, value, identifierColumnName, identifierValue);
 		}
 
 		/// <summary>
@@ -207,25 +366,29 @@ namespace SqliteHandler {
 		/// </summary>
 		/// <param name="value">vector(int)</param>
 		/// <returns>int, should be 0</returns>
-		static int storeData(const std::string db_name, const std::string& tableName, const std::string& valueColumnName, const std::vector<int>& value,
+		static int StoreData(const std::string dbName, const std::string& tableName, const std::string& valueColumnName, const std::vector<int>& value,
 			const std::string& identifierColumnName, const std::string& identifierValue) {
-			return storeDataHelper(db_name, tableName, valueColumnName, value, identifierColumnName, identifierValue);
+			return storeData(dbName, tableName, valueColumnName, value, identifierColumnName, identifierValue);
 		}
 
 		/// <summary>
 		/// Stores data into database
 		/// </summary>
-		/// <param name="value">tuple(int,int)</param>
+		/// <param name="value">pair(int,int)</param>
 		/// <returns>int, should be 0</returns>
-		static int storeData(const std::string db_name, const std::string& tableName, const std::string& valueColumnName,
-			const std::vector<std::tuple<int, int>>& value,
+		static int StoreData(const std::string dbName, const std::string& tableName, const std::string& valueColumnName,
+			const std::vector<std::pair<int, int>>& value,
 			const std::string& identifierColumnName, const std::string& identifierValue) {
-			return storeDataHelper(db_name, tableName, valueColumnName, value, identifierColumnName, identifierValue);
+			return storeData(dbName, tableName, valueColumnName, value, identifierColumnName, identifierValue);
 		}
 	};
 
 	// Retrieve Data from database
-	class SqliteDataGetter : sql_access, DataDeserializer, ValueBinder {
+	class DataGetter : private SqlCom, private DataDeserializer, private ValueBinder {
+
+	public:
+		DataGetter() {};
+
 	private:
 		// int
 		static int retrieveData(sqlite3_stmt* statement, int& data, int columnIndex) {
@@ -235,7 +398,7 @@ namespace SqliteHandler {
 
 		// string
 		static int retrieveData(sqlite3_stmt* statement, std::string& data, int columnIndex) {
-			const unsigned char * textData = sqlite3_column_text(statement, columnIndex);
+			const unsigned char* textData = sqlite3_column_text(statement, columnIndex);
 			if (textData) {
 				data = std::string(reinterpret_cast<const char*>(textData));
 			}
@@ -257,7 +420,7 @@ namespace SqliteHandler {
 				return 1;
 			}
 
-			data = deserializeVectorInt(blobData);
+			data = DeserializeVectorInt(blobData);
 			return 0;
 		}
 
@@ -271,12 +434,12 @@ namespace SqliteHandler {
 				return 1;
 			}
 
-			data = deserializeVectorString(blobData);
+			data = DeserializeVectorString(blobData);
 			return 0;
 		}
 
-		// vector tuple int int
-		static int retrieveData(sqlite3_stmt* statement, std::vector<std::tuple<int,int>>& data, int columnIndex) {
+		// vector pair int int
+		static int retrieveData(sqlite3_stmt* statement, std::vector<std::pair<int, int>>& data, int columnIndex) {
 			const std::vector<char> blobData(
 				static_cast<const char*>(sqlite3_column_blob(statement, columnIndex)),
 				static_cast<const char*>(sqlite3_column_blob(statement, columnIndex)) +
@@ -285,46 +448,31 @@ namespace SqliteHandler {
 				return 1;
 			}
 
-			data = deserializeVectorTuple(blobData);
+			data = deserializeVectorPair(blobData);
 			return 0;
 		}
 
-		/// <summary>
-		/// helperfunction to load data from database
-		/// </summary>
-		/// <typeparam name="ValueType">string, int or containertypes</typeparam>
-		/// <typeparam name="IdentifierType">string, int or containertypes</typeparam>
-		/// <param name="tableName">name of table in database</param>
-		/// <param name="valueColumnName">name of column to store data into</param>
-		/// <param name="identifierColumnName">name of column to determine row</param>
-		/// <param name="identifierValue">value of field in column to determine row</param>
-		/// <returns>Value from specified field</returns>
-		template <typename ValueType, typename IdentifierType>
-		static int loadDataHelper(const std::string& db_name, const std::string& tableName, const std::string& valueColumnName,
-			const std::string& identifierColumnName, const IdentifierType& identifierValue, std::vector<ValueType>& dataStore) {
-			sql_access db(db_name);
-			
+		// Helperfunction to load data
+		template <typename ValueType>
+		static int loadData(
+			sqlite3_stmt* stmt,
+			std::vector<ValueType>& dataVector
+		) {
 			int result;
 			int sql_result;
-			std::string query = "SELECT " + valueColumnName + " FROM " + tableName +
-				" WHERE " + identifierColumnName + " = ?";
 
-			auto stmt = db.GetStatement(query);
-			bindValue(stmt, 1, identifierValue);  // Bind the identifier value
-			
 			do {
+				sql_result = sqlite3_step(stmt);
 
-			sql_result = sqlite3_step(stmt);
+				ValueType data;
 
-			ValueType data;
+				result = retrieveData(stmt, data, 0);  // Assuming the value is in the first column (index 0)
+				if (result != 0) {
+					return 1;
+				}
 
-			result = retrieveData(stmt, data, 0);  // Assuming the value is in the first column (index 0)
-			if (result != 0) {
-				return 1;
-			}
+				dataVector.push_back(data);
 
-			dataStore.push_back(data);
-			
 			} while (sql_result != SQLITE_DONE);
 
 			sqlite3_finalize(stmt);
@@ -332,98 +480,105 @@ namespace SqliteHandler {
 		}
 
 	public:
-		// Overload for int
-		template<typename identifier_t>
-		static int LoadData(const std::string& db_name, const std::string& tableName, const std::string& valueColumnName,
-			const std::string& identifierColumnName, const identifier_t& identifierValue, std::vector<int>& dataStore) {
+		// Templated with identifier
+		template <typename Ret_Type, typename IdentifierType>
+		static int LoadData(
+			const std::string dbName,
+			const std::string table,
+			const std::string valueColumn,
+			std::string identifierColumn,
+			const IdentifierType& identifierValue,
+			Ret_Type& dataVector
+		) {
+			std::string queryStr = "SELECT " + valueColumn + " FROM " + table +
+				" WHERE " + identifierColumn + " = ?";
+			auto database = SqlCom::ConnectToDatabase(dbName);
+			auto stmt = SqlCom::GetStatement(/*database,*/ queryStr);
 
-			int result = loadDataHelper(db_name, tableName, valueColumnName, identifierColumnName, identifierValue, dataStore);
-
-			return 0;
+			Bind(stmt, 1, identifierValue);
+			loadData(stmt, dataVector);
+			return SqlCom::CloseConnection(/*database*/);
 		}
 
-		// Overload for string
-		template<typename identifier_t>
-		static int LoadData(const std::string& db_name, const std::string& tableName, const std::string& valueColumnName,
-			const std::string& identifierColumnName, const identifier_t& identifierValue, std::vector <std::string>& dataStore) {
-			int result = loadDataHelper(db_name, tableName, valueColumnName, identifierColumnName, identifierValue, dataStore);
-			return 0;
-		}
+		// Templated without identifier
+		template <typename Ret_Type>
+		static int LoadData(
+			const std::string dbName,
+			const std::string table,
+			const std::string valueColumn,
+			Ret_Type& dataVector
+		) {
+			std::string queryStr = "SELECT " + valueColumn + " FROM " + table;
+			auto database = SqlCom::ConnectToDatabase(dbName);
 
-		// Overload for vector<int>
-		template<typename identifier_t>
-		static int LoadData(const std::string& db_name, const std::string& tableName, const std::string& valueColumnName,
-			const std::string& identifierColumnName, const identifier_t& identifierValue, std::vector <std::vector<int>>& dataStore) {
-			int result = loadDataHelper(db_name, tableName, valueColumnName, identifierColumnName, identifierValue, dataStore);
-			return 0;
-		}
+			sqlite3_stmt* stmt = SqlCom::GetStatement(/*database,*/ queryStr);
 
-		// Overload for vector<string>
-		template<typename identifier_t>
-		static int LoadData(const std::string& db_name, const std::string& tableName, const std::string& valueColumnName,
-			const std::string& identifierColumnName, const identifier_t& identifierValue, std::vector<std::vector<std::string>>& dataStore) {
-			int result = loadDataHelper(db_name, tableName, valueColumnName, identifierColumnName, identifierValue, dataStore);
-			return 0;
-		}
-
-		// Overload for vector<tuple<int, int>>
-		template<typename identifier_t>
-		static int LoadData(const std::string& db_name, const std::string& tableName, const std::string& valueColumnName,
-			const std::string& identifierColumnName, const identifier_t& identifierValue,
-			std::vector<std::vector<std::tuple<int, int>>>& dataStore) {
-			int result = loadDataHelper(db_name, tableName, valueColumnName, identifierColumnName, identifierValue, dataStore);
-			return 0;
+			loadData(stmt, dataVector);
+			return SqlCom::CloseConnection(/*database*/);
 		}
 	};
 
-	class DatabaseChanger : sql_access, ValueBinder {
+	class DatabaseChanger : private SqlCom, private ValueBinder {
 	public:
 		static inline const std::string V_CHAR = "VARCHAR";
 		static inline const std::string INT = "INT";
 		static inline const std::string BLOB = "BLOB";
 
-		static int CreateTableWithPrimaryKey(std::string db_name, std::string tableName, std::string primaryKeyName, const std::string primaryKeyType) {
+		DatabaseChanger() {  };
+
+		static int CreateTableWithPrimaryKey(std::string dbName, std::string tableName, std::string primaryKeyName, const std::string primaryKeyType) {
 			int result;
-			sql_access db(db_name);
-			std::string query = "CREATE TABLE IF NOT EXISTS " + tableName + " (" + primaryKeyName + " " + primaryKeyType + " PRIMARY KEY)";
+			std::string query = "CREATE TABLE IF NOT EXISTS " + tableName + " (" + primaryKeyName + " " + primaryKeyType + " PRIMARY KEY);";
+			auto database = SqlCom::ConnectToDatabase(dbName);
+			auto statement = SqlCom::GetStatement(/*database,*/ query);
 
+			result = SqlCom::Query(statement);
+			if (result) return 1;
 
-			result = db.Query(db.GetStatement(query));
-			if (result != 0)
-			{
-				return 1;
-			}
-
-			return 0;
+			return SqlCom::CloseConnection(/*database*/);
 		}
 
-		static int CreateTableWithForeignKey(std::string db_name, std::string tableName, std::string foreignKeyColumnName, std::string foreignKeyColumnType, std::string primaryKeyTableName, std::string primaryKeyColumnName) {
+		static int CreateTableWithForeignKey(std::string dbName, std::string tableName, std::string foreignKeyColumnName, std::string foreignKeyColumnType, std::string primaryKeyTableName, std::string primaryKeyColumnName) {
 			int result;
-			sql_access db(db_name);
-			std::string query = "CREATE TABLE IF NOT EXISTS " + tableName + " (" + foreignKeyColumnName + " " + foreignKeyColumnType + " FOREIGN KEY(" + foreignKeyColumnName + ") REFERENCES " + primaryKeyTableName + "(" + primaryKeyColumnName + "))";
+			std::string query = "CREATE TABLE IF NOT EXISTS " + tableName + " (" + foreignKeyColumnName + " " + foreignKeyColumnType + ", FOREIGN KEY(" + foreignKeyColumnName + ") REFERENCES " + primaryKeyTableName + "(" + primaryKeyColumnName + "));";
+			auto database = SqlCom::ConnectToDatabase(dbName);
+			auto statement = SqlCom::GetStatement(/*database,*/ query);
 
-			result = db.Query(db.GetStatement(query));
-			if (result != 0)
-			{
-				return 1;
-			}
+			result = SqlCom::Query(statement);
+			if (result) return 1;
 
-			return 0;
+			return SqlCom::CloseConnection(/*database*/);
 		}
 
-		static int AddColumn(std::string db_name, std::string table_name, std::string columnName, std::string columnType) {
+		static int AddColumn(std::string dbName, std::string table_name, std::string columnName, std::string columnType) {
 			int result;
-			sql_access db(db_name);
-			std::string query = "ALTER TABLE " + table_name + " ADD COLUMN " + columnName + " " + columnType;
+			std::vector<std::string> columns;
+			auto database = SqlCom::ConnectToDatabase(dbName);
 
+			std::string query = "PRAGMA table_info(" + table_name + ");";
 
-			result = db.Query(db.GetStatement(query));
-			if (result != 0)
-			{
-				return 1;
+			auto statement = SqlCom::GetStatement(/*database, */query, result);
+			if (result)	return 1;
+
+			result = SqlCom::Query(statement, columns);
+			if (result)	return 1;
+
+			for (auto column : columns) {
+				if (column == columnName)
+				{
+					return 0;
+				}
 			}
 
-			return 0;
+			auto newquery = "ALTER TABLE " + table_name + " ADD COLUMN " + columnName + " " + columnType + ";";
+
+			auto newstatement = SqlCom::GetStatement(newquery, result);
+			if (result)	return 1;
+
+			result = SqlCom::Query(newstatement);
+			if (result)	return 1;
+
+			return SqlCom::CloseConnection();
 		}
 	};
 
