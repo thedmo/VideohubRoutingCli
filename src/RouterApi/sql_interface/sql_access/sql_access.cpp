@@ -1,89 +1,98 @@
 #include <sql_access.hpp>
 
-// SQL_ACCESS
-int sql_access::last_row_num;
 
-sql_access::sql_access(std::string db_name) {
-  m_db_name = db_name;
+namespace sqlAccess {
 
-  std::string path = whereami::getExecutablePath().dirname();
-  path = path + "/" + m_db_name+ ".db";
-  sqlite3_open(path.c_str(), &m_db);
-}
+	// SQL_ACCESS
+	int sql_access::last_row_num;
 
-sql_access::~sql_access() {
-  sqlite3_close_v2(m_db);
-}
+	sql_access::sql_access(std::string db_name) {
+		m_db_name = db_name;
 
-sqlite3_stmt *sql_access::GetStatement(std::string query) {
-  sqlite3_stmt *statement;
-  sqlite3_prepare_v2(m_db, query.c_str(), -1, &statement, 0);
-  return statement;
-}
+		std::string path = whereami::getExecutablePath().dirname();
+		path = path + "/" + m_db_name + ".db";
+		sqlite3_open(path.c_str(), &m_db);
+	}
 
-int sql_access::Query(sqlite3_stmt *statement) {
-  m_last_query_result.clear();
-  int result;
-  last_row_num = 0;
-  std::vector<std::string> row_content;
+	sql_access::~sql_access() {
+		sqlite3_close_v2(m_db);
+	}
 
-  do {
-    result = sqlite3_step(statement);
+	sqlite3_stmt* sql_access::GetStatement(std::string query) {
+		sqlite3_stmt* statement;
+		sqlite3_prepare_v2(m_db, query.c_str(), -1, &statement, 0);
+		return statement;
+	}
 
-    if (result != SQLITE_ROW) {
-      break;
-    }
+	int sql_access::Query(sqlite3_stmt* statement) {
+		m_last_query_result.clear();
+		int result;
+		last_row_num = 0;
+		std::vector<std::string> row_content;
 
-    // column names
-    if (m_last_query_result.size() == 0) {
-      row_content.clear();
-      for (int i = 0; i < sqlite3_data_count(statement); i++) {
-        const char *col_name = (const char *)sqlite3_column_name(statement, i);
-        std::string column(col_name);
+		rowCount = sqlite3_data_count(statement);
+		do {
+			result = sqlite3_step(statement);
 
-        row_content.push_back(column);
-      }
-      m_last_query_result.push_back(row_content);
-    }
+			if (result != SQLITE_ROW) {
+				break;
+			}
 
-    row_content.clear();
-    // Fields
-    for (int j = 0; j < sqlite3_data_count(statement); j++) {
-      auto field = (const char *)(sqlite3_column_text(statement, j)) ? (const char *)(sqlite3_column_text(statement, j)) : "";
+			// column names
+			if (m_last_query_result.size() == 0) {
+				row_content.clear();
+				for (int i = 0; i < sqlite3_data_count(statement); i++) {
+					const char* col_name = (const char*)sqlite3_column_name(statement, i);
+					std::string column(col_name);
 
-      row_content.push_back(field);
-    }
+					row_content.push_back(column);
+				}
+				m_last_query_result.push_back(row_content);
+			}
 
-    m_last_query_result.push_back(row_content);
-    last_row_num++;
-  } while (result != SQLITE_DONE);
+			row_content.clear();
+			// Fields
+			for (int j = 0; j < sqlite3_data_count(statement); j++) {
+				auto field = (const char*)(sqlite3_column_text(statement, j)) ? (const char*)(sqlite3_column_text(statement, j)) : "";
 
-  result = sqlite3_finalize(statement);
-  if (result != SQLITE_OK) return 1;
+				row_content.push_back(field);
+			}
 
-  return SQL_ACCESS_OK;
-}
+			m_last_query_result.push_back(row_content);
+			last_row_num++;
+		} while (result != SQLITE_DONE);
 
 
-sqlite3_stmt *sql_access::BindValues(std::vector<std::string> args, sqlite3_stmt *statement) {
-  for (size_t i = 0; i < args.size(); i++) {
-    sqlite3_bind_text(statement, i + 1, args[i].c_str(), -1, SQLITE_TRANSIENT);
-  }
+		result = sqlite3_finalize(statement);
+		if (result != SQLITE_OK) return 1;
 
-  return statement;
-}
+		return SQL_ACCESS_OK;
+	}
 
 
-QueryResult sql_access::GetLastQueryResult() {
-  return m_last_query_result;
-}
+	sqlite3_stmt* sql_access::BindValues(std::vector<std::string> args, sqlite3_stmt* statement) {
+		for (size_t i = 0; i < args.size(); i++) {
+			sqlite3_bind_text(statement, i + 1, args[i].c_str(), -1, SQLITE_TRANSIENT);
+		}
+
+		return statement;
+	}
 
 
-int sql_access::GetLastRowNum() {
-  return last_row_num;
-}
+	QueryResult sql_access::GetLastQueryResult() {
+		return m_last_query_result;
+	}
 
+	int sql_access::GetLastRowNum() {
+		return last_row_num;
+	}
 
-std::string sql_access::GetLastErrorMsg(){
-  return sqlite3_errmsg(m_db);
-}
+	int sql_access::GetRowCount() {
+		return rowCount;
+	}
+
+	std::string sql_access::GetLastErrorMsg() {
+		return sqlite3_errmsg(m_db);
+	}
+
+} // namespace sqlAccess
