@@ -9,9 +9,10 @@
 #include <sql_access.hpp>
 
 
+
 // Aliases
 using QueryResult = std::vector<std::vector<std::string>>;
-
+using namespace sqlAccess;
 
 // SQL Handler
 class vdb {

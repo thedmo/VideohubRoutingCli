@@ -1,5 +1,10 @@
 #include <SqliteInterface.hpp>
 
+const std::string routerDatabaseName = "router";
+
+using namespace sqlAccess;
+
+
 vdb::vdb() {
   _sql = std::make_shared<sql_access>("router");
 
