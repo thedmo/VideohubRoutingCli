@@ -5,21 +5,57 @@
 
 class device_data {
 public:
-    std::string ip;
-    std::string name;
-    std::string version;
-    int source_count;
-    int destination_count;
-    std::string source_labels;
-    std::string destination_labels;
-    std::string routing;
-    std::string prepared_routes;
-    std::string locks;
-    std::string marked_for_saving;
 
-    //TODO: to replace simple variables in device Data
-    std::vector<std::tuple<int, int>> marked_routes;
-    std::vector<std::tuple<int, int>> video_output_routing;
+	device_data() {};
+
+	// Copy Constructor
+	device_data(device_data& device) :
+		ip(device.ip),
+		name(device.name),
+		version(device.version),
+		source_labels(device.source_labels),
+		destination_labels(device.destination_labels),
+		routing(device.routing),
+		prepared_routes(device.prepared_routes),
+		locks(device.locks),
+		marked_for_saving(device.marked_for_saving),
+		source_count(device.source_count),
+		destination_count(device.destination_count),
+		sourceLabelsList(device.sourceLabelsList),
+		destinationsLabelsList(device.destinationsLabelsList),
+		locksList(device.locksList),
+		routesMarkedList(device.routesMarkedList),
+		routesPreparedList(device.routesPreparedList),
+		routesList(device.routesList)
+	{ }
+
+	std::string
+		ip,
+		name,
+		version,
+		source_labels,
+		destination_labels,
+		routing,
+		prepared_routes,
+		locks,
+		marked_for_saving;
+
+	int
+		source_count,
+		destination_count;
+
+	//TODO: to replace simple variables in device Data
+
+	// Storable as blobs in database
+	std::vector<std::string>
+		sourceLabelsList,
+		destinationsLabelsList,
+		locksList;
+
+	std::vector<std::pair<int, int>>
+		routesMarkedList,
+		routesPreparedList,
+		routesList;
 };
 
 #endif /* EE918193_380A_4CAC_B16D_81B97DBCC972 */
