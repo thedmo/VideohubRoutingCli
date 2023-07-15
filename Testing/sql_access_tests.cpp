@@ -1,15 +1,12 @@
-#define CATCH_CONFIG_MAIN
+#include <TestHeader.h>
 #include <catch2/catch.hpp>
 #include <filesystem>
 #include <sql_access.hpp>
 
-
-
 // INITIALIZATION
 
-
-
 const std::string TEST_DB_NAME = "test";
+using namespace sqlAccess;
 
 /// <summary>
 /// initializes test database with a table for testing, insert some data and returns object for communication with it
