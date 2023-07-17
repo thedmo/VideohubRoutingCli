@@ -86,15 +86,31 @@ TEST_CASE("Add Table with foreign reference") {
 	REQUIRE(result == 0);
 }
 
-TEST_CASE("Add Row into table") {
+TEST_CASE("Add Rows into table") {
 	int result = SqliteHandler::DataSetter::InsertRow(
 		DB,
 		"TestTable2",
 		"col1",
 		"row1"
 	);
-
 	REQUIRE(result == 0);
+
+	result = SqliteHandler::DataSetter::InsertRow(
+		DB,
+		"TestTable2",
+		"col1",
+		"row2"
+	);
+	REQUIRE(result == 0);
+
+	result = SqliteHandler::DataSetter::InsertRow(
+		DB,
+		"TestTable2",
+		"col1",
+		"row3"
+	);
+	REQUIRE(result == 0);
+
 }
 
 TEST_CASE("update text value in field") {
