@@ -187,3 +187,44 @@ TEST_CASE("Update vector with pairs value in field") {
 
 	REQUIRE(result == 0);
 }
+
+TEST_CASE("Remove existing Row, should return 0") {
+	int result;
+
+	result = SqliteHandler::DataSetter::RemoveRow(
+		DB,
+		"TestTable2",
+		"col1",
+		"row1"
+	);
+
+	REQUIRE(result == 0);
+}
+
+
+// WEITER Check, ob andere Einträge noch vorhanden sind, returniert an sich 0, auch wenn der Eintrag nicht vorhanden ist
+//TEST_CASE("Remove inexistent Row, should return 1") {
+//	int result;
+//
+//	result = SqliteHandler::DataSetter::RemoveRow(
+//		DB,
+//		"TestTable2",
+//		"col1",
+//		"row50"
+//	);
+//
+//	REQUIRE(result == 1);
+//}
+
+TEST_CASE("Remove existing Row by value of non existent column, should return 1") {
+	int result;
+
+	result = SqliteHandler::DataSetter::RemoveRow(
+		DB,
+		"TestTable2",
+		"col50",
+		"row50"
+	);
+
+	REQUIRE(result == 1);
+}
