@@ -287,13 +287,16 @@ namespace SqliteHandler {
 
 		static int RemoveRow(const std::string dbName, const std::string& tableName, const std::string& rowKeyColumnName, std::string rowKeyValue) {
 			int result;
-			auto database = SqlCom::ConnectToDatabase(dbName);
+
+			result = SqlCom::ConnectToDatabase(dbName);
+			if (result) return 1;
 
 			std::string query = "DELETE FROM " + tableName + " WHERE " + rowKeyColumnName + " = ?";
+			auto statement = SqlCom::GetStatement(query, result);
+			if (result) return 1;
 
-			auto statement = SqlCom::GetStatement(query);
-
-			Bind(statement, 1, rowKeyValue);
+			result = Bind(statement, 1, rowKeyValue);
+			if (result) return 1;
 
 			return SqlCom::Query(statement);
 		}
