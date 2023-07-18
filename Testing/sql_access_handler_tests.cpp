@@ -63,26 +63,26 @@ using namespace SqliteHandler;
 TEST_CASE("Create Table1 and add columns") {
 	int result;
 
-	result = DatabaseChanger::CreateTableWithPrimaryKey(DBNAME, TABLE1, TestValues::address, DatabaseChanger::V_CHAR);
+	result = DbMod::CreateTableWithPrimaryKey(DBNAME, TABLE1, TestValues::address, DbMod::V_CHAR);
 	REQUIRE(result == 0);
 
-	result = DatabaseChanger::AddColumn(DBNAME, TABLE1, TestValues::count, DatabaseChanger::INT);
+	result = DbMod::AddColumn(DBNAME, TABLE1, TestValues::count, DbMod::INT);
 	REQUIRE(result == 0);
 
-	result = DatabaseChanger::AddColumn(DBNAME, TABLE1, TestValues::routes, DatabaseChanger::BLOB);
+	result = DbMod::AddColumn(DBNAME, TABLE1, TestValues::routes, DbMod::BLOB);
 	REQUIRE(result == 0);
 
-	result = DatabaseChanger::AddColumn(DBNAME, TABLE1, TestValues::names, DatabaseChanger::BLOB);
+	result = DbMod::AddColumn(DBNAME, TABLE1, TestValues::names, DbMod::BLOB);
 	REQUIRE(result == 0);
 
-	result = DatabaseChanger::AddColumn(DBNAME, TABLE1, TestValues::marked, DatabaseChanger::BLOB);
+	result = DbMod::AddColumn(DBNAME, TABLE1, TestValues::marked, DbMod::BLOB);
 	REQUIRE(result == 0);
 }
 
 TEST_CASE("Create Table2 and add columns") {
-	REQUIRE(DatabaseChanger::CreateTableWithForeignKey(DBNAME, TABLE2, TestValues::address, DatabaseChanger::V_CHAR, TABLE1, TestValues::address) == 0);
+	REQUIRE(DbMod::CreateTableWithForeignKey(DBNAME, TABLE2, TestValues::address, DbMod::V_CHAR, TABLE1, TestValues::address) == 0);
 
-	REQUIRE(DatabaseChanger::AddColumn(DBNAME, TABLE2, TestValues::routes, DatabaseChanger::BLOB) == 0);
+	REQUIRE(DbMod::AddColumn(DBNAME, TABLE2, TestValues::routes, DbMod::BLOB) == 0);
 }
 
 TEST_CASE("INSERTING rows") {

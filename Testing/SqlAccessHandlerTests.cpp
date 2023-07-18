@@ -30,7 +30,7 @@ TEST_CASE("Test Query function") {
 
 TEST_CASE("Add Table Primary function") {
 
-	int result = SqliteHandler::DatabaseChanger::CreateTableWithPrimaryKey(
+	int result = SqliteHandler::DbMod::CreateTableWithPrimaryKey(
 		DB,
 		"TestTable2",
 		"col1",
@@ -41,7 +41,7 @@ TEST_CASE("Add Table Primary function") {
 }
 
 TEST_CASE("Add Text Column function") {
-	int result = SqliteHandler::DatabaseChanger::AddColumn(
+	int result = SqliteHandler::DbMod::AddColumn(
 		DB,
 		"TestTable2",
 		"col2",
@@ -52,7 +52,7 @@ TEST_CASE("Add Text Column function") {
 }
 
 TEST_CASE("Add Int Column function") {
-	int result = SqliteHandler::DatabaseChanger::AddColumn(
+	int result = SqliteHandler::DbMod::AddColumn(
 		DB,
 		"TestTable2",
 		"col3",
@@ -63,7 +63,7 @@ TEST_CASE("Add Int Column function") {
 }
 
 TEST_CASE("Add Blob Column function") {
-	int result = SqliteHandler::DatabaseChanger::AddColumn(
+	int result = SqliteHandler::DbMod::AddColumn(
 		DB,
 		"TestTable2",
 		"col4",
@@ -74,7 +74,7 @@ TEST_CASE("Add Blob Column function") {
 }
 
 TEST_CASE("Add Table with foreign reference") {
-	int result = SqliteHandler::DatabaseChanger::CreateTableWithForeignKey(
+	int result = SqliteHandler::DbMod::CreateTableWithForeignKey(
 		DB,
 		"TestTable3",
 		"col1",

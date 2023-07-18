@@ -55,7 +55,7 @@ namespace SqliteHandler {
 		/// </summary>
 		/// <param name="statement">prepared statement</param>
 		/// <returns>sqlite errcode. 0 = SQLITE_OK</returns>
-		static int query(sqlite3_stmt* statement, int& resultRowCount,  std::vector<std::string>& stringVec) {
+		static int query(sqlite3_stmt* statement, int& resultRowCount, std::vector<std::string>& stringVec) {
 			resultRowCount = 0;
 
 			while (sqlite3_step(statement) == SQLITE_ROW) {

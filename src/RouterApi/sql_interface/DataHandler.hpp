@@ -1,7 +1,7 @@
 #include <sql_access_handler.hpp>
 #include <device_data.hpp>
 
-class DataHandler : private SqliteHandler::DataGetter, private SqliteHandler::DataSetter, private SqliteHandler::DatabaseChanger {
+class DataHandler : private SqliteHandler::DataGetter, private SqliteHandler::DataSetter, private SqliteHandler::DbMod {
 
 	using StringList = std::vector<std::string>;
 	using IntList = std::vector<int>;
@@ -86,37 +86,37 @@ public:
 		int result;
 
 		// Create Devicedatabase if not exists
-		result = SqliteHandler::DatabaseChanger::CreateTableWithPrimaryKey(DB_NAME, DEVICES_TABLE, COLUMN_IP, SqliteHandler::DatabaseChanger::V_CHAR);
+		result = SqliteHandler::DbMod::CreateTableWithPrimaryKey(DB_NAME, DEVICES_TABLE, COLUMN_IP, SqliteHandler::DbMod::V_CHAR);
 		if (result) return 1;
-		result = SqliteHandler::DatabaseChanger::AddColumn(DB_NAME, DEVICES_TABLE, COLUMN_SELECTED, SqliteHandler::DatabaseChanger::V_CHAR);
+		result = SqliteHandler::DbMod::AddColumn(DB_NAME, DEVICES_TABLE, COLUMN_SELECTED, SqliteHandler::DbMod::V_CHAR);
 		if (result) return 1;
-		result = SqliteHandler::DatabaseChanger::AddColumn(DB_NAME, DEVICES_TABLE, COLUMN_NAME, SqliteHandler::DatabaseChanger::V_CHAR);
+		result = SqliteHandler::DbMod::AddColumn(DB_NAME, DEVICES_TABLE, COLUMN_NAME, SqliteHandler::DbMod::V_CHAR);
 		if (result) return 1;
-		result = SqliteHandler::DatabaseChanger::AddColumn(DB_NAME, DEVICES_TABLE, COLUMN_VERSION, SqliteHandler::DatabaseChanger::V_CHAR);
+		result = SqliteHandler::DbMod::AddColumn(DB_NAME, DEVICES_TABLE, COLUMN_VERSION, SqliteHandler::DbMod::V_CHAR);
 		if (result) return 1;
-		result = SqliteHandler::DatabaseChanger::AddColumn(DB_NAME, DEVICES_TABLE, COLUMN_SOURCE_COUNT, SqliteHandler::DatabaseChanger::INT);
+		result = SqliteHandler::DbMod::AddColumn(DB_NAME, DEVICES_TABLE, COLUMN_SOURCE_COUNT, SqliteHandler::DbMod::INT);
 		if (result) return 1;
-		result = SqliteHandler::DatabaseChanger::AddColumn(DB_NAME, DEVICES_TABLE, COLUMN_DESTINATION_COUNT, SqliteHandler::DatabaseChanger::INT);
+		result = SqliteHandler::DbMod::AddColumn(DB_NAME, DEVICES_TABLE, COLUMN_DESTINATION_COUNT, SqliteHandler::DbMod::INT);
 		if (result) return 1;
-		result = SqliteHandler::DatabaseChanger::AddColumn(DB_NAME, DEVICES_TABLE, COLUMN_SOURCE_LABELS, SqliteHandler::DatabaseChanger::BLOB);
+		result = SqliteHandler::DbMod::AddColumn(DB_NAME, DEVICES_TABLE, COLUMN_SOURCE_LABELS, SqliteHandler::DbMod::BLOB);
 		if (result) return 1;
-		result = SqliteHandler::DatabaseChanger::AddColumn(DB_NAME, DEVICES_TABLE, COLUMN_DESTINATION_LABELS, SqliteHandler::DatabaseChanger::BLOB);
+		result = SqliteHandler::DbMod::AddColumn(DB_NAME, DEVICES_TABLE, COLUMN_DESTINATION_LABELS, SqliteHandler::DbMod::BLOB);
 		if (result) return 1;
-		result = SqliteHandler::DatabaseChanger::AddColumn(DB_NAME, DEVICES_TABLE, COLUMN_ROUTES, SqliteHandler::DatabaseChanger::BLOB);
+		result = SqliteHandler::DbMod::AddColumn(DB_NAME, DEVICES_TABLE, COLUMN_ROUTES, SqliteHandler::DbMod::BLOB);
 		if (result) return 1;
-		result = SqliteHandler::DatabaseChanger::AddColumn(DB_NAME, DEVICES_TABLE, COLUMN_PREPARED, SqliteHandler::DatabaseChanger::BLOB);
+		result = SqliteHandler::DbMod::AddColumn(DB_NAME, DEVICES_TABLE, COLUMN_PREPARED, SqliteHandler::DbMod::BLOB);
 		if (result) return 1;
-		result = SqliteHandler::DatabaseChanger::AddColumn(DB_NAME, DEVICES_TABLE, COLUMN_LOCKS, SqliteHandler::DatabaseChanger::BLOB);
+		result = SqliteHandler::DbMod::AddColumn(DB_NAME, DEVICES_TABLE, COLUMN_LOCKS, SqliteHandler::DbMod::BLOB);
 		if (result) return 1;
-		result = SqliteHandler::DatabaseChanger::AddColumn(DB_NAME, DEVICES_TABLE, COLUMN_MARKED, SqliteHandler::DatabaseChanger::BLOB);
+		result = SqliteHandler::DbMod::AddColumn(DB_NAME, DEVICES_TABLE, COLUMN_MARKED, SqliteHandler::DbMod::BLOB);
 		if (result) return 1;
 
 		// create routingdatabase if not exists
-		result = SqliteHandler::DatabaseChanger::CreateTableWithForeignKey(DB_NAME, ROUTINGS_TABLE, COLUMN_IP, SqliteHandler::DatabaseChanger::V_CHAR, DEVICES_TABLE, COLUMN_IP);
+		result = SqliteHandler::DbMod::CreateTableWithForeignKey(DB_NAME, ROUTINGS_TABLE, COLUMN_IP, SqliteHandler::DbMod::V_CHAR, DEVICES_TABLE, COLUMN_IP);
 		if (result) return 1;
-		result = SqliteHandler::DatabaseChanger::AddColumn(DB_NAME, ROUTINGS_TABLE, COLUMN_NAME, SqliteHandler::DatabaseChanger::V_CHAR);
+		result = SqliteHandler::DbMod::AddColumn(DB_NAME, ROUTINGS_TABLE, COLUMN_NAME, SqliteHandler::DbMod::V_CHAR);
 		if (result) return 1;
-		result = SqliteHandler::DatabaseChanger::AddColumn(DB_NAME, ROUTINGS_TABLE, COLUMN_ROUTES, SqliteHandler::DatabaseChanger::BLOB);
+		result = SqliteHandler::DbMod::AddColumn(DB_NAME, ROUTINGS_TABLE, COLUMN_ROUTES, SqliteHandler::DbMod::BLOB);
 		if (result) return 1;
 
 		return 0;
