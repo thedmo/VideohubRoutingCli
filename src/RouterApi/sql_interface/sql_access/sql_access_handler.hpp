@@ -521,13 +521,13 @@ namespace SqliteHandler {
 		}
 	};
 
-	class DatabaseChanger : private SqlCom, private ValueBinder {
+	class DbMod : private SqlCom, private ValueBinder {
 	public:
 		static inline const std::string V_CHAR = "VARCHAR";
 		static inline const std::string INT = "INT";
 		static inline const std::string BLOB = "BLOB";
 
-		DatabaseChanger() {  };
+		DbMod() {  };
 
 		static int CreateTableWithPrimaryKey(std::string dbName, std::string tableName, std::string primaryKeyName, const std::string primaryKeyType) {
 			int result;
@@ -595,6 +595,6 @@ namespace SqliteHandler {
 
 			return SqlCom::CloseConnection();
 		}
-	}; // Class DatabaseChanger
+	}; // Class DbMod
 
 } // namespace SqliteHandler
