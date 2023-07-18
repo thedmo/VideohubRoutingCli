@@ -496,11 +496,11 @@ namespace SqliteHandler {
 			std::string queryStr = "SELECT " + valueColumn + " FROM " + table +
 				" WHERE " + identifierColumn + " = ?";
 			auto database = SqlCom::ConnectToDatabase(dbName);
-			auto stmt = SqlCom::GetStatement(/*database,*/ queryStr);
+			auto stmt = SqlCom::GetStatement(queryStr);
 
 			Bind(stmt, 1, identifierValue);
 			loadData(stmt, dataVector);
-			return SqlCom::CloseConnection(/*database*/);
+			return SqlCom::CloseConnection();
 		}
 
 		// Templated without identifier
@@ -514,10 +514,10 @@ namespace SqliteHandler {
 			std::string queryStr = "SELECT " + valueColumn + " FROM " + table;
 			auto database = SqlCom::ConnectToDatabase(dbName);
 
-			sqlite3_stmt* stmt = SqlCom::GetStatement(/*database,*/ queryStr);
+			sqlite3_stmt* stmt = SqlCom::GetStatement(queryStr);
 
 			loadData(stmt, dataVector);
-			return SqlCom::CloseConnection(/*database*/);
+			return SqlCom::CloseConnection();
 		}
 	};
 
@@ -533,24 +533,24 @@ namespace SqliteHandler {
 			int result;
 			std::string query = "CREATE TABLE IF NOT EXISTS " + tableName + " (" + primaryKeyName + " " + primaryKeyType + " PRIMARY KEY);";
 			auto database = SqlCom::ConnectToDatabase(dbName);
-			auto statement = SqlCom::GetStatement(/*database,*/ query);
+			auto statement = SqlCom::GetStatement(query);
 
 			result = SqlCom::Query(statement);
 			if (result) return 1;
 
-			return SqlCom::CloseConnection(/*database*/);
+			return SqlCom::CloseConnection();
 		}
 
 		static int CreateTableWithForeignKey(std::string dbName, std::string tableName, std::string foreignKeyColumnName, std::string foreignKeyColumnType, std::string primaryKeyTableName, std::string primaryKeyColumnName) {
 			int result;
 			std::string query = "CREATE TABLE IF NOT EXISTS " + tableName + " (" + foreignKeyColumnName + " " + foreignKeyColumnType + ", FOREIGN KEY(" + foreignKeyColumnName + ") REFERENCES " + primaryKeyTableName + "(" + primaryKeyColumnName + "));";
 			auto database = SqlCom::ConnectToDatabase(dbName);
-			auto statement = SqlCom::GetStatement(/*database,*/ query);
+			auto statement = SqlCom::GetStatement(query);
 
 			result = SqlCom::Query(statement);
 			if (result) return 1;
 
-			return SqlCom::CloseConnection(/*database*/);
+			return SqlCom::CloseConnection();
 		}
 
 		static int AddColumn(std::string dbName, std::string table_name, std::string columnName, std::string columnType) {
@@ -560,8 +560,8 @@ namespace SqliteHandler {
 
 			std::string query = "PRAGMA table_info(" + table_name + ");";
 
-			auto statement = SqlCom::GetStatement(/*database, */query, result);
-			if (result)	return 1;
+			auto statement = SqlCom::GetStatement(query, result);
+			if (result) return;
 
 			result = SqlCom::Query(statement, columns);
 			if (result)	return 1;
