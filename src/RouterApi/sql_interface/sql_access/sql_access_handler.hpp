@@ -553,18 +553,29 @@ namespace SqliteHandler {
 			return SqlCom::CloseConnection();
 		}
 
-		static int AddColumn(std::string dbName, std::string table_name, std::string columnName, std::string columnType) {
-			int result;
+	private:
+		static std::vector<std::string> GetColumnNames(std::string dbName, std::string tableName, int& result) {
 			std::vector<std::string> columns;
-			auto database = SqlCom::ConnectToDatabase(dbName);
 
-			std::string query = "PRAGMA table_info(" + table_name + ");";
+			result = SqlCom::ConnectToDatabase(dbName);
+			if (result) return;
+
+			std::string query = "PRAGMA table_info(" + tableName + ");";
 
 			auto statement = SqlCom::GetStatement(query, result);
 			if (result) return;
 
 			result = SqlCom::Query(statement, columns);
-			if (result)	return 1;
+			if (result) return;
+
+			return columns;
+		}
+
+	public:
+		static int AddColumn(std::string dbName, std::string tableName, std::string columnName, std::string columnType) {
+			int result;
+
+			std::vector<std::string> columns = GetColumnNames(dbName, tableName, result);
 
 			for (auto column : columns) {
 				if (column == columnName)
@@ -573,16 +584,17 @@ namespace SqliteHandler {
 				}
 			}
 
-			auto newquery = "ALTER TABLE " + table_name + " ADD COLUMN " + columnName + " " + columnType + ";";
+			result = SqlCom::ConnectToDatabase(dbName);
+			auto queryStr = "ALTER TABLE " + tableName + " ADD COLUMN " + columnName + " " + columnType + ";";
 
-			auto newstatement = SqlCom::GetStatement(newquery, result);
+			auto statement = SqlCom::GetStatement(queryStr, result);
 			if (result)	return 1;
 
-			result = SqlCom::Query(newstatement);
+			result = SqlCom::Query(statement);
 			if (result)	return 1;
 
 			return SqlCom::CloseConnection();
 		}
-	};
+	}; // Class DatabaseChanger
 
 } // namespace SqliteHandler
