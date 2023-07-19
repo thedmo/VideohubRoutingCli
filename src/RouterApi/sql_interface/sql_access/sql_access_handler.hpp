@@ -25,7 +25,6 @@ namespace SqliteHandler {
 	class SqlCom {
 	private:
 		static inline sqlite3* m_database;
-		//static inline sql_access sql;
 
 		static inline const std::string V_CHAR = "VARCHAR";
 		static inline const std::string INT = "INT";
@@ -65,31 +64,83 @@ namespace SqliteHandler {
 		}
 
 	private:
+
+		static Field GetColumnNameField(sqlite3_stmt* statement, int index) {
+			Field field = std::variant<std::monostate >();
+
+			field = (std::string)((char*)sqlite3_column_name(statement, index));
+
+			return field;
+		}
+
+		static Field GetField(sqlite3_stmt* statement, int index) {
+			Field field = std::variant<std::monostate >();
+
+			// VARCHAR
+			if (sqlite3_column_type(statement, index) == SQLITE_TEXT)
+			{
+				//char* chars = (char*)sqlite3_column_text(statement, colNum);
+				field = (std::string)((char*)sqlite3_column_text(statement, index));
+			}
+
+			// INT
+			else if (sqlite3_column_type(statement, index) == SQLITE_INTEGER)
+			{
+				field = sqlite3_column_int(statement, index);
+			}
+
+			// BLOB
+			else if (sqlite3_column_type(statement, index) == SQLITE_BLOB)
+			{
+				field = (char*)sqlite3_column_blob(statement, index);
+			}
+
+			// NULL
+			else if (sqlite3_column_type(statement, index) == SQLITE_NULL)
+			{
+				field = std::variant<std::monostate>();
+			}
+
+			return field;
+		}
+
 		/// <summary>
-		/// Query Database with prepared statement
+		/// Query database with prepared statement
 		/// </summary>
 		/// <param name="statement">prepared statement</param>
-		/// <returns>sqlite errcode. 0 = SQLITE_OK</returns>
-		static int query(sqlite3_stmt* statement, int& resultRowCount, std::vector<std::string>& stringVec) {
+		/// <param name="resultRowCount">storage for rowcount of result set</param>
+		/// <param name="resultTable">Table storage of resultset: row==0 --> vector with Column Names, row>0 --> vector with Fields </param>
+		/// <returns>result as int: 0 --> OK</returns>
+		static int query(sqlite3_stmt* statement, int& resultRowCount, Table& resultTable) {
 			resultRowCount = 0;
 
 			while (sqlite3_step(statement) == SQLITE_ROW) {
+				int columnCount = sqlite3_column_count(statement);
+
+				// Fill Result Table
+				if (resultRowCount == 0)
+				{
+					// Row 0 --> Column Names
+					resultTable.push_back(Row());
+
+					for (int i = 0; i < columnCount; i++) {
+						Field field = GetColumnNameField(statement, i);
+						resultTable[resultRowCount].push_back(field);
+				}
+
+					resultRowCount++;
+				}
+
+				// Rows>0 --> Fields
+				resultTable.push_back(Row());
+
+				for (size_t colNum = 0; colNum < columnCount; colNum++)
+				{
+					Field field = GetField(statement, colNum);
+					resultTable[resultRowCount].push_back(field);
+				}
 
 				resultRowCount++;
-				int columnCount = sqlite3_column_count(statement);
-				if (columnCount < 1)
-				{
-					continue;
-				}
-
-				if (sqlite3_column_type(statement, 1) == SQLITE_TEXT)
-				{
-					auto chars = (char*)sqlite3_column_text(statement, 1);
-
-					std::string str(chars);
-
-					stringVec.push_back(str);
-				}
 			}
 			return sqlite3_finalize(statement);
 		}
@@ -103,8 +154,8 @@ namespace SqliteHandler {
 		/// <param name="resultRowCount">reference to int to retrieve rowcount of result set</param>
 		/// <returns>sqlite errcode. 0 = SQLITE_OK</returns>
 		static int Query(sqlite3_stmt* statement, int& rowCount) {
-			std::vector<std::string> tempStringVec;
-			return query(statement, rowCount, tempStringVec);
+			Table dataVariantVector;
+			return query(statement, rowCount, dataVariantVector);
 		}
 
 		/// <summary>
@@ -112,11 +163,11 @@ namespace SqliteHandler {
 		/// </summary>
 		/// <param name="dbName">name of database</param>
 		/// <param name="statement">prepared statement</param>
-		/// <param name="stringVec">reference to vector to retrieve data as strings</param>
+		/// <param name="resultTable">reference to vector to retrieve data as strings</param>
 		/// <returns>sqlite errcode. 0 = SQLITE_OK</returns>
-		static int Query(sqlite3_stmt* statement, std::vector<std::string>& stringVec) {
+		static int Query(sqlite3_stmt* statement, Table& dataVariantVector) {
 			int tempInt;
-			return query(statement, tempInt, stringVec);
+			return query(statement, tempInt, dataVariantVector);
 		}
 
 		/// <summary>
@@ -127,9 +178,9 @@ namespace SqliteHandler {
 		/// <returns>sqlite errcode. 0 = SQLITE_OK</returns>
 		static int Query(sqlite3_stmt* statement) {
 			int tempInt;
-			std::vector<std::string> tempStringVec;
+			Table dataVariantVector;
 
-			return query(statement, tempInt, tempStringVec);
+			return query(statement, tempInt, dataVariantVector);
 		}
 
 	private:
