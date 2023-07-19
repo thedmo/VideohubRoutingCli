@@ -375,7 +375,7 @@ namespace SqliteHandler {
 			result = SqlCom::Query(statement, queryResultSet);
 			if (result) return columns;
 
-			if (columns.empty()) return columns.push_back(""), columns;
+			if (queryResultSet.empty()) return columns.push_back(""), columns;
 
 			Row rowZero = queryResultSet[0];
 			for (size_t i = 0; i < rowZero.size(); i++)
@@ -437,7 +437,6 @@ namespace SqliteHandler {
 	public:
 		DataSetter() {};
 
-		// HIER WEITER
 		static int InsertRow(const std::string dbName, const std::string& table, const std::string& column, std::string value) {
 			int result = 0;
 			int rowCount = 0;
@@ -455,11 +454,12 @@ namespace SqliteHandler {
 			return SqlCom::CloseConnection();
 		}
 
+		// HIER WEITER
 		static int RemoveRow(const std::string dbName, const std::string& tableName, const std::string& rowKeyColumnName, std::string rowKeyValue) {
 			int result = 0;
 
 			result = DbMod::CheckIfColumnExists(dbName, tableName, rowKeyColumnName);
-			if (result) return 1;
+			if (!result) return 1;
 
 			result = SqlCom::ConnectToDatabase(dbName);
 			if (result) return 1;
