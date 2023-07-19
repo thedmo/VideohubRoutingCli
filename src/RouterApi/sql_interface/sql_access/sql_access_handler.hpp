@@ -25,12 +25,12 @@ namespace SqliteHandler {
 	class SqlCom {
 	private:
 		static inline sqlite3* m_database;
-		
+
+	public:
 		static inline const std::string V_CHAR = "VARCHAR";
 		static inline const std::string INT = "INT";
 		static inline const std::string BLOB = "BLOB";
 
-	public:
 		/// <summary>
 		/// Connects to database located at same location as executable
 		/// </summary>
@@ -375,6 +375,8 @@ namespace SqliteHandler {
 			result = SqlCom::Query(statement, queryResultSet);
 			if (result) return columns;
 
+			if (columns.empty()) return columns.push_back(""), columns;
+
 			Row rowZero = queryResultSet[0];
 			for (size_t i = 0; i < rowZero.size(); i++)
 			{
@@ -404,10 +406,10 @@ namespace SqliteHandler {
 
 			for (auto& columnName : columnNames) {
 				if (columnNameToLookFor == columnName) {
-					return 0;
+					return 1; // does exist
 				}
 			}
-			return 1;
+			return 0; // does not exist
 		}
 
 	public:
@@ -415,7 +417,7 @@ namespace SqliteHandler {
 			int result;
 
 			result = CheckIfColumnExists(dbName, tableName, columnName);
-			if (result)	return 1;
+			if (result)	return 1; // return 1, if already existing
 
 			result = SqlCom::ConnectToDatabase(dbName);
 			if (result)	return 1;
@@ -437,8 +439,8 @@ namespace SqliteHandler {
 
 		// HIER WEITER
 		static int InsertRow(const std::string dbName, const std::string& table, const std::string& column, std::string value) {
-			int result;
-			int rowCount;
+			int result = 0;
+			int rowCount = 0;
 			std::string queryStr;
 			auto database = SqlCom::ConnectToDatabase(dbName);
 
@@ -456,7 +458,7 @@ namespace SqliteHandler {
 		static int RemoveRow(const std::string dbName, const std::string& tableName, const std::string& rowKeyColumnName, std::string rowKeyValue) {
 			int result = 0;
 
-			result = CheckIfColumnExists(dbName, tableName, rowKeyColumnName);
+			result = DbMod::CheckIfColumnExists(dbName, tableName, rowKeyColumnName);
 			if (result) return 1;
 
 			result = SqlCom::ConnectToDatabase(dbName);
@@ -466,15 +468,50 @@ namespace SqliteHandler {
 			auto statement = SqlCom::GetStatement(query, result);
 			if (result) return 1;
 
-			result = Bind(statement, 1, rowKeyValue);
+			result = ValueBinder::Bind(statement, 1, rowKeyValue);
 			if (result) return 1;
 
 			return SqlCom::Query(statement);
 		}
 
 	private:
-		static int CompareColumnType(std::string dbName, std::string tableName, std::string columnName, std::string type) {
+		static int CompareColumnType(std::string dbName, std::string tableName, std::string columnName, std::string typeStr) {
+			int result = 0;
+			Table resultSet;
+			std::string queryStr = "PRAGMA table_info (" + tableName + ");";
 
+			auto statement = GetStatement(queryStr, result);
+			if (result) return 1;
+
+			result = Query(statement, resultSet);
+			if (result) return 1;
+
+			size_t nameIndex = 0;
+			size_t typeIndex = 0;
+
+			for (size_t colNum = 0; colNum < resultSet[0].size(); colNum++)
+			{
+				if (std::get<std::string>(resultSet[0][colNum]) == "name")
+				{
+					nameIndex = colNum;
+				}
+				if (std::get<std::string>(resultSet[0][colNum]) == "type")
+				{
+					typeIndex = colNum;
+				}
+			}
+
+			if (nameIndex == 0 && typeIndex == 0) return 1;
+
+			for (size_t i = 1; i < resultSet.size(); i++)
+			{
+				if (std::get<std::string>(resultSet[i][nameIndex]) == columnName && std::get<std::string>(resultSet[i][typeIndex]) == typeStr)
+				{
+					return 0;
+				}
+			}
+
+			return 1;
 		}
 
 
@@ -485,12 +522,21 @@ namespace SqliteHandler {
 		/// </summary>
 		/// <returns>int, should be 0</returns>
 		template <typename ValueType, typename IdentifierType>
-		static int storeData(const std::string dbName, const std::string& tableName, const std::string& valueColumnName, const ValueType& value,
-			const std::string& identifierColumnName, const IdentifierType& identifierValue) {
-
+		static int storeData(
+			const std::string dbName,
+			const std::string& tableName,
+			const std::string& valueColumnName,
+			const ValueType& value,
+			const std::string valueType,
+			const std::string& identifierColumnName, 
+			const IdentifierType& identifierValue
+		) {
 			int result;
 			auto database = SqlCom::ConnectToDatabase(dbName);
 			std::string query = "UPDATE " + tableName + " SET " + valueColumnName + " = ? WHERE " + identifierColumnName + " = ?";
+
+			result = CompareColumnType(dbName, tableName, valueColumnName, valueType);
+			if (result) return 1;
 
 			auto stmt = SqlCom::GetStatement(query, result);
 			if (result) return 1;
@@ -504,7 +550,7 @@ namespace SqliteHandler {
 			result = SqlCom::Query(stmt);
 			if (result) return 1;
 
-			return SqlCom::CloseConnection(/*database*/);
+			return SqlCom::CloseConnection();
 		}
 
 	public:
@@ -517,7 +563,7 @@ namespace SqliteHandler {
 		/// <returns>int, should be 0</returns>
 		static int StoreData(const std::string dbName, const std::string& tableName, const std::string& valueColumnName, const std::string& value,
 			const std::string& identifierColumnName, const std::string& identifierValue) {
-			return storeData(dbName, tableName, valueColumnName, value, identifierColumnName, identifierValue);
+			return storeData(dbName, tableName, valueColumnName, value, SqlCom::V_CHAR, identifierColumnName, identifierValue);
 		}
 
 		/// <summary>
@@ -527,7 +573,7 @@ namespace SqliteHandler {
 		/// <returns>int, should be 0</returns>
 		static int StoreData(const std::string dbName, const std::string& tableName, const std::string& valueColumnName, int value,
 			const std::string& identifierColumnName, const std::string& identifierValue) {
-			return storeData(dbName, tableName, valueColumnName, value, identifierColumnName, identifierValue);
+			return storeData(dbName, tableName, valueColumnName, value, SqlCom::INT, identifierColumnName, identifierValue);
 		}
 
 		/// <summary>
@@ -537,7 +583,7 @@ namespace SqliteHandler {
 		/// <returns>int, should be 0</returns>
 		static int StoreData(const std::string dbName, const std::string& tableName, const std::string& valueColumnName, const std::vector<std::string>& value,
 			const std::string& identifierColumnName, const std::string& identifierValue) {
-			return storeData(dbName, tableName, valueColumnName, value, identifierColumnName, identifierValue);
+			return storeData(dbName, tableName, valueColumnName, value, SqlCom::BLOB, identifierColumnName, identifierValue);
 		}
 
 		/// <summary>
@@ -547,7 +593,7 @@ namespace SqliteHandler {
 		/// <returns>int, should be 0</returns>
 		static int StoreData(const std::string dbName, const std::string& tableName, const std::string& valueColumnName, const std::vector<int>& value,
 			const std::string& identifierColumnName, const std::string& identifierValue) {
-			return storeData(dbName, tableName, valueColumnName, value, identifierColumnName, identifierValue);
+			return storeData(dbName, tableName, valueColumnName, value, SqlCom::BLOB, identifierColumnName, identifierValue);
 		}
 
 		/// <summary>
@@ -558,7 +604,7 @@ namespace SqliteHandler {
 		static int StoreData(const std::string dbName, const std::string& tableName, const std::string& valueColumnName,
 			const std::vector<std::pair<int, int>>& value,
 			const std::string& identifierColumnName, const std::string& identifierValue) {
-			return storeData(dbName, tableName, valueColumnName, value, identifierColumnName, identifierValue);
+			return storeData(dbName, tableName, valueColumnName, value, SqlCom::BLOB, identifierColumnName, identifierValue);
 		}
 	};
 
