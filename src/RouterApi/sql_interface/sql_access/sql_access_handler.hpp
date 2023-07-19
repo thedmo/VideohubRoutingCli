@@ -27,6 +27,10 @@ namespace SqliteHandler {
 		static inline sqlite3* m_database;
 		//static inline sql_access sql;
 
+		static inline const std::string V_CHAR = "VARCHAR";
+		static inline const std::string INT = "INT";
+		static inline const std::string BLOB = "BLOB";
+
 	public:
 		/// <summary>
 		/// Connects to database located at same location as executable
@@ -273,6 +277,49 @@ namespace SqliteHandler {
 			return sqlite3_bind_blob(stmt, index, serializedData.data(), static_cast<int>(serializedData.size()), SQLITE_TRANSIENT);
 		}
 	};
+
+	class DbMod : private SqlCom, private ValueBinder {
+	public:
+
+
+		DbMod() {  };
+
+		static int CreateTableWithPrimaryKey(std::string dbName, std::string tableName, std::string primaryKeyName, const std::string primaryKeyType) {
+			int result;
+			std::string query = "CREATE TABLE IF NOT EXISTS " + tableName + " (" + primaryKeyName + " " + primaryKeyType + " PRIMARY KEY);";
+			auto database = SqlCom::ConnectToDatabase(dbName);
+			auto statement = SqlCom::GetStatement(query);
+
+			result = SqlCom::Query(statement);
+			if (result) return 1;
+
+			return SqlCom::CloseConnection();
+		}
+
+		static int CreateTableWithForeignKey(std::string dbName, std::string tableName, std::string foreignKeyColumnName, std::string foreignKeyColumnType, std::string primaryKeyTableName, std::string primaryKeyColumnName) {
+			int result;
+			std::string query = "CREATE TABLE IF NOT EXISTS " + tableName + " (" + foreignKeyColumnName + " " + foreignKeyColumnType + ", FOREIGN KEY(" + foreignKeyColumnName + ") REFERENCES " + primaryKeyTableName + "(" + primaryKeyColumnName + "));";
+			auto database = SqlCom::ConnectToDatabase(dbName);
+			auto statement = SqlCom::GetStatement(query);
+
+			result = SqlCom::Query(statement);
+			if (result) return 1;
+
+			return SqlCom::CloseConnection();
+		}
+
+	private:
+		static std::vector<std::string> GetColumnNames(std::string dbName, std::string tableName, int& result) {
+			std::vector<std::string> columns;
+			Table queryResultSet;
+
+			result = SqlCom::ConnectToDatabase(dbName);
+			if (result) return columns;
+
+			std::string query = "SELECT * FROM " + tableName + ";";
+
+			auto statement = SqlCom::GetStatement(query, result);
+			if (result) return columns;
 
 
 	class DataSetter : private ValueBinder, private SqlCom {
@@ -532,80 +579,5 @@ namespace SqliteHandler {
 		}
 	};
 
-	class DbMod : private SqlCom, private ValueBinder {
-	public:
-		static inline const std::string V_CHAR = "VARCHAR";
-		static inline const std::string INT = "INT";
-		static inline const std::string BLOB = "BLOB";
-
-		DbMod() {  };
-
-		static int CreateTableWithPrimaryKey(std::string dbName, std::string tableName, std::string primaryKeyName, const std::string primaryKeyType) {
-			int result;
-			std::string query = "CREATE TABLE IF NOT EXISTS " + tableName + " (" + primaryKeyName + " " + primaryKeyType + " PRIMARY KEY);";
-			auto database = SqlCom::ConnectToDatabase(dbName);
-			auto statement = SqlCom::GetStatement(query);
-
-			result = SqlCom::Query(statement);
-			if (result) return 1;
-
-			return SqlCom::CloseConnection();
-		}
-
-		static int CreateTableWithForeignKey(std::string dbName, std::string tableName, std::string foreignKeyColumnName, std::string foreignKeyColumnType, std::string primaryKeyTableName, std::string primaryKeyColumnName) {
-			int result;
-			std::string query = "CREATE TABLE IF NOT EXISTS " + tableName + " (" + foreignKeyColumnName + " " + foreignKeyColumnType + ", FOREIGN KEY(" + foreignKeyColumnName + ") REFERENCES " + primaryKeyTableName + "(" + primaryKeyColumnName + "));";
-			auto database = SqlCom::ConnectToDatabase(dbName);
-			auto statement = SqlCom::GetStatement(query);
-
-			result = SqlCom::Query(statement);
-			if (result) return 1;
-
-			return SqlCom::CloseConnection();
-		}
-
-	private:
-		static std::vector<std::string> GetColumnNames(std::string dbName, std::string tableName, int& result) {
-			std::vector<std::string> columns;
-
-			result = SqlCom::ConnectToDatabase(dbName);
-			if (result) return;
-
-			std::string query = "PRAGMA table_info(" + tableName + ");";
-
-			auto statement = SqlCom::GetStatement(query, result);
-			if (result) return;
-
-			result = SqlCom::Query(statement, columns);
-			if (result) return;
-
-			return columns;
-		}
-
-	public:
-		static int AddColumn(std::string dbName, std::string tableName, std::string columnName, std::string columnType) {
-			int result;
-
-			std::vector<std::string> columns = GetColumnNames(dbName, tableName, result);
-
-			for (auto column : columns) {
-				if (column == columnName)
-				{
-					return 0;
-				}
-			}
-
-			result = SqlCom::ConnectToDatabase(dbName);
-			auto queryStr = "ALTER TABLE " + tableName + " ADD COLUMN " + columnName + " " + columnType + ";";
-
-			auto statement = SqlCom::GetStatement(queryStr, result);
-			if (result)	return 1;
-
-			result = SqlCom::Query(statement);
-			if (result)	return 1;
-
-			return SqlCom::CloseConnection();
-		}
-	}; // Class DbMod
 
 } // namespace SqliteHandler
