@@ -3,6 +3,7 @@
 #include <sql_access.hpp>
 #include <istream>
 #include <iostream>
+#include <variant>
 
 
 using namespace sqlAccess;
