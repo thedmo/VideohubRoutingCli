@@ -431,6 +431,35 @@ namespace SqliteHandler {
 
 			return SqlCom::CloseConnection();
 		}
+
+		static int CheckIfRowExists(const std::string dbName, const std::string tableName, const std::string colName, const std::string fieldValue) {
+			int result;
+
+			result = CheckIfColumnExists(dbName, tableName, colName);
+			if (!result) return 1;
+
+			result = SqlCom::ConnectToDatabase(dbName);
+			if (result) return 1;
+
+			std::string queryStr = "SELECT * FROM " + tableName + " WHERE " + colName + " = ?;";
+			auto statement = SqlCom::GetStatement(queryStr, result);
+			if (result) return 1;
+
+			result = ValueBinder::Bind(statement, 1, fieldValue);
+			if (result) return 1;
+
+
+			Table resultSet;
+			result = SqlCom::Query(statement, resultSet);
+			if (result) return 1;
+
+			if (resultSet.size() > 0) return 1; // does exist
+
+
+
+			return 0; // does not exist
+		}
+
 	}; // Class DbMod
 
 	class DataSetter : private ValueBinder, private SqlCom, private DbMod {
@@ -454,11 +483,13 @@ namespace SqliteHandler {
 			return SqlCom::CloseConnection();
 		}
 
-		// HIER WEITER
 		static int RemoveRow(const std::string dbName, const std::string& tableName, const std::string& rowKeyColumnName, std::string rowKeyValue) {
 			int result = 0;
 
 			result = DbMod::CheckIfColumnExists(dbName, tableName, rowKeyColumnName);
+			if (!result) return 1;
+
+			result = DbMod::CheckIfRowExists(dbName, tableName, rowKeyColumnName, rowKeyValue);
 			if (!result) return 1;
 
 			result = SqlCom::ConnectToDatabase(dbName);
@@ -513,9 +544,6 @@ namespace SqliteHandler {
 
 			return 1;
 		}
-
-
-		// gibt kein Fehler zurück wenn typ nicht übereinstimmt (TODO: Funktionalität für column typecheck einbauen)
 
 		/// <summary>
 		/// Helperfunction that Stores Data into a Sqlite database. deduces datatype
