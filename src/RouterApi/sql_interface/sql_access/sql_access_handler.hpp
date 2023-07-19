@@ -6,6 +6,16 @@
 
 
 using namespace sqlAccess;
+using Field =
+std::variant<
+	int,
+	std::string,
+	std::vector<char*>,
+	std::variant<std::monostate>
+>;
+using Row = std::vector<Field>;
+using Table = std::vector<Row>;
+
 
 namespace SqliteHandler {
 	template<typename T>
