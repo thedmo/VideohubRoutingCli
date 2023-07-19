@@ -223,7 +223,7 @@ TEST_CASE("Remove existing Row by value of non existent column, should return 1"
 		DB,
 		"TestTable2",
 		"col50",
-		"row50"
+		"row2"
 	);
 
 	REQUIRE(result == 1);
