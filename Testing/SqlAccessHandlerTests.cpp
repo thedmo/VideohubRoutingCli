@@ -164,7 +164,7 @@ TEST_CASE("Add Table with foreign reference") {
 }
 
 TEST_CASE("Add Rows into table") {
-	int result = SqliteHandler::DataSetter::InsertRow(
+	int result = SqliteHandler::DbMod::InsertRow(
 		DB,
 		t2,
 		colid,
@@ -172,7 +172,7 @@ TEST_CASE("Add Rows into table") {
 	);
 	REQUIRE(result == 0);
 
-	result = SqliteHandler::DataSetter::InsertRow(
+	result = SqliteHandler::DbMod::InsertRow(
 		DB,
 		t2,
 		colid,
@@ -180,7 +180,7 @@ TEST_CASE("Add Rows into table") {
 	);
 	REQUIRE(result == 0);
 
-	result = SqliteHandler::DataSetter::InsertRow(
+	result = SqliteHandler::DbMod::InsertRow(
 		DB,
 		t2,
 		colid,
@@ -300,7 +300,7 @@ TEST_CASE("Update blob field with vector containing integers") {
 TEST_CASE("Remove existing Row, should return 0") {
 	int result;
 
-	result = SqliteHandler::DataSetter::RemoveRow(
+	result = SqliteHandler::DbMod::RemoveRow(
 		DB,
 		t2,
 		colid,
@@ -313,7 +313,7 @@ TEST_CASE("Remove existing Row, should return 0") {
 TEST_CASE("Remove inexistent Row, should return errorcode") {
 	int result;
 
-	result = SqliteHandler::DataSetter::RemoveRow(
+	result = SqliteHandler::DbMod::RemoveRow(
 		DB,
 		t2,
 		colid,
@@ -326,7 +326,7 @@ TEST_CASE("Remove inexistent Row, should return errorcode") {
 TEST_CASE("Remove existing Row by value of non existent column, should return errorcode") {
 	int result;
 
-	result = SqliteHandler::DataSetter::RemoveRow(
+	result = SqliteHandler::DbMod::RemoveRow(
 		DB,
 		t2,
 		"col50",
@@ -379,4 +379,13 @@ TEST_CASE("Load vector with pairs from table in database") {
 	result = DataGetter::LoadData(DB, t2, colVecPair, data);
 
 	REQUIRE(data[0] == pairVec1);
+}
+
+TEST_CASE("Load string from column with int. should return errorcode") {
+	int result = 0;
+	std::vector<int> data;
+
+	result = DataGetter::LoadData(DB, t2, colStr, data);
+
+	REQUIRE(result == 1);
 }

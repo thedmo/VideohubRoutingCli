@@ -22,6 +22,7 @@ namespace SqliteHandler {
 	template<typename T>
 	using DataContainer = std::vector<T>;
 
+	// direct communication with sqlite3 library
 	class SqlCom {
 	private:
 		static inline sqlite3* m_database;
@@ -329,183 +330,9 @@ namespace SqliteHandler {
 		}
 	};
 
-	class DbMod : private SqlCom, private ValueBinder {
+	// Information about tables in database
+	class TableInfo : private SqlCom, private ValueBinder {
 	public:
-
-
-		DbMod() {  };
-
-		static int CreateTableWithPrimaryKey(std::string dbName, std::string tableName, std::string primaryKeyName, const std::string primaryKeyType) {
-			int result;
-			std::string query = "CREATE TABLE IF NOT EXISTS " + tableName + " (" + primaryKeyName + " " + primaryKeyType + " PRIMARY KEY);";
-			auto database = SqlCom::ConnectToDatabase(dbName);
-			auto statement = SqlCom::GetStatement(query);
-
-			result = SqlCom::Query(statement);
-			if (result) return 1;
-
-			return SqlCom::CloseConnection();
-		}
-
-		static int CreateTableWithForeignKey(std::string dbName, std::string tableName, std::string foreignKeyColumnName, std::string foreignKeyColumnType, std::string primaryKeyTableName, std::string primaryKeyColumnName) {
-			int result;
-			std::string query = "CREATE TABLE IF NOT EXISTS " + tableName + " (" + foreignKeyColumnName + " " + foreignKeyColumnType + ", FOREIGN KEY(" + foreignKeyColumnName + ") REFERENCES " + primaryKeyTableName + "(" + primaryKeyColumnName + "));";
-			auto database = SqlCom::ConnectToDatabase(dbName);
-			auto statement = SqlCom::GetStatement(query);
-
-			result = SqlCom::Query(statement);
-			if (result) return 1;
-
-			return SqlCom::CloseConnection();
-		}
-
-	private:
-		static std::vector<std::string> GetColumnNames(std::string dbName, std::string tableName, int& result) {
-			std::vector<std::string> columns;
-			Table queryResultSet;
-
-			result = SqlCom::ConnectToDatabase(dbName);
-			if (result) return columns;
-
-			std::string query = "SELECT * FROM " + tableName + ";";
-
-			auto statement = SqlCom::GetStatement(query, result);
-			if (result) return columns;
-
-			result = SqlCom::Query(statement, queryResultSet);
-			if (result) return columns;
-
-			if (queryResultSet.empty()) return columns.push_back(""), columns;
-
-			Row rowZero = queryResultSet[0];
-			for (size_t i = 0; i < rowZero.size(); i++)
-			{
-				auto& field = rowZero[i];
-				columns.push_back(std::get<std::string>(field));
-			}
-
-			result = SqlCom::CloseConnection();
-			if (result) return columns;
-
-			return columns;
-		}
-
-	protected:
-		/// <summary>
-		/// Check, if columnName is in specified table
-		/// </summary>
-		/// <param name="dbName">name of database</param>
-		/// <param name="tableName">name of table</param>
-		/// <param name="columnNameToLookFor">name of column to look for</param>
-		/// <returns>0 if name of column is found in table</returns>
-		static int CheckIfColumnExists(std::string dbName, std::string tableName, std::string columnNameToLookFor) {
-			int result = 0;
-
-			auto columnNames = GetColumnNames(dbName, tableName, result);
-			if (result) return 1;
-
-			for (auto& columnName : columnNames) {
-				if (columnNameToLookFor == columnName) {
-					return 1; // does exist
-				}
-			}
-			return 0; // does not exist
-		}
-
-	public:
-		static int AddColumn(std::string dbName, std::string tableName, std::string columnName, std::string columnType) {
-			int result;
-
-			result = CheckIfColumnExists(dbName, tableName, columnName);
-			if (result)	return 1; // return 1, if already existing
-
-			result = SqlCom::ConnectToDatabase(dbName);
-			if (result)	return 1;
-
-			auto queryStr = "ALTER TABLE " + tableName + " ADD COLUMN " + columnName + " " + columnType + ";";
-			auto statement = SqlCom::GetStatement(queryStr, result);
-			if (result)	return 1;
-
-			result = SqlCom::Query(statement);
-			if (result)	return 1;
-
-			return SqlCom::CloseConnection();
-		}
-
-		static int CheckIfRowExists(const std::string dbName, const std::string tableName, const std::string colName, const std::string fieldValue) {
-			int result;
-
-			result = CheckIfColumnExists(dbName, tableName, colName);
-			if (!result) return 1;
-
-			result = SqlCom::ConnectToDatabase(dbName);
-			if (result) return 1;
-
-			std::string queryStr = "SELECT * FROM " + tableName + " WHERE " + colName + " = ?;";
-			auto statement = SqlCom::GetStatement(queryStr, result);
-			if (result) return 1;
-
-			result = ValueBinder::Bind(statement, 1, fieldValue);
-			if (result) return 1;
-
-
-			Table resultSet;
-			result = SqlCom::Query(statement, resultSet);
-			if (result) return 1;
-
-			if (resultSet.size() > 0) return 1; // does exist
-
-
-
-			return 0; // does not exist
-		}
-
-	}; // Class DbMod
-
-	class DataSetter : private ValueBinder, private SqlCom, private DbMod {
-	public:
-		DataSetter() {};
-
-		static int InsertRow(const std::string dbName, const std::string& table, const std::string& column, std::string value) {
-			int result = 0;
-			int rowCount = 0;
-			std::string queryStr;
-			auto database = SqlCom::ConnectToDatabase(dbName);
-
-			queryStr = "INSERT OR IGNORE INTO " + table + " (" + column + ") VALUES (?)";
-			auto statement = SqlCom::GetStatement(queryStr);
-
-			Bind(statement, 1, value);
-
-			result = SqlCom::Query(statement);
-			if (result) return 1;
-
-			return SqlCom::CloseConnection();
-		}
-
-		static int RemoveRow(const std::string dbName, const std::string& tableName, const std::string& rowKeyColumnName, std::string rowKeyValue) {
-			int result = 0;
-
-			result = DbMod::CheckIfColumnExists(dbName, tableName, rowKeyColumnName);
-			if (!result) return 1;
-
-			result = DbMod::CheckIfRowExists(dbName, tableName, rowKeyColumnName, rowKeyValue);
-			if (!result) return 1;
-
-			result = SqlCom::ConnectToDatabase(dbName);
-			if (result) return 1;
-
-			std::string query = "DELETE FROM " + tableName + " WHERE " + rowKeyColumnName + " = ?";
-			auto statement = SqlCom::GetStatement(query, result);
-			if (result) return 1;
-
-			result = ValueBinder::Bind(statement, 1, rowKeyValue);
-			if (result) return 1;
-
-			return SqlCom::Query(statement);
-		}
-
-	private:
 		static int CompareColumnType(std::string dbName, std::string tableName, std::string columnName, std::string typeStr) {
 			int result = 0;
 			Table resultSet;
@@ -545,6 +372,176 @@ namespace SqliteHandler {
 			return 1;
 		}
 
+		static std::vector<std::string> GetColumnNames(std::string dbName, std::string tableName, int& result) {
+			std::vector<std::string> columns;
+			Table queryResultSet;
+
+			result = SqlCom::ConnectToDatabase(dbName);
+			if (result) return columns;
+
+			std::string query = "SELECT * FROM " + tableName + ";";
+
+			auto statement = SqlCom::GetStatement(query, result);
+			if (result) return columns;
+
+			result = SqlCom::Query(statement, queryResultSet);
+			if (result) return columns;
+
+			if (queryResultSet.empty()) return columns.push_back(""), columns;
+
+			Row rowZero = queryResultSet[0];
+			for (size_t i = 0; i < rowZero.size(); i++)
+			{
+				auto& field = rowZero[i];
+				columns.push_back(std::get<std::string>(field));
+			}
+
+			result = SqlCom::CloseConnection();
+			if (result) return columns;
+
+			return columns;
+		}
+
+		/// <summary>
+		/// Check, if columnName is in specified table
+		/// </summary>
+		/// <param name="dbName">name of database</param>
+		/// <param name="tableName">name of table</param>
+		/// <param name="columnNameToLookFor">name of column to look for</param>
+		/// <returns>0 if name of column is found in table</returns>
+		static int CheckIfColumnExists(std::string dbName, std::string tableName, std::string columnNameToLookFor) {
+			int result = 0;
+
+			auto columnNames = GetColumnNames(dbName, tableName, result);
+			if (result) return 1;
+
+			for (auto& columnName : columnNames) {
+				if (columnNameToLookFor == columnName) {
+					return 1; // does exist
+				}
+			}
+			return 0; // does not exist
+		}
+
+		static int CheckIfRowExists(const std::string dbName, const std::string tableName, const std::string colName, const std::string fieldValue) {
+			int result;
+
+			result = CheckIfColumnExists(dbName, tableName, colName);
+			if (!result) return 1;
+
+			result = SqlCom::ConnectToDatabase(dbName);
+			if (result) return 1;
+
+			std::string queryStr = "SELECT * FROM " + tableName + " WHERE " + colName + " = ?;";
+			auto statement = SqlCom::GetStatement(queryStr, result);
+			if (result) return 1;
+
+			result = ValueBinder::Bind(statement, 1, fieldValue);
+			if (result) return 1;
+
+			Table resultSet;
+			result = SqlCom::Query(statement, resultSet);
+			if (result) return 1;
+
+			if (resultSet.size() > 0) return 1; // does exist
+
+			return 0; // does not exist
+		}
+	}; // class TableInfo
+
+	class DbMod : private SqlCom, private ValueBinder, private TableInfo {
+	public:
+		DbMod() {  };
+
+		static int CreateTableWithPrimaryKey(std::string dbName, std::string tableName, std::string primaryKeyName, const std::string primaryKeyType) {
+			int result;
+			std::string query = "CREATE TABLE IF NOT EXISTS " + tableName + " (" + primaryKeyName + " " + primaryKeyType + " PRIMARY KEY);";
+			auto database = SqlCom::ConnectToDatabase(dbName);
+			auto statement = SqlCom::GetStatement(query);
+
+			result = SqlCom::Query(statement);
+			if (result) return 1;
+
+			return SqlCom::CloseConnection();
+		}
+
+		static int CreateTableWithForeignKey(std::string dbName, std::string tableName, std::string foreignKeyColumnName, std::string foreignKeyColumnType, std::string primaryKeyTableName, std::string primaryKeyColumnName) {
+			int result;
+			std::string query = "CREATE TABLE IF NOT EXISTS " + tableName + " (" + foreignKeyColumnName + " " + foreignKeyColumnType + ", FOREIGN KEY(" + foreignKeyColumnName + ") REFERENCES " + primaryKeyTableName + "(" + primaryKeyColumnName + "));";
+			auto database = SqlCom::ConnectToDatabase(dbName);
+			auto statement = SqlCom::GetStatement(query);
+
+			result = SqlCom::Query(statement);
+			if (result) return 1;
+
+			return SqlCom::CloseConnection();
+		}
+
+		static int AddColumn(std::string dbName, std::string tableName, std::string columnName, std::string columnType) {
+			int result;
+
+			result = CheckIfColumnExists(dbName, tableName, columnName);
+			if (result)	return 1; // return 1, if already existing
+
+			result = SqlCom::ConnectToDatabase(dbName);
+			if (result)	return 1;
+
+			auto queryStr = "ALTER TABLE " + tableName + " ADD COLUMN " + columnName + " " + columnType + ";";
+			auto statement = SqlCom::GetStatement(queryStr, result);
+			if (result)	return 1;
+
+			result = SqlCom::Query(statement);
+			if (result)	return 1;
+
+			return SqlCom::CloseConnection();
+		}
+
+		static int InsertRow(const std::string dbName, const std::string& table, const std::string& column, std::string value) {
+			int result = 0;
+			int rowCount = 0;
+			std::string queryStr;
+			auto database = SqlCom::ConnectToDatabase(dbName);
+
+			queryStr = "INSERT OR IGNORE INTO " + table + " (" + column + ") VALUES (?)";
+			auto statement = SqlCom::GetStatement(queryStr);
+
+			Bind(statement, 1, value);
+
+			result = SqlCom::Query(statement);
+			if (result) return 1;
+
+			return SqlCom::CloseConnection();
+		}
+
+		static int RemoveRow(const std::string dbName, const std::string& tableName, const std::string& rowKeyColumnName, std::string rowKeyValue) {
+			int result = 0;
+
+			result = CheckIfColumnExists(dbName, tableName, rowKeyColumnName);
+			if (!result) return 1;
+
+			result = CheckIfRowExists(dbName, tableName, rowKeyColumnName, rowKeyValue);
+			if (!result) return 1;
+
+			result = SqlCom::ConnectToDatabase(dbName);
+			if (result) return 1;
+
+			std::string query = "DELETE FROM " + tableName + " WHERE " + rowKeyColumnName + " = ?";
+			auto statement = SqlCom::GetStatement(query, result);
+			if (result) return 1;
+
+			result = ValueBinder::Bind(statement, 1, rowKeyValue);
+			if (result) return 1;
+
+			return SqlCom::Query(statement);
+		}
+
+	}; // Class DbMod
+
+	class DataSetter : private ValueBinder, private SqlCom, private TableInfo {
+	public:
+		DataSetter() {};
+
+	private:
 		/// <summary>
 		/// Helperfunction that Stores Data into a Sqlite database. deduces datatype
 		/// </summary>
@@ -556,7 +553,7 @@ namespace SqliteHandler {
 			const std::string& valueColumnName,
 			const ValueType& value,
 			const std::string valueType,
-			const std::string& identifierColumnName, 
+			const std::string& identifierColumnName,
 			const IdentifierType& identifierValue
 		) {
 			int result;
@@ -719,8 +716,13 @@ namespace SqliteHandler {
 
 				ValueType data;
 
-				result = retrieveData(stmt, data, 0);  // Assuming the value is in the first column (index 0)
-				if (result != 0) {
+				try {
+					result = retrieveData(stmt, data, 0);  // Assuming the value is in the first column (index 0)
+					if (result != 0) {
+						return 1;
+					}
+				}
+				catch (std::exception e) {
 					return 1;
 				}
 
@@ -761,15 +763,26 @@ namespace SqliteHandler {
 			const std::string valueColumn,
 			Ret_Type& dataVector
 		) {
+			int result;
+
 			std::string queryStr = "SELECT " + valueColumn + " FROM " + table;
-			auto database = SqlCom::ConnectToDatabase(dbName);
+			result = SqlCom::ConnectToDatabase(dbName);
+			if (result) return 1;
 
-			sqlite3_stmt* stmt = SqlCom::GetStatement(queryStr);
+			sqlite3_stmt* stmt = SqlCom::GetStatement(queryStr, result);
+			if (result) return 1;
 
-			loadData(stmt, dataVector);
+			try
+			{
+				result = loadData(stmt, dataVector);
+			}
+			catch (const std::exception&)
+			{
+				return 1;
+			}
+			if (result) return 1;
+
 			return SqlCom::CloseConnection();
 		}
 	};
-
-
 } // namespace SqliteHandler
