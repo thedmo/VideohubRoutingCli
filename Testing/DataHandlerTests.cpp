@@ -102,17 +102,44 @@ void Initialize() {
 	if (isInitialized) {
 		return;
 	}
+	isInitialized = true;
 
 	DHTestValues::InitializeDevices();
+	DataHandler::InitializeStorage();
+}
+
+void DropTablesDataHandler() {
+	int result = 0;
+
+	result = SqlCom::ConnectToDatabase(DataHandler::DB_NAME);
+
+	std::string queryStr = "DROP TABLE IF EXISTS "+ DataHandler::DEVICES_TABLE +";";
+	auto statement = SqlCom::GetStatement(queryStr, result);
+	result = SqlCom::Query(statement);
+
+	queryStr = "DROP TABLE IF EXISTS "+ DataHandler::ROUTINGS_TABLE +";";
+	statement = SqlCom::GetStatement(queryStr, result);
+	result = SqlCom::Query(statement);
+
+	result = SqlCom::CloseConnection();
+}
+
+void RemoveDevicesFromTable(std::unique_ptr<device_data> &device) {
+	DataHandler::RemoveDevice(device);
 }
 
 TEST_CASE("Add New Devices to database") {
 	Initialize();
 
+	RemoveDevicesFromTable(DHTestValues::device1);
+	RemoveDevicesFromTable(DHTestValues::device2);
+	RemoveDevicesFromTable(DHTestValues::device3);
+
 	REQUIRE(DataHandler::AddDevice(DHTestValues::device1) == 0);
 	REQUIRE(DataHandler::AddDevice(DHTestValues::device2) == 0);
 	REQUIRE(DataHandler::AddDevice(DHTestValues::device3) == 0);
+}
 
-	// duplicate entry
+TEST_CASE("Add already existing device to storage") {
 	REQUIRE(DataHandler::AddDevice(DHTestValues::device1) == 1);
 }
