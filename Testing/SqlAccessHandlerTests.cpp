@@ -43,53 +43,53 @@ const std::vector <std::pair<int, int>> pairVec1 = { { int1, int2 },{ int3, int4
 void DropTables() {
 	int result = 0;
 
-	result = SqliteHandler::SqlCom::ConnectToDatabase(DB);
+	result = SqlCom::ConnectToDatabase(DB);
 
 	std::string queryStr = "DROP TABLE IF EXISTS TestTable1;";
-	auto statement = SqliteHandler::SqlCom::GetStatement(queryStr, result);
-	result = SqliteHandler::SqlCom::Query(statement);
+	auto statement = SqlCom::GetStatement(queryStr, result);
+	result = SqlCom::Query(statement);
 
 	queryStr = "DROP TABLE IF EXISTS TestTable2;";
-	statement = SqliteHandler::SqlCom::GetStatement(queryStr, result);
-	result = SqliteHandler::SqlCom::Query(statement);
+	statement = SqlCom::GetStatement(queryStr, result);
+	result = SqlCom::Query(statement);
 
 	queryStr = "DROP TABLE IF EXISTS TestTable3;";
-	statement = SqliteHandler::SqlCom::GetStatement(queryStr, result);
-	result = SqliteHandler::SqlCom::Query(statement);
+	statement = SqlCom::GetStatement(queryStr, result);
+	result = SqlCom::Query(statement);
 
-	result = SqliteHandler::SqlCom::CloseConnection();
+	result = SqlCom::CloseConnection();
 }
 
 TEST_CASE("Connect to Database") {
-	int result = SqliteHandler::SqlCom::ConnectToDatabase("SqlHandlerTestDatabase");
+	int result = SqlCom::ConnectToDatabase("SqlHandlerTestDatabase");
 	REQUIRE(result == 0);
-	SqliteHandler::SqlCom::CloseConnection();
+	SqlCom::CloseConnection();
 }
 
 TEST_CASE("prepare statement") {
 	DropTables();
 
-	int result = SqliteHandler::SqlCom::ConnectToDatabase("SqlHandlerTestDatabase");
-	auto statement = SqliteHandler::SqlCom::GetStatement("CREATE TABLE IF NOT EXISTS TestTable1 (testColumn VARCHAR PRIMARY KEY);", result);
+	int result = SqlCom::ConnectToDatabase("SqlHandlerTestDatabase");
+	auto statement = SqlCom::GetStatement("CREATE TABLE IF NOT EXISTS TestTable1 (testColumn VARCHAR PRIMARY KEY);", result);
 
 	REQUIRE(result == 0);
-	SqliteHandler::SqlCom::CloseConnection();
+	SqlCom::CloseConnection();
 }
 
 TEST_CASE("Test Query function") {
 	DropTables();
-	int result = SqliteHandler::SqlCom::ConnectToDatabase("SqlHandlerTestDatabase");
-	auto statement = SqliteHandler::SqlCom::GetStatement("CREATE TABLE IF NOT EXISTS TestTable1 (testColumn VARCHAR PRIMARY KEY);", result);
+	int result = SqlCom::ConnectToDatabase("SqlHandlerTestDatabase");
+	auto statement = SqlCom::GetStatement("CREATE TABLE IF NOT EXISTS TestTable1 (testColumn VARCHAR PRIMARY KEY);", result);
 	REQUIRE(result == 0);
-	result = SqliteHandler::SqlCom::Query(statement);
+	result = SqlCom::Query(statement);
 
 	REQUIRE(result == 0);
-	SqliteHandler::SqlCom::CloseConnection();
+	SqlCom::CloseConnection();
 }
 
 TEST_CASE("Add Table Primary function") {
 
-	int result = SqliteHandler::DbMod::CreateTableWithPrimaryKey(
+	int result = DbMod::CreateTableWithPrimaryKey(
 		DB,
 		t2,
 		colid,
@@ -100,7 +100,7 @@ TEST_CASE("Add Table Primary function") {
 }
 
 TEST_CASE("Add Text Column") {
-	int result = SqliteHandler::DbMod::AddColumn(
+	int result = DbMod::AddColumn(
 		DB,
 		t2,
 		colStr,
@@ -111,7 +111,7 @@ TEST_CASE("Add Text Column") {
 }
 
 TEST_CASE("Add Int Column") {
-	int result = SqliteHandler::DbMod::AddColumn(
+	int result = DbMod::AddColumn(
 		DB,
 		t2,
 		colInt,
@@ -122,7 +122,7 @@ TEST_CASE("Add Int Column") {
 }
 
 TEST_CASE("Add some Blob Columns") {
-	int result = SqliteHandler::DbMod::AddColumn(
+	int result = DbMod::AddColumn(
 		DB,
 		t2,
 		colVecPair,
@@ -131,7 +131,7 @@ TEST_CASE("Add some Blob Columns") {
 
 	REQUIRE(result == 0);
 
-	result = SqliteHandler::DbMod::AddColumn(
+	result = DbMod::AddColumn(
 		DB,
 		t2,
 		colVecString,
@@ -140,7 +140,7 @@ TEST_CASE("Add some Blob Columns") {
 
 	REQUIRE(result == 0);
 
-	result = SqliteHandler::DbMod::AddColumn(
+	result = DbMod::AddColumn(
 		DB,
 		t2,
 		colVecInt,
@@ -151,7 +151,7 @@ TEST_CASE("Add some Blob Columns") {
 }
 
 TEST_CASE("Add Table with foreign reference") {
-	int result = SqliteHandler::DbMod::CreateTableWithForeignKey(
+	int result = DbMod::CreateTableWithForeignKey(
 		DB,
 		t3,
 		colid,
@@ -164,7 +164,7 @@ TEST_CASE("Add Table with foreign reference") {
 }
 
 TEST_CASE("Add Rows into table") {
-	int result = SqliteHandler::DbMod::InsertRow(
+	int result = DbMod::InsertRow(
 		DB,
 		t2,
 		colid,
@@ -172,7 +172,7 @@ TEST_CASE("Add Rows into table") {
 	);
 	REQUIRE(result == 0);
 
-	result = SqliteHandler::DbMod::InsertRow(
+	result = DbMod::InsertRow(
 		DB,
 		t2,
 		colid,
@@ -180,7 +180,7 @@ TEST_CASE("Add Rows into table") {
 	);
 	REQUIRE(result == 0);
 
-	result = SqliteHandler::DbMod::InsertRow(
+	result = DbMod::InsertRow(
 		DB,
 		t2,
 		colid,
@@ -191,7 +191,7 @@ TEST_CASE("Add Rows into table") {
 }
 
 TEST_CASE("update text value in field") {
-	int result = SqliteHandler::DataSetter::StoreData(
+	int result = DataSetter::StoreData(
 		DB,
 		t2,
 		colStr,
@@ -204,7 +204,7 @@ TEST_CASE("update text value in field") {
 }
 
 TEST_CASE("update Textvalue in Int Field, should return error") {
-	int result = SqliteHandler::DataSetter::StoreData(
+	int result = DataSetter::StoreData(
 		DB,
 		t2,
 		colInt,
@@ -216,7 +216,7 @@ TEST_CASE("update Textvalue in Int Field, should return error") {
 }
 
 TEST_CASE("Update Textvalue in non existent column, should return error") {
-	int result = SqliteHandler::DataSetter::StoreData(
+	int result = DataSetter::StoreData(
 		DB,
 		t2,
 		"col50",
@@ -228,7 +228,7 @@ TEST_CASE("Update Textvalue in non existent column, should return error") {
 }
 
 TEST_CASE("Update Textvalue in non existent row, should return error") {
-	int result = SqliteHandler::DataSetter::StoreData(
+	int result = DataSetter::StoreData(
 		DB,
 		t2,
 		"col50",
@@ -242,7 +242,7 @@ TEST_CASE("Update Textvalue in non existent row, should return error") {
 TEST_CASE("Update int value in field") {
 	int result = 0;
 
-	result = SqliteHandler::DataSetter::StoreData(
+	result = DataSetter::StoreData(
 		DB,
 		t2,
 		colInt,
@@ -258,7 +258,7 @@ TEST_CASE("Update vector with pairs value in field") {
 	int result = 0;
 
 
-	result = SqliteHandler::DataSetter::StoreData(
+	result = DataSetter::StoreData(
 		DB,
 		t2,
 		colVecPair,
@@ -272,7 +272,7 @@ TEST_CASE("Update vector with pairs value in field") {
 TEST_CASE("Update blob field with vector containing strings") {
 	int result = 0;
 
-	result = SqliteHandler::DataSetter::StoreData(
+	result = DataSetter::StoreData(
 		DB,
 		t2,
 		colVecString,
@@ -286,7 +286,7 @@ TEST_CASE("Update blob field with vector containing strings") {
 TEST_CASE("Update blob field with vector containing integers") {
 	int result = 0;
 
-	result = SqliteHandler::DataSetter::StoreData(
+	result = DataSetter::StoreData(
 		DB,
 		t2,
 		colVecInt,
@@ -300,7 +300,7 @@ TEST_CASE("Update blob field with vector containing integers") {
 TEST_CASE("Remove existing Row, should return 0") {
 	int result;
 
-	result = SqliteHandler::DbMod::RemoveRow(
+	result = DbMod::RemoveRow(
 		DB,
 		t2,
 		colid,
@@ -313,7 +313,7 @@ TEST_CASE("Remove existing Row, should return 0") {
 TEST_CASE("Remove inexistent Row, should return errorcode") {
 	int result;
 
-	result = SqliteHandler::DbMod::RemoveRow(
+	result = DbMod::RemoveRow(
 		DB,
 		t2,
 		colid,
@@ -326,7 +326,7 @@ TEST_CASE("Remove inexistent Row, should return errorcode") {
 TEST_CASE("Remove existing Row by value of non existent column, should return errorcode") {
 	int result;
 
-	result = SqliteHandler::DbMod::RemoveRow(
+	result = DbMod::RemoveRow(
 		DB,
 		t2,
 		"col50",
@@ -340,52 +340,57 @@ TEST_CASE("Load String from table in database") {
 	int result = 0;
 	std::vector<std::string> data;
 
-	result = DataGetter::LoadData(DB, t2, colStr, data);
+	result = DataGetter::LoadData(DB, t2, colStr, colid, row1, data);
 
 	REQUIRE(data[0] == str1);
+	REQUIRE(result == 0);
 }
 
 TEST_CASE("Load Int from table in database") {
 	int result = 0;
 	std::vector<int> data;
 
-	result = DataGetter::LoadData(DB, t2, colInt, data);
+	result = DataGetter::LoadData(DB, t2, colInt, colid, row1, data);
 
 	REQUIRE(data[0] == int2);
+	REQUIRE(result == 0);
 }
 
 TEST_CASE("Load vector with integers from table in database") {
 	int result = 0;
 	std::vector < std::vector<int> > data;
 
-	result = DataGetter::LoadData(DB, t2, colVecInt, data);
+	result = DataGetter::LoadData(DB, t2, colVecInt, colid, row1, data);
 
-	REQUIRE(data[0] == intVec1);
+	REQUIRE((data[0] == intVec1));
+	REQUIRE(result == 0);
 }
 
 TEST_CASE("Load vector with string from table in database") {
 	int result = 0;
 	std::vector < std::vector<std::string> > data;
 
-	result = DataGetter::LoadData(DB, t2, colVecString, data);
+	result = DataGetter::LoadData(DB, t2, colVecString, colid, row1, data);
 
 	REQUIRE(data[0] == strVec1);
+	REQUIRE(result == 0);
 }
 
 TEST_CASE("Load vector with pairs from table in database") {
 	int result = 0;
 	std::vector < std::vector<std::pair<int,int>> > data;
 
-	result = DataGetter::LoadData(DB, t2, colVecPair, data);
+	result = DataGetter::LoadData(DB, t2, colVecPair, colid, row1, data);
 
 	REQUIRE(data[0] == pairVec1);
+	REQUIRE(result == 0);
 }
 
-TEST_CASE("Load string from column with int. should return errorcode") {
+TEST_CASE("Load int from column with string. should return errorcode") {
 	int result = 0;
 	std::vector<int> data;
 
-	result = DataGetter::LoadData(DB, t2, colStr, data);
+	result = DataGetter::LoadData(DB, t2, colStr, colid, row1, data);
 
 	REQUIRE(result == 1);
 }
