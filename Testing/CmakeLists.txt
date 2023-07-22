@@ -14,8 +14,8 @@ set(TestIntegrationFiles
     #"sql_access_tests.cpp"
     #"sql_interface_tests.cpp"
     #"sql_access_handler_tests.cpp"
-    #"DataHandlerTests.cpp"
-     "SqlAccessHandlerTests.cpp"
+    "DataHandlerTests.cpp"
+    "SqlAccessHandlerTests.cpp"
 )
 
 add_executable(tests ${TestIntegrationFiles})
