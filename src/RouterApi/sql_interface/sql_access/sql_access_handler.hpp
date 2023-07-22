@@ -650,15 +650,18 @@ namespace SqliteHandler {
 		}
 	};
 
-	// Get Data from database
+	/// <summary>
+	/// To get data out of tables from a database
+	/// </summary>
 	class DataGetter : private SqlCom, private DataDeserializer, private ValueBinder {
-
-	public:
-		DataGetter() {};
-
 	private:
+		/// <summary>
+		/// Extracts data from Field variant
+		/// </summary>
+		/// <param name="field">reference of variant object</param>
+		/// <param name="fieldData">reference of object to store data into</param>
+		/// <returns>int; 0 = OK</returns>
 		static int GetFieldData(
-			sqlite3_stmt* stmt,
 			Field& field,
 			std::string& fieldData
 		) {
@@ -675,8 +678,13 @@ namespace SqliteHandler {
 			return 0;
 		}
 
+		/// <summary>
+		/// Extracts data from Field variant
+		/// </summary>
+		/// <param name="field">reference of variant object</param>
+		/// <param name="fieldData">reference of object to store data into</param>
+		/// <returns>int; 0 = OK</returns>
 		static int GetFieldData(
-			sqlite3_stmt* stmt,
 			Field& field,
 			int& fieldData
 		) {
@@ -690,8 +698,13 @@ namespace SqliteHandler {
 			return 0;
 		}
 
+		/// <summary>
+		/// Extracts data from Field variant
+		/// </summary>
+		/// <param name="field">reference of variant object</param>
+		/// <param name="fieldData">reference of object to store data into</param>
+		/// <returns>int; 0 = OK</returns>
 		static int GetFieldData(
-			sqlite3_stmt* stmt,
 			Field& field,
 			std::vector<int>& fieldData
 		) {
@@ -711,8 +724,13 @@ namespace SqliteHandler {
 			return 0;
 		}
 
+		/// <summary>
+		/// Extracts data from Field variant
+		/// </summary>
+		/// <param name="field">reference of variant object</param>
+		/// <param name="fieldData">reference of object to store data into</param>
+		/// <returns>int; 0 = OK</returns>
 		static int GetFieldData(
-			sqlite3_stmt* stmt,
 			Field& field,
 			std::vector<std::string>& fieldData
 		) {
@@ -731,8 +749,13 @@ namespace SqliteHandler {
 			return 0;
 		}
 
+		/// <summary>
+		/// Extracts data from Field variant
+		/// </summary>
+		/// <param name="field">reference of variant object</param>
+		/// <param name="fieldData">reference of object to store data into</param>
+		/// <returns>int; 0 = OK</returns>
 		static int GetFieldData(
-			sqlite3_stmt* stmt,
 			Field& field,
 			std::vector<std::pair<int, int>>& fieldData
 		) {
@@ -775,7 +798,7 @@ namespace SqliteHandler {
 				Field field = row[0];
 				Type fieldVar;
 
-				result = GetFieldData(stmt, field, fieldVar);
+				result = GetFieldData(field, fieldVar);
 				if (result) return 1;
 
 				dataVector.push_back(fieldVar);
