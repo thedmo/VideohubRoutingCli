@@ -17,6 +17,10 @@ std::variant<
 using Row = std::vector<Field>;
 using Table = std::vector<Row>;
 
+	const std::string TEXT = "VARCHAR";
+	const std::string INTEGER = "INT";
+	const std::string BLOB = "BLOB";
+
 /// <summary>
 /// Functionality to directly talk to sqlite3 library
 /// </summary>
@@ -30,9 +34,6 @@ namespace {
 		static inline sqlite3* m_database;
 
 	public:
-		static inline const std::string V_CHAR = "VARCHAR";
-		static inline const std::string INT = "INT";
-		static inline const std::string BLOB = "BLOB";
 
 		/// <summary>
 		/// Connects to database located at same location as executable. Creates it, if it does not exist
@@ -76,7 +77,7 @@ namespace {
 		/// </summary>
 		/// <param name="statement">sqlite3_stmt objectpointer of query</param>
 		/// <param name="index">index of field in row of resultset</param>
-		/// <returns>variant with data from field stored into it (INT, VARCHAR or BLOB)</returns>
+		/// <returns>variant with data from field stored into it (INTEGER, VARCHAR or BLOB)</returns>
 		static Field GetField(sqlite3_stmt* statement, int index) {
 			Field field = std::variant<std::monostate >();
 
@@ -92,7 +93,7 @@ namespace {
 				}
 			}
 
-			// INT
+			// INTEGER
 			else if (sqlite3_column_type(statement, index) == SQLITE_INTEGER)
 			{
 				field = sqlite3_column_int(statement, index);
@@ -737,7 +738,7 @@ namespace SqliteHandler {
 		/// <returns>int; 0 = OK </returns>
 		static int StoreData(const std::string dbName, const std::string& tableName, const std::string& valueColumnName, const std::string& value,
 			const std::string& identifierColumnName, const std::string& identifierValue) {
-			return storeData(dbName, tableName, valueColumnName, value, SqlCom::V_CHAR, identifierColumnName, identifierValue);
+			return storeData(dbName, tableName, valueColumnName, value, TEXT, identifierColumnName, identifierValue);
 		}
 
 		/// <summary>
@@ -752,7 +753,7 @@ namespace SqliteHandler {
 		/// <returns>int; 0 = OK </returns>
 		static int StoreData(const std::string dbName, const std::string& tableName, const std::string& valueColumnName, int value,
 			const std::string& identifierColumnName, const std::string& identifierValue) {
-			return storeData(dbName, tableName, valueColumnName, value, SqlCom::INT, identifierColumnName, identifierValue);
+			return storeData(dbName, tableName, valueColumnName, value, INTEGER, identifierColumnName, identifierValue);
 		}
 		/// <summary>
 		/// Stores Data into table of database
@@ -766,7 +767,7 @@ namespace SqliteHandler {
 		/// <returns>int; 0 = OK </returns>
 		static int StoreData(const std::string dbName, const std::string& tableName, const std::string& valueColumnName, const std::vector<std::string>& value,
 			const std::string& identifierColumnName, const std::string& identifierValue) {
-			return storeData(dbName, tableName, valueColumnName, value, SqlCom::BLOB, identifierColumnName, identifierValue);
+			return storeData(dbName, tableName, valueColumnName, value, BLOB, identifierColumnName, identifierValue);
 		}
 
 		/// <summary>
@@ -781,7 +782,7 @@ namespace SqliteHandler {
 		/// <returns>int; 0 = OK </returns>
 		static int StoreData(const std::string dbName, const std::string& tableName, const std::string& valueColumnName, const std::vector<int>& value,
 			const std::string& identifierColumnName, const std::string& identifierValue) {
-			return storeData(dbName, tableName, valueColumnName, value, SqlCom::BLOB, identifierColumnName, identifierValue);
+			return storeData(dbName, tableName, valueColumnName, value, BLOB, identifierColumnName, identifierValue);
 		}
 
 		/// <summary>
@@ -797,7 +798,7 @@ namespace SqliteHandler {
 		static int StoreData(const std::string dbName, const std::string& tableName, const std::string& valueColumnName,
 			const std::vector<std::pair<int, int>>& value,
 			const std::string& identifierColumnName, const std::string& identifierValue) {
-			return storeData(dbName, tableName, valueColumnName, value, SqlCom::BLOB, identifierColumnName, identifierValue);
+			return storeData(dbName, tableName, valueColumnName, value, BLOB, identifierColumnName, identifierValue);
 		}
 	};
 

@@ -10,10 +10,6 @@ const std::string t1 = "TestTable1";
 const std::string t2 = "TestTable2";
 const std::string t3 = "TestTable3";
 
-const std::string INTEGER = "INT";
-const std::string TEXT = "VARCHAR";
-const std::string BLOB = "BLOB";
-
 const std::string colid = "colid";
 const std::string colStr = "colStr";
 const std::string colInt = "colInt";

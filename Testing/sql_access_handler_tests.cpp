@@ -63,26 +63,26 @@ using namespace SqliteHandler;
 TEST_CASE("Create Table1 and add columns") {
 	int result;
 
-	result = DbMod::CreateTableWithPrimaryKey(DBNAME, TABLE1, TestValues::address, DbMod::V_CHAR);
+	result = DbMod::CreateTableWithPrimaryKey(DBNAME, TABLE1, TestValues::address, TEXT);
 	REQUIRE(result == 0);
 
-	result = DbMod::AddColumn(DBNAME, TABLE1, TestValues::count, DbMod::INT);
+	result = DbMod::AddColumn(DBNAME, TABLE1, TestValues::count, INTEGER);
 	REQUIRE(result == 0);
 
-	result = DbMod::AddColumn(DBNAME, TABLE1, TestValues::routes, DbMod::BLOB);
+	result = DbMod::AddColumn(DBNAME, TABLE1, TestValues::routes, BLOB);
 	REQUIRE(result == 0);
 
-	result = DbMod::AddColumn(DBNAME, TABLE1, TestValues::names, DbMod::BLOB);
+	result = DbMod::AddColumn(DBNAME, TABLE1, TestValues::names, BLOB);
 	REQUIRE(result == 0);
 
-	result = DbMod::AddColumn(DBNAME, TABLE1, TestValues::marked, DbMod::BLOB);
+	result = DbMod::AddColumn(DBNAME, TABLE1, TestValues::marked, BLOB);
 	REQUIRE(result == 0);
 }
 
 TEST_CASE("Create Table2 and add columns") {
-	REQUIRE(DbMod::CreateTableWithForeignKey(DBNAME, TABLE2, TestValues::address, DbMod::V_CHAR, TABLE1, TestValues::address) == 0);
+	REQUIRE(DbMod::CreateTableWithForeignKey(DBNAME, TABLE2, TestValues::address, TEXT, TABLE1, TestValues::address) == 0);
 
-	REQUIRE(DbMod::AddColumn(DBNAME, TABLE2, TestValues::routes, DbMod::BLOB) == 0);
+	REQUIRE(DbMod::AddColumn(DBNAME, TABLE2, TestValues::routes, BLOB) == 0);
 }
 
 TEST_CASE("INSERTING rows") {
