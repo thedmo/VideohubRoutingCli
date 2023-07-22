@@ -22,7 +22,7 @@ using Table = std::vector<Row>;
 	const std::string BLOB = "BLOB";
 
 /// <summary>
-/// Functionality to directly talk to sqlite3 library
+/// Functionality to directly talk to sqlite3 library (only for Internal use)
 /// </summary>
 namespace {
 	template<typename T>
@@ -457,26 +457,33 @@ namespace {
 		/// <returns>vector of strings with names of columns</returns>
 		static std::vector<std::string> GetColumnNames(std::string dbName, std::string tableName, int& result) {
 			std::vector<std::string> columns;
-			Table queryResultSet;
+			Table resultSet;
 
 			result = SqlCom::ConnectToDatabase(dbName);
 			if (result) return columns;
 
-			std::string query = "SELECT * FROM " + tableName + ";";
+			std::string queryStr = "PRAGMA table_info (" + tableName + ");";
+			auto statement = GetStatement(queryStr, result);
+			if (result) return columns.push_back(""), columns;
 
-			auto statement = SqlCom::GetStatement(query, result);
-			if (result) return columns;
+			result = Query(statement, resultSet);
+			if (result) return columns.push_back(""), columns;
 
-			result = SqlCom::Query(statement, queryResultSet);
-			if (result) return columns;
+			size_t nameIndex = 0;
 
-			if (queryResultSet.empty()) return columns.push_back(""), columns;
-
-			Row rowZero = queryResultSet[0];
-			for (size_t i = 0; i < rowZero.size(); i++)
+			for (size_t colNum = 0; colNum < resultSet[0].size(); colNum++)
 			{
-				auto& field = rowZero[i];
-				columns.push_back(std::get<std::string>(field));
+				if (std::get<std::string>(resultSet[0][colNum]) == "name")
+				{
+					nameIndex = colNum;
+				}
+			}
+
+			for (size_t i = 1; i < resultSet.size(); i++)
+			{
+				auto columnName = std::get<std::string>(resultSet[i][nameIndex]);
+
+				columns.push_back(columnName);
 			}
 
 			result = SqlCom::CloseConnection();
@@ -631,12 +638,18 @@ namespace SqliteHandler {
 			int result = 0;
 			int rowCount = 0;
 			std::string queryStr;
-			auto database = SqlCom::ConnectToDatabase(dbName);
+
+			result = CheckIfRowExists(dbName, table, column, value);
+			if (result) return 1;
+
+			result = SqlCom::ConnectToDatabase(dbName);
+			if (result) return 1;
 
 			queryStr = "INSERT OR IGNORE INTO " + table + " (" + column + ") VALUES (?)";
-			auto statement = SqlCom::GetStatement(queryStr);
+			auto statement = SqlCom::GetStatement(queryStr, result);
+			if (result) return 1;
 
-			Bind(statement, 1, value);
+			result = Bind(statement, 1, value);
 
 			result = SqlCom::Query(statement);
 			if (result) return 1;
@@ -654,9 +667,6 @@ namespace SqliteHandler {
 		/// <returns>int; 0 = OK</returns>
 		static int RemoveRow(const std::string dbName, const std::string& tableName, const std::string& rowKeyColumnName, std::string rowKeyValue) {
 			int result = 0;
-
-			result = CheckIfColumnExists(dbName, tableName, rowKeyColumnName);
-			if (!result) return 1;
 
 			result = CheckIfRowExists(dbName, tableName, rowKeyColumnName, rowKeyValue);
 			if (!result) return 1;
