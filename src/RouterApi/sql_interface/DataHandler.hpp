@@ -12,6 +12,7 @@ class DataHandler : private SqliteHandler::DataGetter, private SqliteHandler::Da
 	using IntMatrix = std::vector<std::vector<int>>;
 	using IntPairMatrix = std::vector<std::vector<std::pair<int, int>>>;
 
+public:
 	const static inline std::string 
 		DB_NAME = "RouterDb",
 		DEVICES_TABLE = "routers",
@@ -31,6 +32,7 @@ class DataHandler : private SqliteHandler::DataGetter, private SqliteHandler::Da
 		COLUMN_LOCKS = "locks",
 		COLUMN_MARKED = "marked_for_saving";
 
+private:
 	// checks for empty data
 	template <typename T>
 	static bool Empty(T object) {
