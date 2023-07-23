@@ -395,7 +395,12 @@ namespace {
 			return sqlite3_bind_blob(stmt, index, serializedData.data(), static_cast<int>(serializedData.size()), SQLITE_TRANSIENT);
 		}
 	};
+}
 
+/// <summary>
+/// Wrapper for sqlite3 library.
+/// </summary>
+namespace SqliteHandler {
 	/// <summary>
 	/// class to gather infromation about tables in databases
 	/// </summary>
@@ -546,12 +551,7 @@ namespace {
 			return 0; // does not exist
 		}
 	}; // class TableInfo
-}
 
-/// <summary>
-/// Wrapper for sqlite3 library.
-/// </summary>
-namespace SqliteHandler {
 	/// <summary>
 	/// Creation or Modification of Tables in a database 
 	/// </summary>
