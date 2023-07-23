@@ -5,7 +5,6 @@
 
 class device_data {
 public:
-
 	device_data() {};
 
 	// Copy Constructor
@@ -56,6 +55,28 @@ public:
 		routesMarkedList,
 		routesPreparedList,
 		routesList;
+
+	bool Equals(const device_data& other) {
+		return
+			this->ip == other.ip &&
+			this->name == other.name &&
+			this->version == other.version &&
+			this->source_labels == other.source_labels &&
+			this->destination_labels == other.destination_labels &&
+			this->routing == other.routing &&
+			this->prepared_routes == other.prepared_routes &&
+			this->locks == other.locks &&
+			this->marked_for_saving == other.marked_for_saving &&
+			this->source_count == other.source_count &&
+			this->destination_count == other.destination_count &&
+			this->sourceLabelsList == other.sourceLabelsList &&
+			this->destinationsLabelsList == other.destinationsLabelsList &&
+			this->locksList == other.locksList &&
+			this->routesMarkedList == other.routesMarkedList &&
+			this->routesPreparedList == other.routesPreparedList &&
+			this->routesList == other.routesList;
+	}
 };
+
 
 #endif /* EE918193_380A_4CAC_B16D_81B97DBCC972 */
