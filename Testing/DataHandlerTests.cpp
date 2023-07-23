@@ -128,6 +128,21 @@ void RemoveDevicesFromTable(std::unique_ptr<device_data> &device) {
 	DataHandler::RemoveDevice(device);
 }
 
+int AddAndUpdateDevice(std::unique_ptr<device_data> &device) {
+	int result = 0;
+
+	result = DataHandler::AddDevice(device);
+	if (result) return 1;
+
+	result = DataHandler::SelectDevice(device);
+	if (result) return 1;
+
+	result = DataHandler::UpdateSelectedDeviceData(device);
+	if (result) return 1;
+
+	return 0;
+}
+
 TEST_CASE("Add New Devices to database") {
 	Initialize();
 
@@ -142,4 +157,64 @@ TEST_CASE("Add New Devices to database") {
 
 TEST_CASE("Add already existing device to storage") {
 	REQUIRE(DataHandler::AddDevice(DHTestValues::device1) == 1);
+}
+
+TEST_CASE("Remove existing device") {
+	REQUIRE(DataHandler::RemoveDevice(DHTestValues::device3) == 0);
+}
+
+TEST_CASE("Selects entry in storage") {
+	int result = 0;
+
+	result = DataHandler::SelectDevice(DHTestValues::device1);
+
+	REQUIRE(result == 0);
+}
+
+TEST_CASE("Update data of entry in storage") {
+	int result = 0;
+
+	DataHandler::SelectDevice(DHTestValues::device1);
+	result = DataHandler::UpdateSelectedDeviceData(DHTestValues::device1);
+	REQUIRE(result == 0);
+
+	DataHandler::SelectDevice(DHTestValues::device2);
+	result = DataHandler::UpdateSelectedDeviceData(DHTestValues::device2);
+	REQUIRE(result == 0);
+
+	DataHandler::SelectDevice(DHTestValues::device3);
+	result = DataHandler::UpdateSelectedDeviceData(DHTestValues::device3);
+	REQUIRE(result == 0);
+}
+
+TEST_CASE("Get List of entries") {
+	int result = 0;
+	std::vector<std::unique_ptr<device_data>> deviceDataList;
+
+	AddAndUpdateDevice(DHTestValues::device1);
+	AddAndUpdateDevice(DHTestValues::device2);
+	AddAndUpdateDevice(DHTestValues::device3);
+	
+	result = DataHandler::GetEntries(deviceDataList);
+	REQUIRE(result == 0);
+
+	REQUIRE(deviceDataList[0]->ip == DHTestValues::device1->ip);
+	REQUIRE(deviceDataList[1]->ip == DHTestValues::device2->ip);
+	REQUIRE(deviceDataList[2]->ip == DHTestValues::device3->ip);
+}
+
+// HIER WEITER
+TEST_CASE("Get Data of Selected device") {
+	int result = 0;
+	std::unique_ptr<device_data> device;
+
+	AddAndUpdateDevice(DHTestValues::device1);
+	AddAndUpdateDevice(DHTestValues::device2);
+	AddAndUpdateDevice(DHTestValues::device3);
+
+	result = DataHandler::GetDataOfSelectedDevice(device);
+
+	bool isSame = (device.get() == DHTestValues::device1.get());
+
+	REQUIRE(isSame);
 }
