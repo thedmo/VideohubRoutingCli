@@ -139,10 +139,11 @@ public:
 		if (result) return 1;
 
 		// create routingdatabase if not exists
-		result = DbMod::CreateTableWithForeignKey(DB_NAME, ROUTINGS_TABLE, COLUMN_IP, TEXT, DEVICES_TABLE, COLUMN_IP);
+		//result = DbMod::CreateTableWithForeignKey(DB_NAME, ROUTINGS_TABLE, COLUMN_IP, TEXT, DEVICES_TABLE, COLUMN_IP);
+		result = DbMod::CreateTablePrimaryForeign(DB_NAME, ROUTINGS_TABLE, COLUMN_NAME, TEXT, COLUMN_IP, TEXT, DEVICES_TABLE, COLUMN_IP);
 		if (result) return 1;
-		result = DbMod::AddColumn(DB_NAME, ROUTINGS_TABLE, COLUMN_NAME, TEXT);
-		if (result) return 1;
+		//result = DbMod::AddColumn(DB_NAME, ROUTINGS_TABLE, COLUMN_NAME, TEXT);
+		//if (result) return 1;
 		result = DbMod::AddColumn(DB_NAME, ROUTINGS_TABLE, COLUMN_ROUTES, BLOB);
 		if (result) return 1;
 
