@@ -118,7 +118,7 @@ TEST_CASE("Storing data in fields") {
 	REQUIRE(result == 0);
 }
 
-TEST_CASE("Loading Data from database") {
+TEST_CASE("Loading DataVector from database") {
 	int result;
 
 	SECTION("LOADING int from row 1") {
