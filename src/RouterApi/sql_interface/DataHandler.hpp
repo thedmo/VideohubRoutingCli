@@ -13,6 +13,16 @@ class DataHandler : private DataGetter, private DataSetter, private DbMod, priva
 	using IntPairMatrix = std::vector<std::vector<std::pair<int, int>>>;
 
 public:
+	/// <summary>
+	/// std::pair with string as name and vector with pairs of ints as routes
+	/// </summary>
+	using Routing = std::pair<std::string, std::vector<std::pair<int,int>>>;
+
+	/// <summary>
+	/// std::vector with Routing objects
+	/// </summary>
+	using RoutingsList = std::vector<Routing>;
+
 	const static inline std::string
 		DB_NAME = "RouterDb",
 		DEVICES_TABLE = "routers",
