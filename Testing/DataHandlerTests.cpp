@@ -252,3 +252,37 @@ TEST_CASE("Get DataVector of Selected device") {
 
 	REQUIRE(isSame);
 }
+
+TEST_CASE("Store routing in selected device") {
+	int result = 0;
+
+	InitializeAndFillRouterDb();
+	DataHandler::SelectDevice(DHTestValues::device1);
+
+	for (DataHandler::Routing routing : DHTestValues::routings1) {
+		result = DataHandler::StoreRoutingForSelected(routing);
+		if (result) break;
+	}
+
+	REQUIRE(result == 0);
+}
+
+TEST_CASE("Get routings from selected device") {
+	int result = 0;
+
+	InitializeAndFillRouterDb();
+	DataHandler::SelectDevice(DHTestValues::device1);
+	AddRoutingsToSelectedDevice();
+
+	DataHandler::RoutingsList routings;
+	DataHandler::GetRoutesFromSelected(routings);
+
+	for (size_t i = 0; i < routings.size(); i++) {
+		if (!(routings[i] == DHTestValues::routings1[i])) {
+			result = 1;
+			break;
+		}
+	}
+
+	REQUIRE(result == 0);
+}
