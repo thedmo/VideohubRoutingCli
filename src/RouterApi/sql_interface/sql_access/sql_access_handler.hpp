@@ -600,6 +600,59 @@ namespace SqliteHandler {
 		}
 
 		/// <summary>
+		/// Creates Table with primary and foreign key. Table with referenced primary key must exist for this
+		/// </summary>
+		/// <param name="dbName">name of database</param>
+		/// <param name="tableName">name of new table</param>
+		/// <param name="primaryKeyColumn">name of column with primary key</param>
+		/// <param name="primaryType">type of column with primary key</param>
+		/// <param name="foreignKeyColumn">name of column with foreign key</param>
+		/// <param name="foreignKeyType">type of column with foreign key</param>
+		/// <param name="foreignKeyTable">name of table which foreign key refers to</param>
+		/// <param name="foreignKeyColumnRef">name of column which foreign key refers to</param>
+		/// <returns>int; 0 = OK </returns>
+		static int CreateTablePrimaryForeign(
+			std::string dbName,
+			std::string tableName,
+			std::string primaryKeyColumn,
+			std::string primaryType,
+			std::string foreignKeyColumn,
+			std::string foreignKeyType,
+			std::string foreignKeyTable,
+			std::string foreignKeyColumnRef
+		) {
+			int result;
+
+			std::string query =
+				"CREATE TABLE IF NOT EXISTS " +
+				tableName +
+				" (" +
+				primaryKeyColumn +
+				" " +
+				primaryType +
+				" PRIMARY KEY, " +
+				foreignKeyColumn +
+				" " +
+				foreignKeyType +
+				", FOREIGN KEY(" +
+				foreignKeyColumn +
+				") REFERENCES " +
+				foreignKeyTable +
+				"(" +
+				foreignKeyColumnRef +
+				"));";
+
+			//std::string query = "CREATE TABLE IF NOT EXISTS " + tableName + " (" + foreignKeyColumnName + " " + foreignKeyColumnType + ", FOREIGN KEY(" + foreignKeyColumnName + ") REFERENCES " + primaryKeyTableName + "(" + primaryKeyColumnName + "));";
+			auto database = SqlCom::ConnectToDatabase(dbName);
+			auto statement = SqlCom::GetStatement(query);
+
+			result = SqlCom::Query(statement);
+			if (result) return 1;
+
+			return SqlCom::CloseConnection();
+		}
+
+		/// <summary>
 		/// Adds new column to table
 		/// </summary>
 		/// <param name="dbName">name of database</param>
