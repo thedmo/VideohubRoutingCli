@@ -1,5 +1,4 @@
-#ifndef EE918193_380A_4CAC_B16D_81B97DBCC972
-#define EE918193_380A_4CAC_B16D_81B97DBCC972
+#pragma once
 
 #include <iostream> 
 
@@ -43,7 +42,7 @@ public:
 		source_count,
 		destination_count;
 
-	//TODO: to replace simple variables in device Data
+	//TODO: to replace simple variables in device DataVector
 
 	// Storable as blobs in database
 	std::vector<std::string>
@@ -77,6 +76,3 @@ public:
 			this->routesList == other->routesList;
 	}
 };
-
-
-#endif /* EE918193_380A_4CAC_B16D_81B97DBCC972 */
