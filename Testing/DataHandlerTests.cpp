@@ -14,7 +14,11 @@ public:
 
 		version1 = "v1.1",
 		version2 = "v1.2",
-		version3 = "v1.3";
+		version3 = "v1.3",
+
+		routesName1 = "routing1",
+		routesName2 = "routing2",
+		routesName3 = "routing3";
 
 	static inline int
 		sourceCount1 = 20,
@@ -56,6 +60,12 @@ public:
 	static inline std::unique_ptr<device_data> device2 = std::make_unique<device_data>();
 	static inline std::unique_ptr<device_data> device3 = std::make_unique<device_data>();
 
+	static inline DataHandler::Routing routing1 = { routesName1, routesList1 };
+	static inline DataHandler::Routing routing2 = { routesName2, routesList2 };
+	static inline DataHandler::Routing routing3 = { routesName3, routesList3 };
+
+	static inline DataHandler::RoutingsList routings1 = { routing1, routing2, routing3 };
+
 	static void InitializeDevices() {
 		device1->ip = ip1;
 		device1->name = name1;
@@ -95,14 +105,7 @@ public:
 	}
 };
 
-bool isInitialized = false;
-
 void Initialize() {
-	if (isInitialized) {
-		return;
-	}
-	isInitialized = true;
-
 	DHTestValues::InitializeDevices();
 	DataHandler::InitializeStorage();
 }
@@ -112,22 +115,22 @@ void DropTablesDataHandler() {
 
 	result = SqlCom::ConnectToDatabase(DataHandler::DB_NAME);
 
-	std::string queryStr = "DROP TABLE IF EXISTS "+ DataHandler::DEVICES_TABLE +";";
+	std::string queryStr = "DROP TABLE IF EXISTS " + DataHandler::DEVICES_TABLE + ";";
 	auto statement = SqlCom::GetStatement(queryStr, result);
 	result = SqlCom::Query(statement);
 
-	queryStr = "DROP TABLE IF EXISTS "+ DataHandler::ROUTINGS_TABLE +";";
+	queryStr = "DROP TABLE IF EXISTS " + DataHandler::ROUTINGS_TABLE + ";";
 	statement = SqlCom::GetStatement(queryStr, result);
 	result = SqlCom::Query(statement);
 
 	result = SqlCom::CloseConnection();
 }
 
-void RemoveDevicesFromTable(std::unique_ptr<device_data> &device) {
+void RemoveDevicesFromTable(std::unique_ptr<device_data>& device) {
 	DataHandler::RemoveDevice(device);
 }
 
-int AddAndUpdateDevice(std::unique_ptr<device_data> &device) {
+int AddSelectUpdateDevice(std::unique_ptr<device_data>& device) {
 	int result = 0;
 
 	result = DataHandler::AddDevice(device);
