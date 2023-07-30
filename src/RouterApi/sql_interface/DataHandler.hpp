@@ -392,10 +392,39 @@ public:
 		return 0;
 	}
 
-	// get list of routings for selected device
-	static std::pair<StringList, IntPairMatrix> GetRoutesFromSelected(int& result) {
-		StringList routingNames;
-		IntPairMatrix routings;
+	/// <summary>
+	/// save routing for selected device in routings table. Name for routing must be unique in routings list. If not, will return error
+	/// </summary>
+	/// <param name="routing">std pair. First = string with unique name. Second = vector with pairs of ints for routes</param>
+	/// <returns>int; 0 = OK</returns>
+	static int StoreRoutingForSelected(Routing routing) {
+		int result;
+
+		std::vector<std::string> _ipList;
+		result = LoadFromSelected(COLUMN_IP, _ipList);
+		if (result) return 1;
+
+		result = DbMod::InsertRow(DB_NAME, ROUTINGS_TABLE, COLUMN_NAME, routing.first);
+		if (result) return 1;
+
+		result = DataSetter::StoreData(DB_NAME, ROUTINGS_TABLE, COLUMN_IP, _ipList[0], COLUMN_NAME, routing.first);
+		if (result) return 1;
+
+		result = DataSetter::StoreData(DB_NAME, ROUTINGS_TABLE, COLUMN_ROUTES, routing.second, COLUMN_NAME, routing.first);
+		if (result) return 1;
+
+		return 0;
+	}
+
+	/// <summary>
+	/// get list of routings for selected device
+	/// </summary>
+	/// <param name="routings">vector of routing objects</param>
+	/// <returns>int; 0 = OK</returns>
+	static int GetRoutesFromSelected(RoutingsList& routings) {
+		int result = 0;
+		StringList _routingNames;
+		IntPairMatrix _routings;
 
 		StringList ipList;
 		result = LoadFromSelected(COLUMN_IP, ipList);
@@ -406,7 +435,7 @@ public:
 			COLUMN_NAME,
 			COLUMN_IP,
 			ipList[0],
-			routingNames
+			_routingNames
 		);
 
 		result = DataGetter::LoadData(
@@ -415,28 +444,13 @@ public:
 			COLUMN_ROUTES,
 			COLUMN_IP,
 			ipList[0],
-			routings
+			_routings
 		);
 
-		return { routingNames, routings };
+		for (size_t i = 0; i < _routingNames.size(); i++) {
+			if (_routings[i].empty()) return 1;
+			routings.push_back({ _routingNames[i], _routings[i] });
 	}
-
-	// save routing for selected device in routings table
-	static int StoreRoutingForSelected(std::pair<std::string, IntPairList> routing) {
-		int result;
-
-		StringList ipList;
-		result = LoadFromSelected(COLUMN_IP, ipList);
-		if (result) return 1;
-
-		result = DbMod::InsertRow(DB_NAME, ROUTINGS_TABLE, COLUMN_IP, ipList[0]);
-		if (result) return 1;
-
-		result = DataSetter::StoreData(DB_NAME, ROUTINGS_TABLE, COLUMN_NAME, routing.first, COLUMN_IP, ipList[0]);
-		if (result) return 1;
-
-		result = DataSetter::StoreData(DB_NAME, ROUTINGS_TABLE, COLUMN_ROUTES, routing.second, COLUMN_IP, ipList[0]);
-		if (result) return 1;
 
 		return 0;
 	}
