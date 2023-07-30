@@ -174,7 +174,10 @@ namespace {
 		/// <returns>sqlite errcode. 0 = SQLITE_OK</returns>
 		static int Query(sqlite3_stmt* statement, int& rowCount) {
 			Table dataVariantVector;
-			return query(statement, rowCount, dataVariantVector);
+
+			query(statement, rowCount, dataVariantVector);
+
+			return sqlite3_errcode(m_database);
 		}
 
 		/// <summary>
@@ -185,7 +188,10 @@ namespace {
 		/// <returns>sqlite errcode. 0 = SQLITE_OK</returns>
 		static int Query(sqlite3_stmt* statement, Table& resultTable) {
 			int tempInt;
-			return query(statement, tempInt, resultTable);
+
+			query(statement, tempInt, resultTable);
+
+			return sqlite3_errcode(m_database);
 		}
 
 		/// <summary>
@@ -197,7 +203,9 @@ namespace {
 			int tempInt;
 			Table resultTable;
 
-			return query(statement, tempInt, resultTable);
+			query(statement, tempInt, resultTable);
+
+			return sqlite3_errcode(m_database);
 		}
 
 	private:
