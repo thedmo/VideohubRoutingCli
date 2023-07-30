@@ -304,80 +304,90 @@ public:
 
 		// ip
 		result = LoadFromSelected(COLUMN_IP, stringList);
-		if (stringList.empty()) return 1;
+		if (!stringList.empty()) {
 		deviceData->ip = stringList[0];
 		stringList.clear();
-		if (result)	return 1;
+		}
+
 
 		// name
 		result = LoadFromSelected(COLUMN_NAME, stringList);
-		if (stringList.empty()) return 1;
+		if (!stringList.empty()) {
 		deviceData->name = stringList[0];
 		stringList.clear();
-		if (result)	return 1;
+		}
+
 
 		// version
 		result = LoadFromSelected(COLUMN_VERSION, stringList);
-		if (stringList.empty()) return 1;
+		if (!stringList.empty()) {
 		deviceData->version = stringList[0];
 		stringList.clear();
-		if (result)	return 1;
+		}
+
 
 		// source_labels
 		result = LoadFromSelected(COLUMN_SOURCE_LABELS, stringMatrix);
-		if (stringMatrix.empty()) return 1;
+		if (!stringMatrix.empty()) {
 		deviceData->sourceLabelsList = stringMatrix[0];
 		stringMatrix.clear();
-		if (result)	return 1;
+		}
+
 
 		// destination_labels
 		result = LoadFromSelected(COLUMN_DESTINATION_LABELS, stringMatrix);
-		if (stringMatrix.empty()) return 1;
+		if (!stringMatrix.empty()) {
 		deviceData->destinationsLabelsList = stringMatrix[0];
 		stringMatrix.clear();
-		if (result)	return 1;
+		}
+
 
 		// source_count
 		result = LoadFromSelected(COLUMN_SOURCE_COUNT, intList);
-		if (intList.empty()) return 1;
+		if (!intList.empty()) {
 		deviceData->source_count = intList[0];
 		intList.clear();
-		if (result)	return 1;
+		}
+
 
 		// destination_count
 		result = LoadFromSelected(COLUMN_DESTINATION_COUNT, intList);
-		if (intList.empty()) return 1;
+		if (!intList.empty()) {
 		deviceData->destination_count = intList[0];
 		intList.clear();
-		if (result)	return 1;
+		}
+
 
 		// routing
 		result = LoadFromSelected(COLUMN_ROUTES, intPairMatrix);
-		if (intPairMatrix.empty()) return 1;
+		if (!intPairMatrix.empty()) {
 		deviceData->routesList = intPairMatrix[0];
 		intPairMatrix.clear();
-		if (result)	return 1;
+		}
+
 
 		// locks
 		result = LoadFromSelected(COLUMN_LOCKS, stringMatrix);
-		if (stringMatrix.empty()) return 1;
+		if (!stringMatrix.empty()) {
 		deviceData->locksList = stringMatrix[0];
 		stringMatrix.clear();
-		if (result)	return 1;
+		}
+
 
 		// prepared routes
 		result = LoadFromSelected(COLUMN_PREPARED, intPairMatrix);
-		if (intPairMatrix.empty()) return 1;
+		if (!intPairMatrix.empty()) {
 		deviceData->routesPreparedList = intPairMatrix[0];
 		intPairMatrix.clear();
-		if (result)	return 1;
+		}
+
 
 		// routes marked for saving
 		result = LoadFromSelected(COLUMN_MARKED, intPairMatrix);
-		if (intPairMatrix.empty()) return 1;
+		if (!intPairMatrix.empty()) {
 		deviceData->routesMarkedList = intPairMatrix[0];
 		intPairMatrix.clear();
-		if (result)	return 1;
+		}
 
 		return 0;
 	}
