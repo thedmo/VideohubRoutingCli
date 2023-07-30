@@ -353,7 +353,7 @@ TEST_CASE("Load Int from table in database") {
 
 TEST_CASE("Load vector with integers from table in database") {
 	int result = 0;
-	std::vector < std::vector<int> > data;
+	std::vector<std::vector<int>> data;
 
 	result = DataGetter::LoadData(DB, t2, colVecInt, colid, row1, data);
 
@@ -363,7 +363,7 @@ TEST_CASE("Load vector with integers from table in database") {
 
 TEST_CASE("Load vector with string from table in database") {
 	int result = 0;
-	std::vector < std::vector<std::string> > data;
+	std::vector<std::vector<std::string>> data;
 
 	result = DataGetter::LoadData(DB, t2, colVecString, colid, row1, data);
 
@@ -373,7 +373,7 @@ TEST_CASE("Load vector with string from table in database") {
 
 TEST_CASE("Load vector with pairs from table in database") {
 	int result = 0;
-	std::vector < std::vector<std::pair<int,int>> > data;
+	 std::vector<std::vector<std::pair<int,int>>>  data;
 
 	result = DataGetter::LoadData(DB, t2, colVecPair, colid, row1, data);
 
