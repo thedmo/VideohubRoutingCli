@@ -1,5 +1,4 @@
-#include <TestHeader.h>
-#include <catch2/catch.hpp>
+#include <Catch2/catch.hpp>
 #include <sql_access_handler.hpp>
 
 using namespace SqliteHandler;

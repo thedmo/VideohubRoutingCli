@@ -1,6 +1,5 @@
-#include <catch2/catch.hpp>
+#include <Catch2/catch.hpp>
 #include <DataHandler.hpp>
-#include <device_data.hpp>
 
 class DHTestValues {
 public:

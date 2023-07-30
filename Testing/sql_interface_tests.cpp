@@ -1,4 +1,4 @@
-#include <catch2/catch.hpp>
+#include <TestHeader.h>
 #include <SqliteInterface.hpp>
 #include <filesystem>
 
