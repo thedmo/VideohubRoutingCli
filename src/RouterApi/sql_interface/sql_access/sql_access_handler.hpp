@@ -711,6 +711,33 @@ namespace SqliteHandler {
 		}
 
 		/// <summary>
+		/// Adds a new row to a table, does not check, if row with key identifier already exists
+		/// </summary>
+		/// <param name="dbName">name of db</param>
+		/// <param name="table">name of table</param>
+		/// <param name="column">name of key column</param>
+		/// <param name="value">value of column</param>
+		/// <returns>int; OK = 0</returns>
+		static int InsertRowNoCheck(const std::string dbName, const std::string& table, const std::string& column, std::string value) {
+			int result = 0;
+			int rowCount = 0;
+			std::string queryStr;
+
+			result = SqlCom::ConnectToDatabase(dbName);
+			if (result) return 1;
+
+			queryStr = "INSERT OR IGNORE INTO " + table + " (" + column + ") VALUES (?)";
+			auto statement = SqlCom::GetStatement(queryStr, result);
+			if (result) return 1;
+
+			result = Bind(statement, 1, value);
+
+			result = SqlCom::Query(statement);
+			if (result) return 1;
+
+			return SqlCom::CloseConnection();
+		}
+		/// <summary>
 		/// Removes an existing row from a table
 		/// </summary>
 		/// <param name="dbName">name of database</param>
