@@ -1,3 +1,6 @@
+#ifndef DATAHANDLER
+#define DATAHANDLER
+
 #include <sql_access_handler.hpp>
 #include <device_data.hpp>
 
@@ -69,14 +72,14 @@ private:
 	}
 
 	/// <summary>
-	/// Load Data from selected device in table.  
+	/// Load DataVector from selected device in table.  
 	/// </summary>
 	/// <typeparam name="Storage">Type of Container given into method</typeparam>
 	/// <param name="propName">name of property to load</param>
 	/// <param name="dataStorage">container to load data into. has to be a vector</param>
 	/// <returns>int; 0 = OK </returns>
-	template <typename Storage>
-	static int LoadFromSelected(const std::string propName, Storage& dataStorage) {
+	template <typename DataVector>
+	static int LoadFromSelected(const std::string propName, DataVector& dataStorage) {
 		int result = 0;
 
 		result = DataGetter::LoadData(DB_NAME, DEVICES_TABLE, propName, COLUMN_SELECTED, "x", dataStorage);
@@ -93,8 +96,8 @@ private:
 	/// <param name="dataStorage">container to load data into. has to be a vector</param>
 	/// <returns>int; 0 = OK </returns>
 	template <typename Storage>
-	static int StoreInSelected(	const std::string propName,	Storage& dataStorage) {
-		return DataSetter::StoreData( 
+	static int StoreInSelected(const std::string propName, Storage& dataStorage) {
+		return DataSetter::StoreData(
 			DB_NAME,
 			DEVICES_TABLE,
 			propName,
@@ -246,7 +249,7 @@ public:
 	static int GetEntries(std::vector<std::unique_ptr<device_data>>& deviceDataVector) {
 		int result = 0;
 
-		StringList ipList;
+		std::vector<std::string> ipList;
 		StringList nameList;
 		IntList sourceCountList;
 
@@ -305,88 +308,88 @@ public:
 		// ip
 		result = LoadFromSelected(COLUMN_IP, stringList);
 		if (!stringList.empty()) {
-		deviceData->ip = stringList[0];
-		stringList.clear();
+			deviceData->ip = stringList[0];
+			stringList.clear();
 		}
 
 
 		// name
 		result = LoadFromSelected(COLUMN_NAME, stringList);
 		if (!stringList.empty()) {
-		deviceData->name = stringList[0];
-		stringList.clear();
+			deviceData->name = stringList[0];
+			stringList.clear();
 		}
 
 
 		// version
 		result = LoadFromSelected(COLUMN_VERSION, stringList);
 		if (!stringList.empty()) {
-		deviceData->version = stringList[0];
-		stringList.clear();
+			deviceData->version = stringList[0];
+			stringList.clear();
 		}
 
 
 		// source_labels
 		result = LoadFromSelected(COLUMN_SOURCE_LABELS, stringMatrix);
 		if (!stringMatrix.empty()) {
-		deviceData->sourceLabelsList = stringMatrix[0];
-		stringMatrix.clear();
+			deviceData->sourceLabelsList = stringMatrix[0];
+			stringMatrix.clear();
 		}
 
 
 		// destination_labels
 		result = LoadFromSelected(COLUMN_DESTINATION_LABELS, stringMatrix);
 		if (!stringMatrix.empty()) {
-		deviceData->destinationsLabelsList = stringMatrix[0];
-		stringMatrix.clear();
+			deviceData->destinationsLabelsList = stringMatrix[0];
+			stringMatrix.clear();
 		}
 
 
 		// source_count
 		result = LoadFromSelected(COLUMN_SOURCE_COUNT, intList);
 		if (!intList.empty()) {
-		deviceData->source_count = intList[0];
-		intList.clear();
+			deviceData->source_count = intList[0];
+			intList.clear();
 		}
 
 
 		// destination_count
 		result = LoadFromSelected(COLUMN_DESTINATION_COUNT, intList);
 		if (!intList.empty()) {
-		deviceData->destination_count = intList[0];
-		intList.clear();
+			deviceData->destination_count = intList[0];
+			intList.clear();
 		}
 
 
 		// routing
 		result = LoadFromSelected(COLUMN_ROUTES, intPairMatrix);
 		if (!intPairMatrix.empty()) {
-		deviceData->routesList = intPairMatrix[0];
-		intPairMatrix.clear();
+			deviceData->routesList = intPairMatrix[0];
+			intPairMatrix.clear();
 		}
 
 
 		// locks
 		result = LoadFromSelected(COLUMN_LOCKS, stringMatrix);
 		if (!stringMatrix.empty()) {
-		deviceData->locksList = stringMatrix[0];
-		stringMatrix.clear();
+			deviceData->locksList = stringMatrix[0];
+			stringMatrix.clear();
 		}
 
 
 		// prepared routes
 		result = LoadFromSelected(COLUMN_PREPARED, intPairMatrix);
 		if (!intPairMatrix.empty()) {
-		deviceData->routesPreparedList = intPairMatrix[0];
-		intPairMatrix.clear();
+			deviceData->routesPreparedList = intPairMatrix[0];
+			intPairMatrix.clear();
 		}
 
 
 		// routes marked for saving
 		result = LoadFromSelected(COLUMN_MARKED, intPairMatrix);
 		if (!intPairMatrix.empty()) {
-		deviceData->routesMarkedList = intPairMatrix[0];
-		intPairMatrix.clear();
+			deviceData->routesMarkedList = intPairMatrix[0];
+			intPairMatrix.clear();
 		}
 
 		return 0;
@@ -450,8 +453,9 @@ public:
 		for (size_t i = 0; i < _routingNames.size(); i++) {
 			if (_routings[i].empty()) return 1;
 			routings.push_back({ _routingNames[i], _routings[i] });
-	}
+		}
 
 		return 0;
 	}
 };
+#endif // !DATAHANDLER
