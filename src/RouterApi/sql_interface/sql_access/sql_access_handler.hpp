@@ -1,4 +1,6 @@
-#pragma once
+#ifndef SQLDATAHANDLER
+#define SQLDATAHANDLER
+
 
 #include <whereami++.h>
 #include <sqlite3.h>
@@ -17,9 +19,9 @@ std::variant<
 using Row = std::vector<Field>;
 using Table = std::vector<Row>;
 
-	const std::string TEXT = "VARCHAR";
-	const std::string INTEGER = "INT";
-	const std::string BLOB = "BLOB";
+const std::string TEXT = "VARCHAR";
+const std::string INTEGER = "INT";
+const std::string BLOB = "BLOB";
 
 /// <summary>
 /// Functionality to directly talk to sqlite3 library (only for Internal use)
@@ -353,7 +355,7 @@ namespace {
 		/// <param name="index">index of value (+1 for every ? in a query string. starts at 1</param>
 		/// <param name="value">value to bind into statement</param>
 		/// <returns>int; 0 = OK</returns>
-		static int Bind(sqlite3_stmt* stmt, int index, int value) {
+		static int Bind(sqlite3_stmt* stmt, int index, const int value) {
 			return sqlite3_bind_int(stmt, index, value);
 		}
 
@@ -577,7 +579,12 @@ namespace SqliteHandler {
 		/// <param name="primaryKeyName"></param>
 		/// <param name="primaryKeyType"></param>
 		/// <returns>int; OK = 0</returns>
-		static int CreateTableWithPrimaryKey(std::string dbName, std::string tableName, std::string primaryKeyName, const std::string primaryKeyType) {
+		static int CreateTableWithPrimaryKey(
+			std::string dbName, 
+			std::string tableName, 
+			std::string primaryKeyName, 
+			const std::string primaryKeyType
+		) {
 			int result;
 			std::string query = "CREATE TABLE IF NOT EXISTS " + tableName + " (" + primaryKeyName + " " + primaryKeyType + " PRIMARY KEY);";
 			auto database = SqlCom::ConnectToDatabase(dbName);
@@ -599,7 +606,14 @@ namespace SqliteHandler {
 		/// <param name="primaryKeyTableName">name table with primary key in it</param>
 		/// <param name="primaryKeyColumnName">name of column from table with primary key</param>
 		/// <returns>int; OK = 0</returns>
-		static int CreateTableWithForeignKey(std::string dbName, std::string tableName, std::string foreignKeyColumnName, std::string foreignKeyColumnType, std::string primaryKeyTableName, std::string primaryKeyColumnName) {
+		static int CreateTableWithForeignKey(
+			std::string dbName,
+			std::string tableName,
+			std::string foreignKeyColumnName,
+			std::string foreignKeyColumnType,
+			std::string primaryKeyTableName,
+			std::string primaryKeyColumnName
+		) {
 			int result;
 			std::string query = "CREATE TABLE IF NOT EXISTS " + tableName + " (" + foreignKeyColumnName + " " + foreignKeyColumnType + ", FOREIGN KEY(" + foreignKeyColumnName + ") REFERENCES " + primaryKeyTableName + "(" + primaryKeyColumnName + "));";
 			auto database = SqlCom::ConnectToDatabase(dbName);
@@ -829,7 +843,7 @@ namespace SqliteHandler {
 
 	public:
 		/// <summary>
-		/// Stores Data into table of database
+		/// Stores DataVector into table of database
 		/// </summary>
 		/// <param name="dbName">name of db</param>
 		/// <param name="tableName">name of table</param>
@@ -844,7 +858,7 @@ namespace SqliteHandler {
 		}
 
 		/// <summary>
-		/// Stores Data into table of database
+		/// Stores DataVector into table of database
 		/// </summary>
 		/// <param name="dbName">name of db</param>
 		/// <param name="tableName">name of table</param>
@@ -858,7 +872,7 @@ namespace SqliteHandler {
 			return storeData(dbName, tableName, valueColumnName, value, INTEGER, identifierColumnName, identifierValue);
 		}
 		/// <summary>
-		/// Stores Data into table of database
+		/// Stores DataVector into table of database
 		/// </summary>
 		/// <param name="dbName">name of db</param>
 		/// <param name="tableName">name of table</param>
@@ -873,7 +887,7 @@ namespace SqliteHandler {
 		}
 
 		/// <summary>
-		/// Stores Data into table of database
+		/// Stores DataVector into table of database
 		/// </summary>
 		/// <param name="dbName">name of db</param>
 		/// <param name="tableName">name of table</param>
@@ -888,7 +902,7 @@ namespace SqliteHandler {
 		}
 
 		/// <summary>
-		/// Stores Data into table of database
+		/// Stores DataVector into table of database
 		/// </summary>
 		/// <param name="dbName">name of db</param>
 		/// <param name="tableName">name of table</param>
@@ -907,7 +921,7 @@ namespace SqliteHandler {
 	/// <summary>
 	/// To get data out of tables from a database
 	/// </summary>
-	class DataGetter : private SqlCom, private DataDeserializer, private ValueBinder {
+	class DataGetter : private SqlCom, private ValueBinder, private DataDeserializer {
 	private:
 		/// <summary>
 		/// Extracts data from Field variant
@@ -1030,7 +1044,7 @@ namespace SqliteHandler {
 		/// <summary>
 		/// templated method to load data from table in database
 		/// </summary>
-		/// <typeparam name="Type">Type of field. deduced by reference given</typeparam>
+		/// <typeparam name="TypeList">TypeList of field. deduced by reference given</typeparam>
 		/// <param name="stmt">statement to query database</param>
 		/// <param name="dataVector">vector of data to load from database</param>
 		/// <returns>int; 0 = OK </returns>
@@ -1144,3 +1158,4 @@ namespace SqliteHandler {
 		}
 	};
 } // namespace SqliteHandler
+#endif // !SQLDATAHANDLER
