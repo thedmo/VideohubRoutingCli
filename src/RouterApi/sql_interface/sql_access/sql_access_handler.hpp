@@ -57,6 +57,10 @@ namespace {
 			return sqlite3_close_v2(m_database);
 		}
 
+		static std::string GetLastErrMsg() {
+			return sqlite3_errmsg(m_database);
+		}
+
 	private:
 		/// <summary>
 		/// Gets Field of ColumnName from result of query
