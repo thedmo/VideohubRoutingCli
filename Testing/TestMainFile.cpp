@@ -7,5 +7,7 @@
 #include <Catch2/catch.hpp>
 
 // Include sourcefiles with tests in them
+
+#include <TelnetClientTests.cpp>
 #include <SqlAccessHandlerTests.cpp>
 #include <DataHandlerTests.cpp>
