@@ -1075,12 +1075,15 @@ namespace SqliteHandler {
 			const std::string table,
 			const std::string valueColumn,
 			std::string identifierColumn,
-			const IdentifierType& identifierValue,
+			const IdentifierType identifierValue,
 			Ret_Type& dataVector
 		) {
 			int result = 0;
+			//std::string queryStr = "SELECT " + valueColumn + " FROM " + table +
+			//	" WHERE " + identifierColumn + " =?;";
+
 			std::string queryStr = "SELECT " + valueColumn + " FROM " + table +
-				" WHERE " + identifierColumn + " = ?";
+				" WHERE " + identifierColumn + " = '" + identifierValue + "';";
 
 			result = SqlCom::ConnectToDatabase(dbName);
 			if (result) return 1;
@@ -1088,8 +1091,8 @@ namespace SqliteHandler {
 			auto stmt = SqlCom::GetStatement(queryStr, result);
 			if (result) return 1;
 
-			result = Bind(stmt, 1, identifierValue);
-			if (result) return 1;
+			//result = Bind(stmt, 1, identifierValue);
+			//if (result) return 1;
 
 			result = loadFromTable(stmt, dataVector);
 			if (result) return 1;
