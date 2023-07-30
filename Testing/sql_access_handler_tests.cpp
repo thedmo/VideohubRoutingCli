@@ -69,20 +69,20 @@ TEST_CASE("Create Table1 and add columns") {
 	result = DbMod::AddColumn(DBNAME, TABLE1, TestValues::count, INTEGER);
 	REQUIRE(result == 0);
 
-	result = DbMod::AddColumn(DBNAME, TABLE1, TestValues::routes, BLOB);
+	result = DbMod::AddColumn(DBNAME, TABLE1, TestValues::routes, BLOB_T);
 	REQUIRE(result == 0);
 
-	result = DbMod::AddColumn(DBNAME, TABLE1, TestValues::names, BLOB);
+	result = DbMod::AddColumn(DBNAME, TABLE1, TestValues::names, BLOB_T);
 	REQUIRE(result == 0);
 
-	result = DbMod::AddColumn(DBNAME, TABLE1, TestValues::marked, BLOB);
+	result = DbMod::AddColumn(DBNAME, TABLE1, TestValues::marked, BLOB_T);
 	REQUIRE(result == 0);
 }
 
 TEST_CASE("Create Table2 and add columns") {
 	REQUIRE(DbMod::CreateTableWithForeignKey(DBNAME, TABLE2, TestValues::address, TEXT, TABLE1, TestValues::address) == 0);
 
-	REQUIRE(DbMod::AddColumn(DBNAME, TABLE2, TestValues::routes, BLOB) == 0);
+	REQUIRE(DbMod::AddColumn(DBNAME, TABLE2, TestValues::routes, BLOB_T) == 0);
 }
 
 TEST_CASE("INSERTING rows") {

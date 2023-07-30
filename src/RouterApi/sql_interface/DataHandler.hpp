@@ -128,17 +128,17 @@ public:
 		if (result) return 1;
 		result = DbMod::AddColumn(DB_NAME, DEVICES_TABLE, COLUMN_DESTINATION_COUNT, INTEGER);
 		if (result) return 1;
-		result = DbMod::AddColumn(DB_NAME, DEVICES_TABLE, COLUMN_SOURCE_LABELS, BLOB);
+		result = DbMod::AddColumn(DB_NAME, DEVICES_TABLE, COLUMN_SOURCE_LABELS, BLOB_T);
 		if (result) return 1;
-		result = DbMod::AddColumn(DB_NAME, DEVICES_TABLE, COLUMN_DESTINATION_LABELS, BLOB);
+		result = DbMod::AddColumn(DB_NAME, DEVICES_TABLE, COLUMN_DESTINATION_LABELS, BLOB_T);
 		if (result) return 1;
-		result = DbMod::AddColumn(DB_NAME, DEVICES_TABLE, COLUMN_ROUTES, BLOB);
+		result = DbMod::AddColumn(DB_NAME, DEVICES_TABLE, COLUMN_ROUTES, BLOB_T);
 		if (result) return 1;
-		result = DbMod::AddColumn(DB_NAME, DEVICES_TABLE, COLUMN_PREPARED, BLOB);
+		result = DbMod::AddColumn(DB_NAME, DEVICES_TABLE, COLUMN_PREPARED, BLOB_T);
 		if (result) return 1;
-		result = DbMod::AddColumn(DB_NAME, DEVICES_TABLE, COLUMN_LOCKS, BLOB);
+		result = DbMod::AddColumn(DB_NAME, DEVICES_TABLE, COLUMN_LOCKS, BLOB_T);
 		if (result) return 1;
-		result = DbMod::AddColumn(DB_NAME, DEVICES_TABLE, COLUMN_MARKED, BLOB);
+		result = DbMod::AddColumn(DB_NAME, DEVICES_TABLE, COLUMN_MARKED, BLOB_T);
 		if (result) return 1;
 
 		// create routingdatabase if not exists
@@ -147,7 +147,7 @@ public:
 		if (result) return 1;
 		//result = DbMod::AddColumn(DB_NAME, ROUTINGS_TABLE, COLUMN_NAME, TEXT);
 		//if (result) return 1;
-		result = DbMod::AddColumn(DB_NAME, ROUTINGS_TABLE, COLUMN_ROUTES, BLOB);
+		result = DbMod::AddColumn(DB_NAME, ROUTINGS_TABLE, COLUMN_ROUTES, BLOB_T);
 		if (result) return 1;
 
 		return 0;

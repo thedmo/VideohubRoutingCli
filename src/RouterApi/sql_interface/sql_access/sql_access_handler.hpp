@@ -21,7 +21,7 @@ using Table = std::vector<Row>;
 
 const std::string TEXT = "VARCHAR";
 const std::string INTEGER = "INT";
-const std::string BLOB = "BLOB";
+const std::string BLOB_T = "BLOB";
 
 /// <summary>
 /// Functionality to directly talk to sqlite3 library (only for Internal use)
@@ -83,7 +83,7 @@ namespace {
 		/// </summary>
 		/// <param name="statement">sqlite3_stmt objectpointer of query</param>
 		/// <param name="index">index of field in row of resultset</param>
-		/// <returns>variant with data from field stored into it (INTEGER, VARCHAR or BLOB)</returns>
+		/// <returns>variant with data from field stored into it (INTEGER, VARCHAR or BLOB_T)</returns>
 		static Field GetField(sqlite3_stmt* statement, int index) {
 			Field field = std::variant<std::monostate >();
 
@@ -883,7 +883,7 @@ namespace SqliteHandler {
 		/// <returns>int; 0 = OK </returns>
 		static int StoreData(const std::string dbName, const std::string& tableName, const std::string& valueColumnName, const std::vector<std::string>& value,
 			const std::string& identifierColumnName, const std::string& identifierValue) {
-			return storeData(dbName, tableName, valueColumnName, value, BLOB, identifierColumnName, identifierValue);
+			return storeData(dbName, tableName, valueColumnName, value, BLOB_T, identifierColumnName, identifierValue);
 		}
 
 		/// <summary>
@@ -898,7 +898,7 @@ namespace SqliteHandler {
 		/// <returns>int; 0 = OK </returns>
 		static int StoreData(const std::string dbName, const std::string& tableName, const std::string& valueColumnName, const std::vector<int>& value,
 			const std::string& identifierColumnName, const std::string& identifierValue) {
-			return storeData(dbName, tableName, valueColumnName, value, BLOB, identifierColumnName, identifierValue);
+			return storeData(dbName, tableName, valueColumnName, value, BLOB_T, identifierColumnName, identifierValue);
 		}
 
 		/// <summary>
@@ -914,7 +914,7 @@ namespace SqliteHandler {
 		static int StoreData(const std::string dbName, const std::string& tableName, const std::string& valueColumnName,
 			const std::vector<std::pair<int, int>>& value,
 			const std::string& identifierColumnName, const std::string& identifierValue) {
-			return storeData(dbName, tableName, valueColumnName, value, BLOB, identifierColumnName, identifierValue);
+			return storeData(dbName, tableName, valueColumnName, value, BLOB_T, identifierColumnName, identifierValue);
 		}
 	};
 

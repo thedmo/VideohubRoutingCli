@@ -1,5 +1,4 @@
-#include <TestHeader.h>
-
+#include <catch2/catch.hpp>
 #include <TelnetClient.hpp>
 #include <iostream>
 

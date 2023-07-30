@@ -121,7 +121,7 @@ TEST_CASE("Add some Blob Columns") {
 		DB,
 		t2,
 		colVecPair,
-		BLOB
+		BLOB_T
 	);
 
 	REQUIRE(result == 0);
@@ -130,7 +130,7 @@ TEST_CASE("Add some Blob Columns") {
 		DB,
 		t2,
 		colVecString,
-		BLOB
+		BLOB_T
 	);
 
 	REQUIRE(result == 0);
@@ -139,7 +139,7 @@ TEST_CASE("Add some Blob Columns") {
 		DB,
 		t2,
 		colVecInt,
-		BLOB
+		BLOB_T
 	);
 
 	REQUIRE(result == 0);

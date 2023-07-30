@@ -78,7 +78,7 @@ public:
 		device1->routesMarkedList = routesMarkedList1;
 		device1->routesPreparedList = routesPreparedList1;
 		device1->routesList = routesList1;
-		
+
 		device2->ip = ip2;
 		device2->name = name2;
 		device2->version = version2;
@@ -90,7 +90,7 @@ public:
 		device2->routesMarkedList = routesMarkedList2;
 		device2->routesPreparedList = routesPreparedList2;
 		device2->routesList = routesList2;
-				
+
 		device3->ip = ip3;
 		device3->name = name3;
 		device3->version = version3;
@@ -230,7 +230,7 @@ TEST_CASE("Get List of entries") {
 	std::vector<std::unique_ptr<device_data>> deviceDataList;
 
 	InitializeAndFillRouterDb();
-	
+
 	result = DataHandler::GetEntries(deviceDataList);
 	REQUIRE(result == 0);
 
