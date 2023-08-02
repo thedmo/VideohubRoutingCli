@@ -19,7 +19,7 @@ public:
 	/// <summary>
 	/// std::pair with string as name and vector with pairs of ints as routes
 	/// </summary>
-	using Routing = std::pair<std::string, std::vector<std::pair<int,int>>>;
+	using Routing = std::pair<std::string, std::vector<std::pair<int, int>>>;
 
 	/// <summary>
 	/// std::vector with Routing objects
@@ -107,13 +107,9 @@ private:
 		);
 	}
 
-public:
-	/// <summary>
-	/// Initializes Storage for devices and routings if it not already exists
-	/// </summary>
-	/// <returns>int; 0 = OK</returns>
-	static int InitializeStorage() {
-		int result;
+private:
+	static int CreateDeviceDataStorage(std::string name) {
+		int result = 0;
 
 		// Create Devicedatabase if not exists
 		result = DbMod::CreateTableWithPrimaryKey(DB_NAME, DEVICES_TABLE, COLUMN_IP, TEXT);
@@ -141,16 +137,60 @@ public:
 		result = DbMod::AddColumn(DB_NAME, DEVICES_TABLE, COLUMN_MARKED, BLOB_T);
 		if (result) return 1;
 
-		// create routingdatabase if not exists
-		//result = DbMod::CreateTableWithForeignKey(DB_NAME, ROUTINGS_TABLE, COLUMN_IP, TEXT, DEVICES_TABLE, COLUMN_IP);
+		return 0;
+	}
+
+	static int CreateRoutingDataStorage(std::string name) {
+		int result = 0;
+
 		result = DbMod::CreateTablePrimaryForeign(DB_NAME, ROUTINGS_TABLE, COLUMN_NAME, TEXT, COLUMN_IP, TEXT, DEVICES_TABLE, COLUMN_IP);
 		if (result) return 1;
-		//result = DbMod::AddColumn(DB_NAME, ROUTINGS_TABLE, COLUMN_NAME, TEXT);
-		//if (result) return 1;
 		result = DbMod::AddColumn(DB_NAME, ROUTINGS_TABLE, COLUMN_ROUTES, BLOB_T);
 		if (result) return 1;
 
 		return 0;
+	}
+
+public:
+	/// <summary>
+	/// Initializes Storage for devices and routings if it not already exists
+	/// </summary>
+	/// <returns>int; 0 = OK</returns>
+	static int InitializeStorage() {
+		int result;
+
+		result = CreateDeviceDataStorage(DB_NAME);
+		if (result) return 1;
+
+		return CreateRoutingDataStorage(DB_NAME);
+	}
+
+	/// <summary>
+	/// Create new file to stre data device data into
+	/// </summary>
+	/// <param name="fileName">name of the file</param>
+	/// <returns>int; 0 = OK</returns>
+	static int CreateNewStorageFile(std::string fileName) {
+		int result = 0;
+
+		result = CreateDeviceDataStorage(fileName);
+		if (result) return 1;
+
+		return CreateRoutingDataStorage(fileName);
+	}
+
+	/// <summary>
+	/// empties storage file from data
+	/// </summary>
+	/// <param name="fileName">name of file to clear out</param>
+	/// <returns>int; 0 = OK</returns>
+	static int ClearStorageFile(std::string fileName) {
+		int result = 0;
+
+		result = DbMod::RemoveTable(fileName, DEVICES_TABLE);
+		if (result) return 1;
+
+		return DbMod::RemoveTable(fileName, ROUTINGS_TABLE);
 	}
 
 	/// <summary>
