@@ -668,9 +668,31 @@ namespace SqliteHandler {
 				foreignKeyColumnRef +
 				"));";
 
-			//std::string query = "CREATE TABLE IF NOT EXISTS " + tableName + " (" + foreignKeyColumnName + " " + foreignKeyColumnType + ", FOREIGN KEY(" + foreignKeyColumnName + ") REFERENCES " + primaryKeyTableName + "(" + primaryKeyColumnName + "));";
-			auto database = SqlCom::ConnectToDatabase(dbName);
-			auto statement = SqlCom::GetStatement(query);
+			result = SqlCom::ConnectToDatabase(dbName);
+			if (result) return 1;
+
+			auto statement = SqlCom::GetStatement(query, result);
+			if (result) return 1;
+
+			result = SqlCom::Query(statement);
+			if (result) return 1;
+
+			return SqlCom::CloseConnection();
+		}
+
+		/// <summary>
+		/// Remove Table from Database
+		/// </summary>
+		/// <param name="dbName">name of database</param>
+		/// <param name="tableName">name of table to be removed</param>
+		/// <returns>int; 0 = OK</returns>
+		static int RemoveTable(std::string dbName, std::string tableName) {
+			int result = 0;
+			result = SqlCom::ConnectToDatabase(dbName);
+
+			std::string queryStr = "DROP TABLE IF EXISTS " + tableName + ";";
+			auto statement = SqlCom::GetStatement(queryStr, result);
+			if (result) return 1;
 
 			result = SqlCom::Query(statement);
 			if (result) return 1;
