@@ -11,3 +11,4 @@
 #include <TelnetClientTests.cpp>
 #include <SqlAccessHandlerTests.cpp>
 #include <DataHandlerTests.cpp>
+#include <RouterApiTests.cpp>
