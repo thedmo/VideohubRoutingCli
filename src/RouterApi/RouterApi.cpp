@@ -36,6 +36,8 @@ int Vapi::GetInformationType(std::string line, information_type &type) {
 int Vapi::ExtractInformation(std::string info, std::unique_ptr<device_data> &_data) {
   information_type type = information_type::none;
 
+  _data = std::make_unique<device_data>();
+
   std::string line;
 
   int result;
@@ -58,6 +60,9 @@ int Vapi::ExtractInformation(std::string info, std::unique_ptr<device_data> &_da
       continue;
     }
 
+    std::string informationStr;
+    std::pair<int, int> routePair;
+
     // extract information
     switch (type) {
       case information_type::preamble:
@@ -68,15 +73,23 @@ int Vapi::ExtractInformation(std::string info, std::unique_ptr<device_data> &_da
         break;
       case information_type::inputs_labels:
         _data->source_labels += line + "\n";
+        result = Converter::StringLineToData(line, informationStr);
+        _data->sourceLabelsList.push_back(informationStr);
         break;
       case information_type::outputs_labels:
         _data->destination_labels += line + "\n";
+        result = Converter::StringLineToData(line, informationStr);
+        _data->destinationsLabelsList.push_back(informationStr);
         break;
       case information_type::routing:
         _data->routing += line + "\n";
+        result = Converter::RouteLineToRoutePair(line, routePair);
+        _data->routesList.push_back(routePair);
         break;
       case information_type::locks:
         _data->locks += line + "\n";
+        result = Converter::StringLineToData(line, informationStr);
+        _data->locksList.push_back(informationStr);
         break;
       case information_type::configuration:
         // TODO Feature: configuration of device via library
@@ -153,7 +166,12 @@ int Vapi::AddRouter(std::string ip) {
   result = m_database.check_if_device_exists(ip);
   if (result) return AddToTrace("could not check if device exists... ", vdb::GetErrorMessages());
 
-  m_database.insert_device_into_db(router_data);
+  result = m_database.insert_device_into_db(router_data);
+  if (result) return AddToTrace("could not add router to Storage");
+
+  result = DataHandler::AddDevice(router_data);
+  if (result) return AddToTrace("could not add router to Storage");
+
   return ROUTER_API_OK;
 }
 
