@@ -172,6 +172,12 @@ int Vapi::AddRouter(std::string ip) {
   result = DataHandler::AddDevice(router_data);
   if (result) return AddToTrace("could not add router to Storage");
 
+  result = DataHandler::SelectDevice(router_data);
+  if (result) return AddToTrace("could not select router in Storage");
+
+  result = DataHandler::UpdateSelectedDeviceData(router_data);
+  if (result) return AddToTrace("could not update data in Storage");
+
   return ROUTER_API_OK;
 }
 
