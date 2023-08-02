@@ -1,5 +1,6 @@
 #include <catch2/catch.hpp>
 #include <RouterApi.hpp>
+#include <SqliteInterface.hpp>
 
 TEST_CASE("Cenvert line with two numbers on it into a std pair of two ints") {
 	int result = 0;
@@ -36,9 +37,21 @@ TEST_CASE("Get Status of device by ip address") {
 
 TEST_CASE("Add new router to storage") {
 	int result = 0;
+
+	result = DataHandler::ClearStorageFile("RouterDb");
+	REQUIRE(result == 0);
+
+	result = DataHandler::ClearStorageFile("router");
+	REQUIRE(result == 0);
+
+	result = DataHandler::InitializeStorage();
+	REQUIRE(result == 0);
+
+	vdb dataBase;
+
 	std::string ip = "127.0.0.1";
-
 	result = Vapi::AddRouter(ip);
+	REQUIRE(result == 0);
 
-	REQUIRE(result = 0);
+	
 }
