@@ -14,6 +14,7 @@ std::variant<
 	int,
 	std::string,
 	std::vector<char>,
+	std::monostate,
 	std::variant<std::monostate>
 >;
 using Row = std::vector<Field>;
@@ -1081,7 +1082,10 @@ namespace SqliteHandler {
 			result = SqlCom::Query(stmt, resultSet);
 			if (result) return 1;
 
-			if (resultSet.empty()) return 1;
+			if (resultSet.empty())
+			{
+				return 1;
+			}
 
 			for (size_t i = 1; i < resultSet.size(); i++)
 			{
@@ -1094,6 +1098,10 @@ namespace SqliteHandler {
 
 				Field field = row[0];
 				Type fieldVar;
+
+				if (std::holds_alternative<std::variant<std::monostate>>(field)) {
+					continue;
+				}
 
 				result = GetFieldData(field, fieldVar);
 				if (result) return 1;
