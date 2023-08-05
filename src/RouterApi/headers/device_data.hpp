@@ -5,6 +5,9 @@
 class device_data {
 public:
 	device_data() {};
+	~device_data() {
+
+	};
 
 	// Copy Constructor
 	device_data(device_data& device) :
