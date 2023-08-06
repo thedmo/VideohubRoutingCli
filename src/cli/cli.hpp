@@ -5,6 +5,8 @@
 #include <vector>
 #include <stdexcept>
 
+using namespace RouterModel;
+
 class cli {
 public:
   cli() {};
