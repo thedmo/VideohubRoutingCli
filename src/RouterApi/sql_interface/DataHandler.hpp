@@ -292,6 +292,7 @@ public:
 		std::vector<std::string> ipList;
 		StringList nameList;
 		IntList sourceCountList;
+		StringList versionList;
 
 		result = DataGetter::LoadData(DB_NAME, DEVICES_TABLE, COLUMN_IP, ipList);
 		if (result) return 1;
@@ -302,11 +303,15 @@ public:
 		result = DataGetter::LoadData(DB_NAME, DEVICES_TABLE, COLUMN_SOURCE_COUNT, sourceCountList);
 		if (result) return 1;
 
+		result = DataGetter::LoadData(DB_NAME, DEVICES_TABLE, COLUMN_VERSION, versionList);
+		if (result) return 1;
+
 		for (size_t i = 0; i < ipList.size(); i++) {
 			deviceDataVector.push_back(std::make_unique<device_data>());
 			deviceDataVector[i]->ip = ipList[i];
 			deviceDataVector[i]->name = nameList[i];
 			deviceDataVector[i]->source_count = sourceCountList[i];
+			deviceDataVector[i]->version = versionList[i];
 		}
 
 		return 0;
