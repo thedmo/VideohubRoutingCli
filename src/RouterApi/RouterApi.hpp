@@ -10,6 +10,8 @@
 
 const int VIDEOHUB_TELNET_PORT = 9990;
 
+namespace RouterModel {
+
 class Converter {
 private:
 	static int GetLineContents(std::string line, std::vector<std::string>& lineContentVec) {
@@ -88,6 +90,7 @@ public:
 	static int SelectRouter(std::string ip);
 	static int RemoveSelectedRouter();
 	static int GetDevices(std::string& callback);
+	static int GetDevicesList(std::vector<std::string> &entries);
 	static int RenameSource(int channel_number, const std::string new_name);
 	static int GetSources(std::string& callback);
 	static int RenameDestination(int channel_number, const std::string new_name);
@@ -121,3 +124,5 @@ private:
 
 	static vdb m_database;
 };
+
+} // RouterModel
