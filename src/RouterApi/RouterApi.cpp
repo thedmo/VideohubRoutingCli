@@ -1,6 +1,4 @@
 #include <RouterApi.hpp>
-#include <iostream>
-#include <sstream>
 
 Vapi::Vapi() {
 }
@@ -28,7 +26,7 @@ int Vapi::GetInformationType(std::string line, information_type &type) {
   }
   
   else {
-    return AddToTrace("Type could not be extracted from: " + line + ".");
+    return ET::Collector::Add("Type could not be extracted from: " + line + ".");
   }
   return Vapi::ROUTER_API_OK;
 }
@@ -55,7 +53,7 @@ int Vapi::ExtractInformation(std::string info, std::unique_ptr<device_data> &_da
       result = GetInformationType(line, type);
 
       if (result != Vapi::ROUTER_API_OK) {
-        return AddToTrace("Could not determine information type");
+        return ET::Collector::Add("Could not determine information type");
       }
       continue;
     }
@@ -98,7 +96,7 @@ int Vapi::ExtractInformation(std::string info, std::unique_ptr<device_data> &_da
         break;
 
       default:
-        return AddToTrace("empty information type was passed");
+        return ET::Collector::Add("empty information type was passed");
         break;
     }
   }
@@ -115,9 +113,9 @@ int Vapi::GetDeviceInformation(std::string line, std::unique_ptr<device_data> &_
     words.push_back(word);
   }
 
-  if (words.empty()) return AddToTrace("empty string was given to GetDeviceInformation Function");
+  if (words.empty()) return ET::Collector::Add("empty string was given to GetDeviceInformation Function");
 
-  if (words[0].empty() || words[1].empty()) return AddToTrace("empty string in extracted words from line");
+  if (words[0].empty() || words[1].empty()) return ET::Collector::Add("empty string in extracted words from line");
 
   std::string key = words[0];
   std::string value = words[1];
@@ -147,10 +145,10 @@ int Vapi::GetStatus(std::string ip, std::unique_ptr<device_data> &_data) {
   std::string response;
 
   TelnetClient _telnet(ip, VIDEOHUB_TELNET_PORT, response, result);
-  if (result) return AddToTrace("could not get status...", _telnet.GetErrorMessages());
+  if (result) return ET::Collector::Add("could not get status...", ET::Collector::GetErrorMessages());
 
   result = ExtractInformation(response, _data);
-  if (result) return AddToTrace("could not extract information");
+  if (result) return ET::Collector::Add("could not extract information");
 
   _data->ip = ip;
 
@@ -161,42 +159,44 @@ int Vapi::AddRouter(std::string ip) {
   std::unique_ptr<device_data> router_data = std::make_unique<device_data>();
 
   int result = GetStatus(ip, router_data);
-  if (result) return AddToTrace("Could not add router...", Vapi::GetErrorMessages());
+  if (result) return ET::Collector::Add("Could not add router...", ET::Collector::GetErrorMessages());
 
   result = m_database.check_if_device_exists(ip);
-  if (result) return AddToTrace("could not check if device exists... ", vdb::GetErrorMessages());
+  if (result) return ET::Collector::Add("could not check if device exists... ", ET::Collector::GetErrorMessages());
 
   result = m_database.insert_device_into_db(router_data);
-  if (result) return AddToTrace("could not add router to Storage");
+  if (result) return ET::Collector::Add("could not add router to Storage");
 
   result = DataHandler::AddDevice(router_data);
-  if (result) return AddToTrace("could not add router to Storage");
+  if (result) return ET::Collector::Add("could not add router to Storage");
 
   result = DataHandler::SelectDevice(router_data);
-  if (result) return AddToTrace("could not select router in Storage");
+  if (result) return ET::Collector::Add("could not select router in Storage");
 
   result = DataHandler::UpdateSelectedDeviceData(router_data);
-  if (result) return AddToTrace("could not update data in Storage");
+  if (result) return ET::Collector::Add("could not update data in Storage");
 
   return ROUTER_API_OK;
 }
 
 int Vapi::SelectRouter(std::string ip) {
   int result = m_database.select_device(ip);
-  if (result) return AddToTrace("could not select router...", vdb::GetErrorMessages());
+  if (result) return ET::Collector::Add("could not select router...", ET::Collector::GetErrorMessages());
+
+
 
   return ROUTER_API_OK;
 }
 
 int Vapi::RemoveSelectedRouter() {
   int result = m_database.remove_selected_device_from_db();
-  if (result) return AddToTrace("removing device did not work.", vdb::GetErrorMessages());
+  if (result) return ET::Collector::Add("removing device did not work.", ET::Collector::GetErrorMessages());
 
   return ROUTER_API_OK;
 }
 int Vapi::GetDevices(std::string &callback) {
   int result = m_database.GetDevices(callback);
-  if (result) return AddToTrace("could not get Device listings: ", m_database.GetErrorMessages());
+  if (result) return ET::Collector::Add("could not get Device listings: ", ET::Collector::GetErrorMessages());
 
   return ROUTER_API_OK;
 }
@@ -206,37 +206,37 @@ int Vapi::RenameSource(int channel_number, const std::string new_name) {
 
   // Prüfen, ob Kanal Nummer nicht zu tief oder zu hoch --> neue private Funktion dafür erstellen
   result = check_channel_number(channel_number);
-  if (result) return AddToTrace("Problem with channel number: ");
+  if (result) return ET::Collector::Add("Problem with channel number: ");
 
   // get Device information for IP
   auto current_device = std::make_unique<device_data>();
   result = m_database.GetSelectedDeviceData(current_device);
-  if (result) AddToTrace("Could not get device data: ");
+  if (result) ET::Collector::Add("Could not get device data: ");
 
   // Socket erstellen und öffnen
   std::string response;
   TelnetClient tc(current_device->ip, VIDEOHUB_TELNET_PORT, response, result);
-  if (result) return AddToTrace("Could not establish conection to device:");
+  if (result) return ET::Collector::Add("Could not establish conection to device:");
 
   // Nachricht zusammenstellen und an Videohub schicken
   std::string message = "INPUT LABELS:\n" + std::to_string(channel_number) + " " + new_name + "\n\n";
   result = tc.SendMsgToServer(message);
-  if (result) return AddToTrace("sending message did not work: ");
+  if (result) return ET::Collector::Add("sending message did not work: ");
 
   // Liste mit Sourcenamen anfordern
   message = "INPUT LABELS:\n\n";
   result = tc.SendMsgToServer(message);
-  if (result) return AddToTrace("sending message did not work: ");
+  if (result) return ET::Collector::Add("sending message did not work: ");
 
   // get last response from socket and extract information
   response = tc.GetLastDataDump();
   current_device->source_labels = "";
   result = ExtractInformation(response, current_device);
-  if (result) return AddToTrace("Could extract routing from response");
+  if (result) return ET::Collector::Add("Could extract routing from response");
 
   // update values in database with device data
   result = m_database.update_selected_device_data(current_device);
-  if (result) return AddToTrace("Could not update device data of selected router in database", m_database.GetErrorMessages());
+  if (result) return ET::Collector::Add("Could not update device data of selected router in database", ET::Collector::GetErrorMessages());
 
   return ROUTER_API_OK;
 }
@@ -247,17 +247,17 @@ int Vapi::GetSources(std::string &callback) {
   // get Device information for IP
   auto current_device = std::make_unique<device_data>();
   result = m_database.GetSelectedDeviceData(current_device);
-  if (result) AddToTrace("Could not get device data: ");
+  if (result) ET::Collector::Add("Could not get device data: ");
 
   // Socket erstellen und öffnen
   std::string response;
   TelnetClient tc(current_device->ip, VIDEOHUB_TELNET_PORT, response, result);
-  if (result) return AddToTrace("Could not establish conection to device:");
+  if (result) return ET::Collector::Add("Could not establish conection to device:");
 
   // Nachrich an socket schicken
   std::string message = "INPUT LABELS:\n\n";
   result = tc.SendMsgToServer(message);
-  if (result) return AddToTrace("could not send message to device ");
+  if (result) return ET::Collector::Add("could not send message to device ");
 
   // Letzte Anwort von socket anfordern und in string speichern
   callback = tc.GetLastDataDump();
@@ -270,37 +270,37 @@ int Vapi::RenameDestination(int channel_number, const std::string new_name) {
 
   // Prüfen, ob Kanal Nummer nicht zu tief oder zu hoch --> neue private Funktion dafür erstellen
   result = check_channel_number(channel_number);
-  if (result) return AddToTrace("Problem with channel number: ");
+  if (result) return ET::Collector::Add("Problem with channel number: ");
 
   // get Device information for IP
   auto current_device = std::make_unique<device_data>();
   result = m_database.GetSelectedDeviceData(current_device);
-  if (result) AddToTrace("Could not get device data: ");
+  if (result) ET::Collector::Add("Could not get device data: ");
 
   // Socket erstellen und öffnen
   std::string response;
   TelnetClient tc(current_device->ip, VIDEOHUB_TELNET_PORT, response, result);
-  if (result) return AddToTrace("Could not establish conection to device:");
+  if (result) return ET::Collector::Add("Could not establish conection to device:");
 
   // Nachricht zusammenstellen und an Videohub schicken
   std::string message = "OUTPUT LABELS:\n" + std::to_string(channel_number) + " " + new_name + "\n\n";
   result = tc.SendMsgToServer(message);
-  if (result) return AddToTrace("sending message did not work: ");
+  if (result) return ET::Collector::Add("sending message did not work: ");
 
   // Liste mit Sourcenamen anfordern
   message = "OUTPUT LABELS:\n\n";
   result = tc.SendMsgToServer(message);
-  if (result) return AddToTrace("sending message did not work: ");
+  if (result) return ET::Collector::Add("sending message did not work: ");
 
   // get last response from socket and extract information
   response = tc.GetLastDataDump();
   current_device->destination_labels = "";
   result = ExtractInformation(response, current_device);
-  if (result) return AddToTrace("Could extract data from response");
+  if (result) return ET::Collector::Add("Could extract data from response");
 
   // update values in database with device data
   result = m_database.update_selected_device_data(current_device);
-  if (result) return AddToTrace("Could not update device data of selected router in database", m_database.GetErrorMessages());
+  if (result) return ET::Collector::Add("Could not update device data of selected router in database", ET::Collector::GetErrorMessages());
 
   return ROUTER_API_OK;
 }
@@ -311,17 +311,17 @@ int Vapi::GetDestinations(std::string &callback) {
   // get Device information for IP
   auto current_device = std::make_unique<device_data>();
   result = m_database.GetSelectedDeviceData(current_device);
-  if (result) AddToTrace("Could not get device data: ");
+  if (result) ET::Collector::Add("Could not get device data: ");
 
   // Socket erstellen und öffnen
   std::string response;
   TelnetClient tc(current_device->ip, VIDEOHUB_TELNET_PORT, response, result);
-  if (result) return AddToTrace("Could not establish conection to device:");
+  if (result) return ET::Collector::Add("Could not establish conection to device:");
 
   // Nachrich an socket schicken
   std::string message = "OUTPUT LABELS:\n\n";
   result = tc.SendMsgToServer(message);
-  if (result) return AddToTrace("could not send message to device ");
+  if (result) return ET::Collector::Add("could not send message to device ");
 
   // Letzte Anwort von socket anfordern und in string speichern
   callback = tc.GetLastDataDump();
@@ -331,7 +331,7 @@ int Vapi::GetDestinations(std::string &callback) {
 
 int Vapi::PrepareNewRoute(unsigned int destination, unsigned int source) {
   int result = m_database.add_to_prepared_routes(destination, source);
-  if (result) return AddToTrace("Could not add new route", vdb::GetErrorMessages());
+  if (result) return ET::Collector::Add("Could not add new route", ET::Collector::GetErrorMessages());
   return ROUTER_API_OK;
 }
 
@@ -342,36 +342,36 @@ int Vapi::TakePreparedRoutes() {
 
   // Get device data from database
   result = m_database.GetSelectedDeviceData(current_device);
-  if (result) return AddToTrace("Could not not get prepared routes", m_database.GetErrorMessages());
+  if (result) return ET::Collector::Add("Could not not get prepared routes", ET::Collector::GetErrorMessages());
 
   // Create socket send ip from acquired device data
   TelnetClient tc(current_device->ip, VIDEOHUB_TELNET_PORT, response, result);
-  if (result) return AddToTrace("Could not create socket", tc.GetErrorMessages());
+  if (result) return ET::Collector::Add("Could not create socket", ET::Collector::GetErrorMessages());
 
   // send Command to take routes to connected device
   std::string msg = "VIDEO OUTPUT ROUTING:\n" + current_device->prepared_routes + '\n';
   result = tc.SendMsgToServer(msg);
-  if (result) return AddToTrace("Could not take prepared routes", tc.GetErrorMessages());
+  if (result) return ET::Collector::Add("Could not take prepared routes", ET::Collector::GetErrorMessages());
 
   // reset prepared routes in device_data
   // result = m_database.clean_prepared_routes();
   current_device->prepared_routes = "";
-  // if (result) return AddToTrace("could not reset prepared routes", m_database.GetErrorMessages());
+  // if (result) return ET::Collector::Add("could not reset prepared routes", ET::Collector::GetErrorMessages());
 
   // get current routes from connected device (response gets saved in member variable)
   msg = "VIDEO OUTPUT ROUTING:\n\n";
   result = tc.SendMsgToServer(msg);
-  if (result) return AddToTrace("Could not get routing from device", tc.GetErrorMessages());
+  if (result) return ET::Collector::Add("Could not get routing from device", ET::Collector::GetErrorMessages());
 
   // get response from member variable and fill in routing of device data
   response = tc.GetLastDataDump();
   current_device->routing = "";
   result = ExtractInformation(response, current_device);
-  if (result) return AddToTrace("Could extract routing from response");
+  if (result) return ET::Collector::Add("Could extract routing from response");
 
   // update values in database with device data
   result = m_database.update_selected_device_data(current_device);
-  if (result) return AddToTrace("Could not update device data of selected router in database", m_database.GetErrorMessages());
+  if (result) return ET::Collector::Add("Could not update device data of selected router in database", ET::Collector::GetErrorMessages());
 
   return ROUTER_API_OK;
 }
@@ -381,27 +381,27 @@ int Vapi::LockRoute(unsigned int destination) {
 
   // Check Channelnumber
   result = check_channel_number(destination);
-  if (result) return AddToTrace("something wrong with the channelnumber: ");
+  if (result) return ET::Collector::Add("something wrong with the channelnumber: ");
 
   // get device data
   auto current_device = std::make_unique<device_data>();
   result = m_database.GetSelectedDeviceData(current_device);
-  if (result) return AddToTrace("could not get device data: ");
+  if (result) return ET::Collector::Add("could not get device data: ");
 
   // create socket
   std::string response;
   TelnetClient tc(current_device->ip, VIDEOHUB_TELNET_PORT, response, result);
-  if (result) return AddToTrace("Could not create socket", tc.GetErrorMessages());
+  if (result) return ET::Collector::Add("Could not create socket", ET::Collector::GetErrorMessages());
 
   // generate message and send to device
   std::string message = "VIDEO OUTPUT LOCKS:\n" + std::to_string(destination) + " L\n\n";
   result = tc.SendMsgToServer(message);
-  if (result) return AddToTrace("Could not send message", tc.GetErrorMessages());
+  if (result) return ET::Collector::Add("Could not send message", ET::Collector::GetErrorMessages());
 
   // get lock information from device
   message = "VIDEO OUTPUT LOCKS:\n\n";
   result = tc.SendMsgToServer(message);
-  if (result) return AddToTrace("Could not send message", tc.GetErrorMessages());
+  if (result) return ET::Collector::Add("Could not send message", ET::Collector::GetErrorMessages());
 
   // update device data in database
   current_device->locks = "";
@@ -417,27 +417,27 @@ int Vapi::UnlockRoute(unsigned int destination) {
 
   // Check Channelnumber
   result = check_channel_number(destination);
-  if (result) return AddToTrace("something wrong with the channelnumber: ");
+  if (result) return ET::Collector::Add("something wrong with the channelnumber: ");
 
   // get device data
   auto current_device = std::make_unique<device_data>();
   result = m_database.GetSelectedDeviceData(current_device);
-  if (result) return AddToTrace("could not get device data: ");
+  if (result) return ET::Collector::Add("could not get device data: ");
 
   // create socket
   std::string response;
   TelnetClient tc(current_device->ip, VIDEOHUB_TELNET_PORT, response, result);
-  if (result) return AddToTrace("Could not create socket", tc.GetErrorMessages());
+  if (result) return ET::Collector::Add("Could not create socket", ET::Collector::GetErrorMessages());
 
   // generate message and send to device
   std::string message = "VIDEO OUTPUT LOCKS:\n" + std::to_string(destination) + " U\n\n";
   result = tc.SendMsgToServer(message);
-  if (result) return AddToTrace("Could not send message", tc.GetErrorMessages());
+  if (result) return ET::Collector::Add("Could not send message", ET::Collector::GetErrorMessages());
 
   // get lock information from device
   message = "VIDEO OUTPUT LOCKS:\n\n";
   result = tc.SendMsgToServer(message);
-  if (result) return AddToTrace("Could not send message", tc.GetErrorMessages());
+  if (result) return ET::Collector::Add("Could not send message", ET::Collector::GetErrorMessages());
 
   // update device data in database
   current_device->locks = "";
@@ -454,17 +454,17 @@ int Vapi::GetRoutes(std::string &callback) {
   // get Device information for IP
   auto current_device = std::make_unique<device_data>();
   result = m_database.GetSelectedDeviceData(current_device);
-  if (result) AddToTrace("Could not get device data: ");
+  if (result) ET::Collector::Add("Could not get device data: ");
 
   // Socket erstellen und öffnen
   std::string response;
   TelnetClient tc(current_device->ip, VIDEOHUB_TELNET_PORT, response, result);
-  if (result) return AddToTrace("Could not establish conection to device:");
+  if (result) return ET::Collector::Add("Could not establish conection to device:");
 
   // Nachrich an socket schicken
   std::string message = "VIDEO OUTPUT ROUTING:\n\n";
   result = tc.SendMsgToServer(message);
-  if (result) return AddToTrace("could not send message to device ");
+  if (result) return ET::Collector::Add("could not send message to device ");
 
   // Letzte Anwort von socket anfordern und in string speichern
   callback = tc.GetLastDataDump();
@@ -485,29 +485,29 @@ int Vapi::MarkRouteForSaving(int destination) {
     // std::cout << "current argument: " << destination << std::endl;
   // Get device data from database
   result = m_database.GetSelectedDeviceData(current_device);
-  if (result) return AddToTrace("Could not not get device data from database: ", m_database.GetErrorMessages());
+  if (result) return ET::Collector::Add("Could not not get device data from database: ", ET::Collector::GetErrorMessages());
 
   // Create socket
   TelnetClient tc(current_device->ip, VIDEOHUB_TELNET_PORT, response, result);
-  if (result) return AddToTrace("Could not create socket: ", tc.GetErrorMessages());
+  if (result) return ET::Collector::Add("Could not create socket: ", ET::Collector::GetErrorMessages());
 
   // get current routes from connected device (response gets saved in member variable)
   std::string msg = "VIDEO OUTPUT ROUTING:\n\n";
   result = tc.SendMsgToServer(msg);
-  if (result) return AddToTrace("Could not get routing from device: ", tc.GetErrorMessages());
+  if (result) return ET::Collector::Add("Could not get routing from device: ", ET::Collector::GetErrorMessages());
 
   // get response from member variable and fill in routing of device data
   response = tc.GetLastDataDump();
   current_device->routing = "";
   result = ExtractInformation(response, current_device);
-  if (result) return AddToTrace("Could not extract routing from response: ");
+  if (result) return ET::Collector::Add("Could not extract routing from response: ");
 
   // update values in database with device data
   result = m_database.update_selected_device_data(current_device);
-  if (result) return AddToTrace("Could not update device data of selected router in database", m_database.GetErrorMessages());
+  if (result) return ET::Collector::Add("Could not update device data of selected router in database", ET::Collector::GetErrorMessages());
 
   result = m_database.mark_route_for_saving(destination);
-  if (result) return AddToTrace("could not mark route: ", vdb::GetErrorMessages());
+  if (result) return ET::Collector::Add("could not mark route: ", ET::Collector::GetErrorMessages());
 
   return ROUTER_API_OK;
 }
@@ -528,13 +528,13 @@ int Vapi::SaveRoutes(std::string routing_name) {
 
   // Get device data with prepared routes from database
   result = m_database.GetSelectedDeviceData(current_device);
-  if (result) return AddToTrace("Could not not get marked routes", m_database.GetErrorMessages());
+  if (result) return ET::Collector::Add("Could not not get marked routes", ET::Collector::GetErrorMessages());
 
-  if (current_device->marked_for_saving.empty()) return AddToTrace("No marked route to save present in selected device");
+  if (current_device->marked_for_saving.empty()) return ET::Collector::Add("No marked route to save present in selected device");
 
   // Insert new row for routing of selected device in routings table: ip, name of routing, routing as text
   result = m_database.save_routing(routing_name, current_device);
-  if (result) return AddToTrace("Could not save routing: ", m_database.GetErrorMessages());
+  if (result) return ET::Collector::Add("Could not save routing: ", ET::Collector::GetErrorMessages());
 
   return ROUTER_API_OK;
 }
@@ -545,7 +545,7 @@ int Vapi::GetSavedRoutes(std::string &callback) {
 
   // get routing
   result = m_database.get_saved_routings(callback);
-  if (result) return AddToTrace("Could not not get saved routings: ", m_database.GetErrorMessages());
+  if (result) return ET::Collector::Add("Could not not get saved routings: ", ET::Collector::GetErrorMessages());
 
   return ROUTER_API_OK;
 }
@@ -558,58 +558,37 @@ int Vapi::LoadRoutes(std::string name) {
 
   // send request to database api to get saved routes by name
   result = m_database.get_routing_by_name(name, routes);
-  if (result) return AddToTrace("could not get saved routes:");
+  if (result) return ET::Collector::Add("could not get saved routes:");
 
   // Get device data from database
   result = m_database.GetSelectedDeviceData(current_device);
-  if (result) return AddToTrace("Could not not get prepared routes", m_database.GetErrorMessages());
+  if (result) return ET::Collector::Add("Could not not get prepared routes", ET::Collector::GetErrorMessages());
 
   // Create socket
   TelnetClient tc(current_device->ip, VIDEOHUB_TELNET_PORT, response, result);
-  if (result) return AddToTrace("Could not create socket", tc.GetErrorMessages());
+  if (result) return ET::Collector::Add("Could not create socket", ET::Collector::GetErrorMessages());
 
   // send Command to take routes to connected device
   std::string route_command = "VIDEO OUTPUT ROUTING:\n" + routes + '\n';
   result = tc.SendMsgToServer(route_command);
-  if (result) return AddToTrace("Could not load routes", tc.GetErrorMessages());
+  if (result) return ET::Collector::Add("Could not load routes", ET::Collector::GetErrorMessages());
 
   // get current routes from connected device (response gets saved in member variable)
   route_command = "VIDEO OUTPUT ROUTING:\n\n";
   result = tc.SendMsgToServer(route_command);
-  if (result) return AddToTrace("Could not get routing from device", tc.GetErrorMessages());
+  if (result) return ET::Collector::Add("Could not get routing from device", ET::Collector::GetErrorMessages());
 
   // get response from member variable and fill in routing of device data
   response = tc.GetLastDataDump();
   current_device->routing = "";
   result = ExtractInformation(response, current_device);
-  if (result) return AddToTrace("Could extract routing from response");
+  if (result) return ET::Collector::Add("Could extract routing from response");
 
   // update values in database with device data
   result = m_database.update_selected_device_data(current_device);
-  if (result) return AddToTrace("Could not update device data of selected router in database", m_database.GetErrorMessages());
+  if (result) return ET::Collector::Add("Could not update device data of selected router in database", ET::Collector::GetErrorMessages());
 
   return ROUTER_API_OK;
-}
-
-// Error Handling
-std::vector<std::string> Vapi::m_err_msgs;
-int Vapi::AddToTrace(std::string s) {
-  m_err_msgs.push_back("ROUTER_API: " + s);
-  return 1;
-}
-
-int Vapi::AddToTrace(std::string err, std::vector<std::string> err_list) {
-  m_err_msgs.push_back("ROUTER_API: " + err);
-  for (std::string e : err_list) {
-    m_err_msgs.push_back(e);
-  }
-  return ROUTER_API_NOT_OK;
-}
-
-std::vector<std::string> Vapi::GetErrorMessages() {
-  std::vector<std::string> temp = m_err_msgs;
-  m_err_msgs.clear();
-  return temp;
 }
 
 int Vapi::check_channel_number(int num) {
@@ -618,13 +597,13 @@ int Vapi::check_channel_number(int num) {
   // Device information von Datenbank anfordern
   auto device_info = std::make_unique<device_data>();
   result = m_database.GetSelectedDeviceData(device_info);
-  if (result) return AddToTrace("could not acquire device information");
+  if (result) return ET::Collector::Add("could not acquire device information");
 
   // Kanalnummer mit anzahl Kanäle in device information vergleichen
   if (num > device_info->source_count) {
-    return AddToTrace("Channel number too high. Max value: " + std::to_string(device_info->destination_count - 1));
+    return ET::Collector::Add("Channel number too high. Max value: " + std::to_string(device_info->destination_count - 1));
   } else if (num < 0) {
-    return AddToTrace("Channel number under 0 not possible. Min value: 0");
+    return ET::Collector::Add("Channel number under 0 not possible. Min value: 0");
   }
   return ROUTER_API_OK;
 }

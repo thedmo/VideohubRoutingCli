@@ -2,7 +2,7 @@
 #define DATAHANDLER
 
 #include <sql_access_handler.hpp>
-#include <device_data.hpp>
+#include <DeviceData.hpp>
 
 using namespace SqliteHandler;
 

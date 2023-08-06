@@ -17,14 +17,14 @@ TelnetClient::TelnetClient(std::string ip, int port, std::string &init_response,
     result = OpenConnection();
     if (result != TELNET_OK)
     {
-        AddToTrace("could not open connection.");
+        ET::Collector::Add("could not open connection.");
         return;
     }
 
     result = ReceiveMsgFromServer(init_response);
     if (result != TELNET_OK)
     {
-        AddToTrace("Got no message from videohub");
+        ET::Collector::Add("Got no message from videohub");
         return;
     }
 
@@ -42,14 +42,14 @@ int TelnetClient::SendMsgToServer(std::string msg) {
     send(m_sock, msg.c_str(), msg.size(), 0);
     if (WSAGetLastError())
     {
-        AddToTrace("could not send message: " + std::to_string(WSAGetLastError()));
+        ET::Collector::Add("could not send message: " + std::to_string(WSAGetLastError()));
         return 1;
     }
 
     ReceiveMsgFromServer(m_last_data_dump);
     if (WSAGetLastError())
     {
-        AddToTrace("could not receive any data: " + std::to_string(WSAGetLastError()));
+        ET::Collector::Add("could not receive any data: " + std::to_string(WSAGetLastError()));
         return 1;
     }
 
@@ -91,7 +91,7 @@ int TelnetClient::ChangeIpAddress(std::string newAddress, std::string &init_resp
 
     if (newAddress.empty())
     {
-        AddToTrace("ip adress empty..");
+        ET::Collector::Add("ip adress empty..");
         return 1;
     }
 
@@ -101,7 +101,7 @@ int TelnetClient::ChangeIpAddress(std::string newAddress, std::string &init_resp
 
     if (_result != 1)
     {
-        AddToTrace("not a valid IPv4 Adress");
+        ET::Collector::Add("not a valid IPv4 Adress");
         return 1;
     }
 
@@ -110,14 +110,14 @@ int TelnetClient::ChangeIpAddress(std::string newAddress, std::string &init_resp
     _result = OpenConnection();
     if (_result != TELNET_OK)
     {
-        AddToTrace("could not open connection.");
+        ET::Collector::Add("could not open connection.");
         return 1;
     }
 
     _result = ReceiveMsgFromServer(init_response);
     if (_result != TELNET_OK)
     {
-        AddToTrace("could not receive message from server");
+        ET::Collector::Add("could not receive message from server");
         return 1;
     }
 
@@ -148,7 +148,7 @@ int TelnetClient::OpenConnection()
     int wsResult = WSAStartup(ver, &data);
     if (wsResult != 0)
     {
-        AddToTrace("Can't start Winsock, err #" + std::to_string(WSAGetLastError()));
+        ET::Collector::Add("Can't start Winsock, err #" + std::to_string(WSAGetLastError()));
         return 1;
     }
 
@@ -156,7 +156,7 @@ int TelnetClient::OpenConnection()
     if (m_sock == INVALID_SOCKET)
     {
         WSACleanup();
-        AddToTrace("Can't Create socket, ERR #" + std::to_string(WSAGetLastError()));
+        ET::Collector::Add("Can't Create socket, ERR #" + std::to_string(WSAGetLastError()));
         return 1;
     }
 
@@ -166,7 +166,7 @@ int TelnetClient::OpenConnection()
     int ipresult = inet_pton(AF_INET, m_ip_address.c_str(), &hint.sin_addr);
     if (ipresult == 0)
     {
-        AddToTrace("Format of Ip Wrong! Err #: " + std::to_string(WSAGetLastError()));
+        ET::Collector::Add("Format of Ip Wrong! Err #: " + std::to_string(WSAGetLastError()));
         return 1;
     }
 
@@ -175,7 +175,7 @@ int TelnetClient::OpenConnection()
     {
         closesocket(m_sock);
         WSACleanup();
-        AddToTrace("Can't connect to server. Wrong IP? Err #" + std::to_string(WSAGetLastError()));
+        ET::Collector::Add("Can't connect to server. Wrong IP? Err #" + std::to_string(WSAGetLastError()));
         return 1;
     }
 
@@ -191,22 +191,4 @@ int TelnetClient::CloseConnection()
     closesocket(m_sock);
     WSACleanup();
     return 0;
-}
-
-/// <summary>
-/// Adds a message to the error message vector when stuff gets wrong
-/// </summary>
-/// <param name="s">message to be added</param>
-void TelnetClient::AddToTrace(std::string s) {
-    m_err_msgs.push_back("TELNET_CLIENT: " + s);
-}
-
-/// <summary>
-/// Returns vector with all error messages
-/// </summary>
-/// <returns>Collected messages as std::vector<std::string></returns>
-std::vector<std::string> TelnetClient::GetErrorMessages() {
-    std::vector<std::string> temp = m_err_msgs;
-    m_err_msgs.clear();
-    return temp;
 }

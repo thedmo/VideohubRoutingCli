@@ -7,12 +7,13 @@ add_library(sql_interface_lib STATIC
         )
 
 target_link_libraries(sql_interface_lib PUBLIC
+        DeviceDataLib
         sql_access_lib
+        ErrorTraceLib
         )
 
 target_include_directories(sql_interface_lib PUBLIC
         "./"
-        "../headers/"
         )
 
 # install library files

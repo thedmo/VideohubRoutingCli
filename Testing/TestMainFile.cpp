@@ -8,6 +8,7 @@
 
 // Include sourcefiles with tests in them
 
+#include <ErrorTraceTests.cpp>
 #include <TelnetClientTests.cpp>
 #include <SqlAccessHandlerTests.cpp>
 #include <DataHandlerTests.cpp>

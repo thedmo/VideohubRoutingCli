@@ -9,7 +9,8 @@
 #include <iostream>
 #include <sstream>
 #include <format>
-#include <device_data.hpp>
+#include <DeviceData.hpp>
+#include <ErrorTrace.hpp>
 #include <sql_access.hpp>
 
 
@@ -65,9 +66,6 @@ private:
 	int get_saved_routing_names(std::string ip, std::vector<std::string>& names, QueryResult& query_result);
 
 	int [[deprecated("use new function instead to mitigate sql injection")]] sql_query(std::string query);
-
-	static std::vector<std::string> m_err_msgs;
-	int AddToTrace(std::string s);
 
 	int get_data_of_selected_device();
 };

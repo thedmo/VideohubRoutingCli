@@ -3,7 +3,10 @@
 #include <vector>
 
 #include <TelnetClient.hpp>
-#include <device_data.hpp>
+#include <DeviceData.hpp>
+#include <ErrorTrace.hpp>
+#include <iostream>
+#include <sstream>
 
 const int VIDEOHUB_TELNET_PORT = 9990;
 
@@ -108,9 +111,6 @@ public:
 	static const int ROUTER_API_OK = 0;
 
 private:
-	static std::vector<std::string> m_err_msgs;
-	static int AddToTrace(std::string);
-	static int AddToTrace(std::string err, std::vector<std::string> err_list);
 
 	static int GetInformationType(std::string line, information_type& type);
 	static int ExtractInformation(std::string, std::unique_ptr<device_data>& _data);

@@ -1,6 +1,8 @@
-#pragma once
+#ifndef DeviceData
+#define DeviceData
 
 #include <iostream> 
+#include <vector>
 
 class device_data {
 public:
@@ -79,3 +81,5 @@ public:
 			this->routesList == other->routesList;
 	}
 };
+
+#endif // !DeviceData

@@ -1,4 +1,5 @@
 #include <RouterApi.hpp>
+#include <ErrorTrace.hpp>
 #include <iostream>
 #include <string>
 #include <vector>

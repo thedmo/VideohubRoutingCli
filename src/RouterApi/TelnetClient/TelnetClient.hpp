@@ -9,6 +9,8 @@
 #include <string>
 #include <vector>
 
+#include <ErrorTrace.hpp>
+
 class TelnetClient {
 public:
     TelnetClient() = delete;
@@ -24,12 +26,9 @@ public:
     std::string GetLastDataDump();
     std::string GetIp();
 
-    std::vector<std::string> GetErrorMessages();
     const static int TELNET_OK = 0;
 
 private:
-    std::vector<std::string> m_err_msgs;
-    void AddToTrace(std::string s);
 
     std::string m_ip_address;
     int m_port;

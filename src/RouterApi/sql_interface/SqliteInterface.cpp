@@ -88,9 +88,9 @@ int vdb::check_if_device_exists(std::string ip) {
   // sql_access _sql;
   int result = _sql->Query(_sql->BindValues(bind_values, _sql->GetStatement(query_str)));
 
-  if (result != SQL_OK) return AddToTrace("Error: " + _sql->GetLastErrorMsg());
+  if (result != SQL_OK) return ET::Collector::Add("Error: " + _sql->GetLastErrorMsg());
 
-  if (_sql->GetLastRowNum() == 1) return AddToTrace("Device with ip: '" + ip + "' already in list");
+  if (_sql->GetLastRowNum() == 1) return ET::Collector::Add("Device with ip: '" + ip + "' already in list");
   return SQL_OK;
 }
 
@@ -99,9 +99,9 @@ int vdb::check_if_devicetable_empty() {
 
   // sql_access _sql;
   int result = _sql->Query(_sql->GetStatement(query_str));
-  if (result) return AddToTrace("could not check devicetable");
+  if (result) return ET::Collector::Add("could not check devicetable");
 
-  if (_sql->GetLastRowNum() == 0) return AddToTrace("devices table is empty");
+  if (_sql->GetLastRowNum() == 0) return ET::Collector::Add("devices table is empty");
 
   return SQL_OK;
 }
@@ -115,13 +115,13 @@ int vdb::insert_device_into_db(std::unique_ptr<device_data> &data) {
 
   if (result) {
       
-    AddToTrace("could not insert new device into table: " + _sql->GetLastErrorMsg());
+      ET::Collector::Add("could not insert new device into table: " + _sql->GetLastErrorMsg());
     return 1;
   }
 
   result = select_device(data->ip);
   if (result) {
-    AddToTrace("Could not select device in table");
+      ET::Collector::Add("Could not select device in table");
     return 1;
   }
 
@@ -130,33 +130,33 @@ int vdb::insert_device_into_db(std::unique_ptr<device_data> &data) {
 
 int vdb::select_device(std::string ip) {
   int result = check_if_device_exists(ip);
-  if (result == 0) return AddToTrace("Device with ip: " + ip + " does not exist in database. Add it first before selecting.");
+  if (result == 0) return ET::Collector::Add("Device with ip: " + ip + " does not exist in database. Add it first before selecting.");
 
   std::string query = "UPDATE " + DEVICES_TABLE + " SET selected_router='o';";
 
   // sql_access _sql;
   result = _sql->Query(_sql->GetStatement(query));
-  if (result) return AddToTrace(std::to_string(result) + ": could not reset router selection...");
+  if (result) return ET::Collector::Add(std::to_string(result) + ": could not reset router selection...");
 
   query = "UPDATE " + DEVICES_TABLE + " SET selected_router='x' WHERE ip=?;";
 
   std::vector<std::string> args = { ip };
   result = _sql->Query(_sql->BindValues(args, _sql->GetStatement(query)));
-  if (result) return AddToTrace("Error: " + _sql->GetLastErrorMsg());
+  if (result) return ET::Collector::Add("Error: " + _sql->GetLastErrorMsg());
 
   return SQL_OK;
 }
 
 int vdb::remove_selected_device_from_db() {
   int result = check_if_devicetable_empty();
-  if (result) return AddToTrace("could not remove device from table, seems to be empty");
+  if (result) return ET::Collector::Add("could not remove device from table, seems to be empty");
 
 
   // sql_access _sql;
   std::string query_str = "DELETE FROM " + DEVICES_TABLE + " WHERE selected_router='x'";
 
   result = _sql->Query(_sql->GetStatement(query_str));
-  if (result) return AddToTrace("could not remove device from table");
+  if (result) return ET::Collector::Add("could not remove device from table");
 
   return SQL_OK;
 }
@@ -164,23 +164,23 @@ int vdb::remove_selected_device_from_db() {
 int vdb::get_data_of_selected_device() {
   int result;
   result = check_if_devicetable_empty();
-  if (result) return AddToTrace("Could not get data:");
+  if (result) return ET::Collector::Add("Could not get data:");
 
   std::string query = "SELECT * FROM " + DEVICES_TABLE + " WHERE selected_router='x';";
 
   // sql_access _sql;
   result = _sql->Query(_sql->GetStatement(query));
-  if (result) return AddToTrace("no selected device found");
+  if (result) return ET::Collector::Add("no selected device found");
 
   result = SetLocalDeviceDataNew(_sql->GetLastQueryResult());
-  if (result) return AddToTrace("could not set devicedata");
+  if (result) return ET::Collector::Add("could not set devicedata");
 
   return SQL_OK;
 }
 
 int vdb::add_to_prepared_routes(int destination, int source) {
   int result = get_data_of_selected_device();
-  if (result) return AddToTrace("could not get data of selected device");
+  if (result) return ET::Collector::Add("could not get data of selected device");
 
   std::string prepared_routes = m_device.prepared_routes;
 
@@ -192,7 +192,7 @@ int vdb::add_to_prepared_routes(int destination, int source) {
 
   // sql_access _sql;
   result = _sql->Query(_sql->GetStatement(query_str));
-  if (result) return AddToTrace("could not add new route to prepared routes");
+  if (result) return ET::Collector::Add("could not add new route to prepared routes");
 
   return SQL_OK;
 }
@@ -200,7 +200,7 @@ int vdb::add_to_prepared_routes(int destination, int source) {
 
 int vdb::mark_route_for_saving(int destination) {
   int result = get_data_of_selected_device();
-  if (result) return AddToTrace("could not get data of selected device");
+  if (result) return ET::Collector::Add("could not get data of selected device");
 
   std::string marked_routes_str = m_device.marked_for_saving;
   std::string marked_route;
@@ -225,7 +225,7 @@ int vdb::mark_route_for_saving(int destination) {
   std::string marked_line;
   while (std::getline(marked_routes_stream, marked_line)) {
     if (destination_string == marked_line) {
-      return AddToTrace("Route already marked");
+      return ET::Collector::Add("Route already marked");
       break;
     }
   }
@@ -237,7 +237,7 @@ int vdb::mark_route_for_saving(int destination) {
   std::vector<std::string> args = {marked_routes_str};
 
   result = _sql->Query(_sql->BindValues(args, _sql->GetStatement(query_str)));
-  if (result) return AddToTrace("Error: " + _sql->GetLastErrorMsg());
+  if (result) return ET::Collector::Add("Error: " + _sql->GetLastErrorMsg());
 
   return SQL_OK;
 }
@@ -249,7 +249,7 @@ int vdb::clean_marked_routes() {
   // sql_access _sql;
 
   result = _sql->Query(_sql->GetStatement(query_str));
-  if (result) return AddToTrace("Error: " + _sql->GetLastErrorMsg());
+  if (result) return ET::Collector::Add("Error: " + _sql->GetLastErrorMsg());
 
   return SQL_OK;
 }
@@ -260,8 +260,8 @@ int vdb::get_saved_routing_names(std::string ip, std::vector<std::string> &names
   // sql_access _sql;
   
   result = _sql->Query(_sql->GetStatement(query_str));
-  if (result) return AddToTrace("Error: " + _sql->GetLastErrorMsg());
-  if (_sql->GetLastQueryResult().size() < 1) return AddToTrace("no routings in list");
+  if (result) return ET::Collector::Add("Error: " + _sql->GetLastErrorMsg());
+  if (_sql->GetLastQueryResult().size() < 1) return ET::Collector::Add("no routings in list");
 
   for (unsigned int i = 1; i < _sql->GetLastQueryResult().size(); i++) {
     std::string current_name = _sql->GetLastQueryResult()[i][1];
@@ -277,8 +277,8 @@ int vdb::get_saved_routing_names(std::string ip, std::vector<std::string> &names
   // sql_access _sql;
   
   result = _sql->Query(_sql->GetStatement(query_str));
-  if (result) return AddToTrace("Error: " + _sql->GetLastErrorMsg());
-  if (_sql->GetLastQueryResult().size() < 1) return AddToTrace("no routings in list");
+  if (result) return ET::Collector::Add("Error: " + _sql->GetLastErrorMsg());
+  if (_sql->GetLastQueryResult().size() < 1) return ET::Collector::Add("no routings in list");
 
   for (unsigned int i = 1; i < _sql->GetLastQueryResult().size(); i++) {
     std::string current_name = _sql->GetLastQueryResult()[i][1];
@@ -299,7 +299,7 @@ int vdb::save_routing(const std::string name, std::unique_ptr<device_data> &data
 
   for (auto saved_routing_name : saved_routing_names) {
     if (name == saved_routing_name) {
-      return AddToTrace("Routing with name: " + name + " already in list of saved routings");
+      return ET::Collector::Add("Routing with name: " + name + " already in list of saved routings");
     }
   }
 
@@ -308,10 +308,10 @@ int vdb::save_routing(const std::string name, std::unique_ptr<device_data> &data
   std::vector<std::string> args = {data->ip, name, data->marked_for_saving};
   result = _sql->Query(_sql->BindValues(args, _sql->GetStatement(query_str)));
 
-  if (result) return AddToTrace("Error: " + _sql->GetLastErrorMsg());
+  if (result) return ET::Collector::Add("Error: " + _sql->GetLastErrorMsg());
 
   result = clean_marked_routes();
-  if (result) return AddToTrace("Could not clean marked routes: ");
+  if (result) return ET::Collector::Add("Could not clean marked routes: ");
 
   return SQL_OK;
 }
@@ -320,12 +320,12 @@ int vdb::save_routing(const std::string name, std::unique_ptr<device_data> &data
 int vdb::get_routing_by_name(const std::string name, std::string &routes_str) {
   int result;
   result = get_data_of_selected_device();
-  if (result) return AddToTrace("could not get routing names: ");
+  if (result) return ET::Collector::Add("could not get routing names: ");
   QueryResult query_result;
 
   std::vector<std::string> saved_routing_names;
   result = get_saved_routing_names(m_device.ip, saved_routing_names, query_result);
-  if (result) return AddToTrace("could not get routings list: ");
+  if (result) return ET::Collector::Add("could not get routings list: ");
 
   for (size_t i = 1; i < query_result.size(); i++) {
     if (query_result[i][1] == name) {
@@ -334,12 +334,12 @@ int vdb::get_routing_by_name(const std::string name, std::string &routes_str) {
     }
   }
 
-  return AddToTrace("routing with name: " + name + " does not exist for selected device.");
+  return ET::Collector::Add("routing with name: " + name + " does not exist for selected device.");
 }
 
 int vdb::update_selected_device_data(std::unique_ptr<device_data> &data) {
   int result = get_data_of_selected_device();
-  if (result) return AddToTrace("could not get data of selected device");
+  if (result) return ET::Collector::Add("could not get data of selected device");
 
   std::string query_str = "UPDATE " + DEVICES_TABLE + " SET version=?, "+
                                                             "source_labels=?, "+
@@ -361,14 +361,14 @@ int vdb::update_selected_device_data(std::unique_ptr<device_data> &data) {
 
   result = _sql->Query(_sql->BindValues(args, _sql->GetStatement(query_str)));
 
-  if (result) return AddToTrace("Query did not work: " + _sql->GetLastErrorMsg());
+  if (result) return ET::Collector::Add("Query did not work: " + _sql->GetLastErrorMsg());
 
   return SQL_OK;
 }
 
 int vdb::GetSelectedDeviceData(std::unique_ptr<device_data> &device) {
   int result = get_data_of_selected_device();
-  if (result) return AddToTrace("could not get data from selected device");
+  if (result) return ET::Collector::Add("could not get data from selected device");
 
   *device = m_device;
   return SQL_OK;
@@ -381,7 +381,7 @@ int vdb::GetDevices(std::string &device_str) {
   // sql_access _sql;
 
   result = _sql->Query(_sql->GetStatement(query_str));
-  if (result) return AddToTrace("could not get Devices List");
+  if (result) return ET::Collector::Add("could not get Devices List");
 
   // Compose response string
   for (auto row : _sql->GetLastQueryResult()) {
@@ -397,7 +397,7 @@ int vdb::get_saved_routings(std::string &routings_str) {
 
   // Get data of selected device
   result = get_data_of_selected_device();
-  if (result) return AddToTrace("could not get data from selected device");
+  if (result) return ET::Collector::Add("could not get data from selected device");
 
   // query for saved routings of selected device
   std::string ip_str = m_device.ip;
@@ -405,7 +405,7 @@ int vdb::get_saved_routings(std::string &routings_str) {
   // sql_access _sql;
   
   result = _sql->Query(_sql->GetStatement(query));
-  if (result) return AddToTrace(std::format("query did not work: {}", _sql->GetLastErrorMsg()));
+  if (result) return ET::Collector::Add(std::format("query did not work: {}", _sql->GetLastErrorMsg()));
 
   // Compose response string
   for (size_t i = 1; i < _sql->GetLastQueryResult().size(); i++) {
@@ -416,26 +416,4 @@ int vdb::get_saved_routings(std::string &routings_str) {
   }
 
   return SQL_OK;
-}
-
-
-
-
-
-
-
-
-
-
-// Error Handling
-std::vector<std::string> vdb::m_err_msgs;
-int vdb::AddToTrace(std::string s) {
-  m_err_msgs.push_back("SQLITE_INTERFACE: " + s);
-  return 1;
-}
-
-std::vector<std::string> vdb::GetErrorMessages() {
-  std::vector<std::string> temp = m_err_msgs;
-  m_err_msgs.clear();
-  return temp;
 }
