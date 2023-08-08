@@ -120,6 +120,7 @@ private:
 
 	static int GetDeviceInformation(std::string, std::unique_ptr<device_data>& _data);
 
+	static std::pair<int, int> GetRouteFromDestination(int destination, std::unique_ptr<device_data>& deviceData);
 	static int check_channel_number(int num);
 
 	static vdb m_database;
