@@ -203,3 +203,239 @@ TEST_CASE("Rename sourcechannel of connected device") {
 
 	REQUIRE(isSame);
 }
+
+TEST_CASE("Rename destinationchannel of connected device") {
+	int result = 0;
+
+	std::unique_ptr<device_data> device;
+	std::string compareString = "ChannelTest";
+
+	InitializeStorage();
+
+	result = Vapi::AddRouter("127.0.0.1");
+	REQUIRE(result == 0);
+
+	result = Vapi::RenameDestination(0, "ChannelTest");
+	REQUIRE(result == 0);
+
+	result = DataHandler::GetDataOfSelectedDevice(device);
+	REQUIRE(result == 0);
+
+	bool isSame = device->destinationsLabelsList[0] == compareString;
+
+	REQUIRE(isSame);
+}
+
+TEST_CASE("Prepare new routes for connected device") {
+	int result = 0;
+
+	InitializeStorage();
+	AddDevicesToStorage();
+	Vapi::SelectRouter("127.0.0.1");
+
+	result = Vapi::PrepareNewRoute(0, 9);
+	REQUIRE(result == 0);
+
+	result = Vapi::PrepareNewRoute(1, 9);
+	REQUIRE(result == 0);
+
+	result = Vapi::PrepareNewRoute(2, 9);
+	REQUIRE(result == 0);
+
+	result = Vapi::PrepareNewRoute(3, 9);
+	REQUIRE(result == 0);
+
+	result = Vapi::PrepareNewRoute(4, 9);
+	REQUIRE(result == 0);
+
+	result = Vapi::PrepareNewRoute(5, 9);
+	REQUIRE(result == 0);
+
+	result = Vapi::PrepareNewRoute(6, 9);
+	REQUIRE(result == 0);
+
+	result = Vapi::PrepareNewRoute(7, 9);
+	REQUIRE(result == 0);
+
+	result = Vapi::PrepareNewRoute(8, 9);
+	REQUIRE(result == 0);
+
+	result = Vapi::PrepareNewRoute(9, 9);
+	REQUIRE(result == 0);
+
+	auto device = std::make_unique<device_data>();
+	result = DataHandler::GetDataOfSelectedDevice(device);
+	REQUIRE(result == 0);
+
+	auto routing = device->routesPreparedList;
+
+	auto route = routing[0];
+	REQUIRE(route.second == 9);
+
+	route = routing[1];
+	REQUIRE(route.second == 9);
+
+	route = routing[2];
+	REQUIRE(route.second == 9);
+
+	route = routing[3];
+	REQUIRE(route.second == 9);
+
+	route = routing[4];
+	REQUIRE(route.second == 9);
+
+	route = routing[5];
+	REQUIRE(route.second == 9);
+
+	route = routing[6];
+	REQUIRE(route.second == 9);
+
+	route = routing[7];
+	REQUIRE(route.second == 9);
+
+	route = routing[8];
+	REQUIRE(route.second == 9);
+
+	route = routing[9];
+	REQUIRE(route.second == 9);
+}
+
+TEST_CASE("take prepared routes on connected device") {
+	int result = 0;
+
+	InitializeStorage();
+	AddDevicesToStorage();
+	Vapi::SelectRouter("127.0.0.1");
+
+	result = Vapi::PrepareNewRoute(0, 9);
+	REQUIRE(result == 0);
+
+	result = Vapi::PrepareNewRoute(1, 9);
+	REQUIRE(result == 0);
+
+	result = Vapi::PrepareNewRoute(2, 9);
+	REQUIRE(result == 0);
+
+	result = Vapi::PrepareNewRoute(3, 9);
+	REQUIRE(result == 0);
+
+	result = Vapi::PrepareNewRoute(4, 9);
+	REQUIRE(result == 0);
+
+	result = Vapi::PrepareNewRoute(5, 9);
+	REQUIRE(result == 0);
+
+	result = Vapi::PrepareNewRoute(6, 9);
+	REQUIRE(result == 0);
+
+	result = Vapi::PrepareNewRoute(7, 9);
+	REQUIRE(result == 0);
+
+	result = Vapi::PrepareNewRoute(8, 9);
+	REQUIRE(result == 0);
+
+	result = Vapi::PrepareNewRoute(9, 9);
+	REQUIRE(result == 0);
+
+
+	result = Vapi::TakePreparedRoutes();
+	REQUIRE(result == 0);
+
+
+	auto device = std::make_unique<device_data>();
+	result = DataHandler::GetDataOfSelectedDevice(device);
+	REQUIRE(result == 0);
+
+	auto routing = device->routesList;
+
+	auto route = routing[0];
+	REQUIRE(route.second == 9);
+
+	route = routing[1];
+	REQUIRE(route.second == 9);
+
+	route = routing[2];
+	REQUIRE(route.second == 9);
+
+	route = routing[3];
+	REQUIRE(route.second == 9);
+
+	route = routing[4];
+	REQUIRE(route.second == 9);
+
+	route = routing[5];
+	REQUIRE(route.second == 9);
+
+	route = routing[6];
+	REQUIRE(route.second == 9);
+
+	route = routing[7];
+	REQUIRE(route.second == 9);
+
+	route = routing[8];
+	REQUIRE(route.second == 9);
+
+	route = routing[9];
+	REQUIRE(route.second == 9);
+}
+
+
+//TEST_CASE("Lock routes of connected device") {
+//	int result = 0;
+//
+//	InitializeStorage();
+//	AddDevicesToStorage();
+//
+//
+//	REQUIRE(result == 0);
+//}
+//
+//TEST_CASE("unlock routes of connected device") {
+//	int result = 0;
+//
+//	InitializeStorage();
+//	AddDevicesToStorage();
+//
+//
+//	REQUIRE(result == 0);
+//}
+//
+//TEST_CASE("mark routes form connected device to save as routing in storage") {
+//	int result = 0;
+//
+//	InitializeStorage();
+//	AddDevicesToStorage();
+//
+//
+//	REQUIRE(result == 0);
+//}
+//
+//TEST_CASE("save marked routes as routing in storage") {
+//	int result = 0;
+//
+//	InitializeStorage();
+//	AddDevicesToStorage();
+//
+//
+//	REQUIRE(result == 0);
+//}
+//
+//TEST_CASE("get listing of saved routings from storage") {
+//	int result = 0;
+//
+//	InitializeStorage();
+//	AddDevicesToStorage();
+//
+//
+//	REQUIRE(result == 0);
+//}
+//
+//TEST_CASE("load saved routing from storage and send it to connected device") {
+//	int result = 0;
+//
+//	InitializeStorage();
+//	AddDevicesToStorage();
+//
+//
+//	REQUIRE(result == 0);
+//}
