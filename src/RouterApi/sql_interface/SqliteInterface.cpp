@@ -369,6 +369,7 @@ int vdb::update_selected_device_data(std::unique_ptr<device_data>& data) {
 int vdb::GetSelectedDeviceData(std::unique_ptr<device_data>& device) {
 	int result = get_data_of_selected_device();
 	if (result) return ET::Collector::Add("could not get data from selected device");
+	device = std::make_unique<device_data>();
 
 	*device = m_device;
 	return SQL_OK;
