@@ -570,6 +570,8 @@ int Vapi::TakePreparedRoutes() {
 int Vapi::LockRoute(unsigned int destination) {
 	int result;
 	auto currentDevice = std::make_unique<device_data>();
+	auto current_device = std::make_unique<device_data>();
+	auto deviceLocks = std::make_unique<device_data>();
 	
 	//// OLD
 	//// Check Channelnumber
@@ -588,7 +590,6 @@ int Vapi::LockRoute(unsigned int destination) {
 
 	// OLD
 	// get device data
-	auto current_device = std::make_unique<device_data>();
 	result = m_database.GetSelectedDeviceData(current_device);
 	if (result) return ET::Collector::Add("could not get device data: ");
 	// old
@@ -613,13 +614,13 @@ int Vapi::LockRoute(unsigned int destination) {
 
 	response = tc.GetLastDataDump();
 
+	result = ExtractInformation(response, deviceLocks);
 
 
 
 	// OLD
 	// update device data in database
-	current_device->locks = "";
-	result = ExtractInformation(response, current_device);
+	current_device->locks = deviceLocks->locks;
 	m_database.update_selected_device_data(current_device);
 	//old
 
@@ -627,8 +628,7 @@ int Vapi::LockRoute(unsigned int destination) {
 
 
 	// NEW
-	currentDevice->locksList.clear();
-	result = ExtractInformation(response, currentDevice);
+	currentDevice->locksList = deviceLocks->locksList;
 	if (result) return ET::Collector::Add("could not extract data from response of connected device");
 
 	result = DataHandler::UpdateSelectedDeviceData(currentDevice);
@@ -645,25 +645,21 @@ int Vapi::LockRoute(unsigned int destination) {
 int Vapi::UnlockRoute(unsigned int destination) {
 	int result;
 	auto currentDevice = std::make_unique<device_data>();
-
-	// Check Channelnumber
-	result = check_channel_number(destination);
-	if (result) return ET::Collector::Add("something wrong with the channelnumber: ");
-
-
-
+	auto current_device = std::make_unique<device_data>();
+	std::unique_ptr<device_data> deviceLocks;
 
 	// OLD
 	// get device data
-	auto current_device = std::make_unique<device_data>();
 	result = m_database.GetSelectedDeviceData(current_device);
 	if (result) return ET::Collector::Add("could not get device data: ");
 	// old
+	if (destination < 0 || destination >= current_device->destination_count) return ET::Collector::Add("Channel Number not in range");
 
 	// NEW
 	result = DataHandler::GetDataOfSelectedDevice(currentDevice);
 	if (result) return ET::Collector::Add("could not get device data: ");
 
+	if (destination < 0 || destination >= currentDevice->destination_count) return ET::Collector::Add("Channel Number not in range");
 
 
 	// create socket
@@ -681,22 +677,20 @@ int Vapi::UnlockRoute(unsigned int destination) {
 	result = tc.SendMsgToServer(message);
 	if (result) return ET::Collector::Add("Could not send message");
 
+	response = tc.GetLastDataDump();
+	result = ExtractInformation(response, deviceLocks);
 
 
 	// OLD
 	// update device data in database
-	current_device->locks = "";
-	response = tc.GetLastDataDump();
-	result = ExtractInformation(response, current_device);
+	current_device->locks = deviceLocks->locks;
 	m_database.update_selected_device_data(current_device);
 	// old
 
 
 
 	// NEW
-	currentDevice->locksList.clear();
-	response = tc.GetLastDataDump();
-	result = ExtractInformation(response, currentDevice);
+	currentDevice->locksList = deviceLocks->locksList;
 	if (result) return ET::Collector::Add("Could not extract information of response from connecte device");
 
 	result = DataHandler::UpdateSelectedDeviceData(currentDevice);
@@ -785,92 +779,138 @@ std::pair<int, int> Vapi::GetRouteFromDestination(int destination, std::unique_p
 /// <returns>int; 0 = ok</returns>
 int Vapi::MarkRoutes2(std::vector<int> destinations) {
 	int result = 0;
-	auto currentDevice = std::make_unique<device_data>() ;
+	std::unique_ptr<device_data> selectedDevice;
+	std::unique_ptr<device_data> connectedDevice;
 	std::string response;
+	std::string ip;
 
-	result = DataHandler::GetDataOfSelectedDevice(currentDevice);
+	result = DataHandler::GetDataOfSelectedDevice(selectedDevice);
 	if (result) return ET::Collector::Add("could not get data of selected device from storage");
 
-	auto markedRoutes = currentDevice->routesMarkedList;
-
-	std::string ip = currentDevice->ip;
-	result = GetStatus(ip, currentDevice);
+	ip = selectedDevice->ip;
+	result = GetStatus(ip, connectedDevice);
 	if (result) ET::Collector::Add("Could not get data from connected device");
 
-	bool isAlreadyInList = false;
-	for (size_t i = 0; i < destinations.size(); i++)
-	{
-		for (size_t j = 0; i < markedRoutes.size(); j++) {
-			if (markedRoutes[j].first == destinations[i]) {
-				isAlreadyInList = true;
-				break;
-			}
+	for (int destination : destinations) {
+		if (destination < 0 || destination >= connectedDevice->destination_count) return ET::Collector::Add("Destination out of range: " + std::to_string(destination));
 
-			if (isAlreadyInList) continue;
-
-			auto route = GetRouteFromDestination(destinations[i], currentDevice);
-			currentDevice->routesMarkedList.push_back(route);
-		}
+		connectedDevice->routesMarkedList.push_back(GetRouteFromDestination(destination, connectedDevice));
 	}
+	selectedDevice->routesMarkedList = connectedDevice->routesMarkedList;
 
 	// update device data with new deviceData object to update the markedforsavings list in storage
-	DataHandler::UpdateSelectedDeviceData(currentDevice);
+	DataHandler::UpdateSelectedDeviceData(selectedDevice);
 
 	return ROUTER_API_OK;
 }
 
+/// <summary>
+/// Saves marked routes from selected device in storage as new routing
+/// </summary>
+/// <param name="routing_name">name for new routing to store</param>
+/// <returns>int; 0 = ok</returns>
 int Vapi::SaveRoutes(std::string routing_name) {
-	// Get marked routes of selected device from database
 	int result;
-	std::unique_ptr<device_data> current_device = std::make_unique<device_data>();
+	std::unique_ptr<device_data> selectedDevice;
 
+	// OLD
 	// Get device data with prepared routes from database
-	result = m_database.GetSelectedDeviceData(current_device);
+	std::unique_ptr<device_data> selectedDeviceOld;
+	result = m_database.GetSelectedDeviceData(selectedDeviceOld);
 	if (result) return ET::Collector::Add("Could not not get marked routes", ET::Collector::GetErrorMessages());
 
-	if (current_device->marked_for_saving.empty()) return ET::Collector::Add("No marked route to save present in selected device");
+	if (selectedDeviceOld->marked_for_saving.empty()) {
+		ET::Collector::Add("No marked route to save present in selected device (old)");
 
-	// Insert new row for routing of selected device in routings table: ip, name of routing, routing as text
-	result = m_database.save_routing(routing_name, current_device);
-	if (result) return ET::Collector::Add("Could not save routing: ", ET::Collector::GetErrorMessages());
+		// Insert new row for routing of selected device in routings table: ip, name of routing, routing as text
+		result = m_database.save_routing(routing_name, selectedDeviceOld);
+		if (result) return ET::Collector::Add("Could not save routing: ", ET::Collector::GetErrorMessages());
+		// old
+	}
 
+	// NEW
+	result = DataHandler::GetDataOfSelectedDevice(selectedDevice);
+	if (result) return ET::Collector::Add("Could not get data of selected device from storage");
 
+	if (selectedDevice->routesMarkedList.empty()) return ET::Collector::Add("now marked routes to store as saved routes");
 
-	return ROUTER_API_OK;
+	auto markedRoutes = selectedDevice->routesMarkedList;
+	DataHandler::Routing markedRouting = { routing_name, markedRoutes };
+	result = DataHandler::StoreRoutingForSelected(markedRouting);
+	if (result) return ET::Collector::Add("Could not store routing in storage");
+
+	selectedDevice->routesMarkedList.clear();
+	result = DataHandler::UpdateSelectedDeviceData(selectedDevice);
+	if (result) return ET::Collector::Add("Could not update device data in storage");
+
+	return 0;
 }
 
-// TODO
-int Vapi::GetSavedRoutes(std::string& callback) {
+/// <summary>
+/// Gets List of all saved routings for selected device in storage
+/// </summary>
+/// <param name="routingsList">list to store routings into</param>
+/// <returns>int; 0 = ok</returns>
+int Vapi::GetSavedRoutes(std::vector < std::pair<std::string, std::vector<std::pair<int, int>>>> &routingsList) {
 	int result;
-	DataHandler::RoutingsList routings;
 
-	result = DataHandler::GetRoutesFromSelected(routings);
+	result = DataHandler::GetRoutesFromSelected(routingsList);
+	if (result) return ET::Collector::Add("could not acquire routings from storage");
 
-
-	// get routing
-	result = m_database.get_saved_routings(callback);
-	if (result) return ET::Collector::Add("Could not not get saved routings: ", ET::Collector::GetErrorMessages());
+	// get routing OLD
+	//std::string routingStr;
+	//result = m_database.get_saved_routings(routingStr);
+	//if (result) return ET::Collector::Add("Could not not get saved routings (old)");
+	// old
 
 	return ROUTER_API_OK;
 }
 
+/// <summary>
+/// loads routing from storage of selected device and sends it to connected device
+/// </summary>
+/// <param name="name">name of routing</param>
+/// <returns>int; 0 = ok</returns>
 int Vapi::LoadRoutes(std::string name) {
-	std::unique_ptr<device_data> current_device = std::make_unique<device_data>();
+	int result;
+	std::unique_ptr<device_data> current_device;
 	std::string response;
 	std::string routes;
-	int result;
+	DataHandler::Routing routing;
+	DataHandler::RoutingsList routingsList;
+	std::unique_ptr<device_data> selectedDevice;
+	std::unique_ptr<device_data> connectedDevice;
 
-	// send request to database api to get saved routes by name
-	result = m_database.get_routing_by_name(name, routes);
-	if (result) return ET::Collector::Add("could not get saved routes:");
 
-	// Get device data from database
-	result = m_database.GetSelectedDeviceData(current_device);
-	if (result) return ET::Collector::Add("Could not not get prepared routes", ET::Collector::GetErrorMessages());
+	
+	//// OLD
+	//// send request to database api to get saved routes by name
+	//result = m_database.get_routing_by_name(name, routes);
+	//if (result) return ET::Collector::Add("could not get saved routes:");
 
-	// Create socket
-	TelnetClient tc(current_device->ip, VIDEOHUB_TELNET_PORT, response, result);
+	//// Get device data from database
+	//result = m_database.GetSelectedDeviceData(current_device);
+	//if (result) return ET::Collector::Add("Could not not get prepared routes");
+	//// old
+
+
+
+	result = DataHandler::GetDataOfSelectedDevice(selectedDevice);
+	if (result) return ET::Collector::Add("Could not get data of selected device");
+
+	result = DataHandler::GetRoutesFromSelected(routingsList);
+	if (result) return ET::Collector::Add("could not get saved routes of selected device from storage");
+
+	TelnetClient tc(selectedDevice->ip, VIDEOHUB_TELNET_PORT, response, result);
 	if (result) return ET::Collector::Add("Could not create socket", ET::Collector::GetErrorMessages());
+
+	for (DataHandler::Routing routing : routingsList) {
+		if (routing.first != name) continue;
+
+		for (std::pair<int, int> route : routing.second) {
+			routes += std::to_string(route.first) + " " + std::to_string(route.second) + '\n';
+		}
+	}
 
 	// send Command to take routes to connected device
 	std::string route_command = "VIDEO OUTPUT ROUTING:\n" + routes + '\n';
@@ -884,15 +924,21 @@ int Vapi::LoadRoutes(std::string name) {
 
 	// get response from member variable and fill in routing of device data
 	response = tc.GetLastDataDump();
-	current_device->routing = "";
-	result = ExtractInformation(response, current_device);
+	result = ExtractInformation(response, connectedDevice);
 	if (result) return ET::Collector::Add("Could extract routing from response");
 
+	//OLD
 	// update values in database with device data
-	result = m_database.update_selected_device_data(current_device);
-	if (result) return ET::Collector::Add("Could not update device data of selected router in database", ET::Collector::GetErrorMessages());
+	selectedDevice->routing = connectedDevice->routing;
+	result = m_database.update_selected_device_data(selectedDevice);
+	if (result) return ET::Collector::Add("Could not update device data of selected router in database (old)");
+	// old
 
-	return ROUTER_API_OK;
+	selectedDevice->routesList = connectedDevice->routesList;
+	result = DataHandler::UpdateSelectedDeviceData(selectedDevice);
+	if (result) return ET::Collector::Add("could not update data in storage");
+
+	return 0;
 }
 
 int Vapi::check_channel_number(int num) {
