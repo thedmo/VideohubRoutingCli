@@ -131,7 +131,7 @@ int Vapi::GetDeviceInformation(std::string line, std::unique_ptr<device_data>& _
 	std::string value = words[1];
 	value.erase(0, 1);
 
-	std::cout << key << " " << value << std::endl;
+	//std::cout << key << " " << value << std::endl;
 
 	if (key.compare("Version") == 0) {
 		_data->version = value;
