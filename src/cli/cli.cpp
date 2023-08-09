@@ -2,592 +2,645 @@
 
 // Usage
 void cli::PrintHelp() {
-  std::string usage = "Usage:\n";
-  for (size_t i = 0; i < m_options.size(); i++) {
-    // TODO: add description with examples
-    usage += (m_options[i].short_name + "  " + m_options[i].long_name) + '\n';
-  }
+	std::string usage = "Usage:\n";
+	for (size_t i = 0; i < m_options.size(); i++) {
+		// TODO: add description with examples
+		usage += (m_options[i].short_name + "  " + m_options[i].long_name) + '\n';
+	}
 
-  std::cout << usage << std::endl;
+	std::cout << usage << std::endl;
 }
 
 // EVALUATION =====================
 
 int cli::CompareToOptions(const std::string comp_str) {
-  for (size_t i = 0; i < m_options.size(); i++) {
-    if ((comp_str == m_options[i].short_name) || (comp_str == m_options[i].long_name)) {
-      return m_options[i].option_number;
-    }
-  }
+	for (size_t i = 0; i < m_options.size(); i++) {
+		if ((comp_str == m_options[i].short_name) || (comp_str == m_options[i].long_name)) {
+			return m_options[i].option_number;
+		}
+	}
 
-  // std::cout << comp_str << " not found." << std::endl;
-  return Flags::value;
+	// std::cout << comp_str << " not found." << std::endl;
+	return Flags::value;
 }
 
-int cli::CheckArgCount(const int argc, const int current_index, std::string &err_msg) {
-  if (argc <= (current_index + 1)) {
-    err_msg = "Too few arguments.\n";
-    return NOT_OK;
-  }
+int cli::CheckArgCount(const int argc, const int current_index, std::string& err_msg) {
+	if (argc <= (current_index + 1)) {
+		err_msg = "Too few arguments.\n";
+		return NOT_OK;
+	}
 
-  return OK;
+	return OK;
 }
 
 // CLI METHODS ======================
 
-void cli::AddRouter(int argc, const char *argv[], int &current_argument_index) {
-  if (CheckArgCount(argc, current_argument_index, m_err_msg) != OK) {
-    std::cout << "Argc error: " << m_err_msg << '\n';
-    return;
-  }
-  //   current_argument_index += 1;
-  if (Vapi::AddRouter(argv[++current_argument_index]) != Vapi::ROUTER_API_OK) {
-    PrintErrors(ET::Collector::GetErrorMessages());
-    return;
-  }
+void cli::AddRouter(int argc, const char* argv[], int& current_argument_index) {
+	if (CheckArgCount(argc, current_argument_index, m_err_msg) != OK) {
+		std::cout << "Argc error: " << m_err_msg << '\n';
+		return;
+	}
+	//   current_argument_index += 1;
+	if (Vapi::AddRouter(argv[++current_argument_index]) != Vapi::ROUTER_API_OK) {
+		PrintErrors(ET::Collector::GetErrorMessages());
+		return;
+	}
 }
 
 void cli::RemoveRouter() {
-  if (Vapi::RemoveSelectedRouter() != Vapi::ROUTER_API_OK) {
-    PrintErrors(ET::Collector::GetErrorMessages());
-    return;
-  }
+	if (Vapi::RemoveSelectedRouter() != Vapi::ROUTER_API_OK) {
+		PrintErrors(ET::Collector::GetErrorMessages());
+		return;
+	}
 }
 
-void cli::SelectRouter(int argc, const char *argv[], int &current_argument_index) {
-  if (CheckArgCount(argc, current_argument_index, m_err_msg) != OK) {
-    std::cout << "Error: " << m_err_msg << '\n';
-    return;
-  };
+void cli::SelectRouter(int argc, const char* argv[], int& current_argument_index) {
+	if (CheckArgCount(argc, current_argument_index, m_err_msg) != OK) {
+		std::cout << "Error: " << m_err_msg << '\n';
+		return;
+	};
 
-  if (Vapi::SelectRouter(argv[++current_argument_index]) != Vapi::ROUTER_API_OK) {
-    PrintErrors(ET::Collector::GetErrorMessages());
-    return;
-  }
+	if (Vapi::SelectRouter(argv[++current_argument_index]) != Vapi::ROUTER_API_OK) {
+		PrintErrors(ET::Collector::GetErrorMessages());
+		return;
+	}
 }
 
 void cli::ListDevices() {
-  std::string device_list;
+	std::string device_list;
 
-  if (Vapi::GetDevices(device_list) != Vapi::ROUTER_API_OK) {
-    PrintErrors(ET::Collector::GetErrorMessages());
-    return;
-  }
+	if (Vapi::GetDevices(device_list) != Vapi::ROUTER_API_OK) {
+		PrintErrors(ET::Collector::GetErrorMessages());
+		return;
+	}
 
-  std::cout << device_list << std::endl;
+	std::cout << device_list << std::endl;
 };
 
-void cli::RenameSource(int argc, const char *argv[], int &current_argument_index) {
-  std::string new_name;
-  int channel_number;
+void cli::RenameSource(int argc, const char* argv[], int& current_argument_index) {
+	std::string new_name;
+	int channel_number;
 
-  if (CheckArgCount(argc, current_argument_index, m_err_msg) != OK) {
-    std::cout << "Error: " << m_err_msg << '\n';
-    return;
-  }
+	if (CheckArgCount(argc, current_argument_index, m_err_msg) != OK) {
+		std::cout << "Error: " << m_err_msg << '\n';
+		return;
+	}
 
-  try {
-    channel_number = std::stoi(argv[++current_argument_index]);
-  }
-  catch (const std::exception &exception) {
-    std::cout << "Error: " << exception.what() << std::endl;
-    return;
-  }
+	try {
+		channel_number = std::stoi(argv[++current_argument_index]);
+	}
+	catch (const std::exception& exception) {
+		std::cout << "Error: " << exception.what() << std::endl;
+		return;
+	}
 
-  // check second Argument
-  if (CheckArgCount(argc, current_argument_index, m_err_msg) != OK) {
-    std::cout << "Error: " << m_err_msg << '\n';
-    return;
-  }
+	// check second Argument
+	if (CheckArgCount(argc, current_argument_index, m_err_msg) != OK) {
+		std::cout << "Error: " << m_err_msg << '\n';
+		return;
+	}
 
-  new_name = argv[++current_argument_index];
+	new_name = argv[++current_argument_index];
 
-  if (Vapi::RenameSource(channel_number, new_name) != Vapi::ROUTER_API_OK) {
-    PrintErrors(ET::Collector::GetErrorMessages());
-    return;
-  }
+	if (Vapi::RenameSource(channel_number, new_name) != Vapi::ROUTER_API_OK) {
+		PrintErrors(ET::Collector::GetErrorMessages());
+		return;
+	}
 };
 
 void cli::ListSources() {
-  std::string device_text;
+	std::string device_text;
 
-  int result = Vapi::GetSources(device_text);
-  if (result) {
-    PrintErrors(ET::Collector::GetErrorMessages());
-    return;
-  }
+	int result = Vapi::GetSources(device_text);
+	if (result) {
+		PrintErrors(ET::Collector::GetErrorMessages());
+		return;
+	}
 
-  std::cout << device_text << std::endl;
+	std::cout << device_text << std::endl;
 };
 
-void cli::RenameDestination(int argc, const char *argv[], int &current_argument_index) {
-  std::string new_name;
-  int channel_number = 0;
+void cli::RenameDestination(int argc, const char* argv[], int& current_argument_index) {
+	std::string new_name;
+	int channel_number = 0;
 
-  // Check first argument
-  if (CheckArgCount(argc, current_argument_index, m_err_msg) != OK) {
-    std::cout << "Error: " << m_err_msg << '\n';
-    return;
-  }
+	// Check first argument
+	if (CheckArgCount(argc, current_argument_index, m_err_msg) != OK) {
+		std::cout << "Error: " << m_err_msg << '\n';
+		return;
+	}
 
-  try {
-    channel_number = std::stoi(argv[++current_argument_index]);
-  }
-  catch (const std::invalid_argument &exception) {
-    std::cout << "Error, not a valid integer: " << exception.what() << std::endl;
-    return;
-  }
+	try {
+		channel_number = std::stoi(argv[++current_argument_index]);
+	}
+	catch (const std::invalid_argument& exception) {
+		std::cout << "Error, not a valid integer: " << exception.what() << std::endl;
+		return;
+	}
 
-  // check second Argument
-  if (CheckArgCount(argc, current_argument_index, m_err_msg) != OK) {
-    std::cout << "Error: " << m_err_msg << '\n';
-    return;
-  }
+	// check second Argument
+	if (CheckArgCount(argc, current_argument_index, m_err_msg) != OK) {
+		std::cout << "Error: " << m_err_msg << '\n';
+		return;
+	}
 
-  new_name = argv[++current_argument_index];
+	new_name = argv[++current_argument_index];
 
-  int result = Vapi::RenameDestination(channel_number, new_name);
-  if (result) PrintErrors(ET::Collector::GetErrorMessages());
+	int result = Vapi::RenameDestination(channel_number, new_name);
+	if (result) PrintErrors(ET::Collector::GetErrorMessages());
 }
 
 void cli::ListDestinations() {
-  std::string destination_list;
+	std::string destination_list;
 
-  int result = Vapi::GetDestinations(destination_list);
-  if (result) {
-    PrintErrors(ET::Collector::GetErrorMessages());
-    return;
-  }
+	int result = Vapi::GetDestinations(destination_list);
+	if (result) {
+		PrintErrors(ET::Collector::GetErrorMessages());
+		return;
+	}
 
-  std::cout << destination_list << std::endl;
+	std::cout << destination_list << std::endl;
 };
 
-void cli::PrepareNewRoute(int argc, const char *argv[], int &current_argument_index) {
-  int temp_destination;
-  int temp_source;
+void cli::PrepareNewRoute(int argc, const char* argv[], int& current_argument_index) {
+	int temp_destination;
+	int temp_source;
 
-  if (CheckArgCount(argc, current_argument_index, m_err_msg) != OK) {
-    std::cout << "Error: " << m_err_msg << '\n';
-    return;
-  }
+	if (CheckArgCount(argc, current_argument_index, m_err_msg) != OK) {
+		std::cout << "Error: " << m_err_msg << '\n';
+		return;
+	}
 
-  try {
-    temp_destination = std::stoi(argv[++current_argument_index]);
-  }
-  catch (const std::invalid_argument &exception) {
-    std::cout << "Error, not a valid integer: " << exception.what() << std::endl;
-  }
+	try {
+		temp_destination = std::stoi(argv[++current_argument_index]);
+	}
+	catch (const std::invalid_argument& exception) {
+		std::cout << "Error, not a valid integer: " << exception.what() << std::endl;
+	}
 
-  if (CheckArgCount(argc, current_argument_index, m_err_msg) != OK) {
-    std::cout << "Error: " << m_err_msg << '\n';
-    return;
-  }
+	if (CheckArgCount(argc, current_argument_index, m_err_msg) != OK) {
+		std::cout << "Error: " << m_err_msg << '\n';
+		return;
+	}
 
-  try {
-    temp_source = std::stoi(argv[++current_argument_index]);
-  }
-  catch (const std::invalid_argument &exception) {
-    std::cout << "Error, not a valid integer: " << exception.what() << std::endl;
-  }
-  if (Vapi::PrepareNewRoute(temp_destination, temp_source) != Vapi::ROUTER_API_OK) {
-    PrintErrors(ET::Collector::GetErrorMessages());
-    return;
-  }
+	try {
+		temp_source = std::stoi(argv[++current_argument_index]);
+	}
+	catch (const std::invalid_argument& exception) {
+		std::cout << "Error, not a valid integer: " << exception.what() << std::endl;
+	}
+	if (Vapi::PrepareNewRoute(temp_destination, temp_source) != Vapi::ROUTER_API_OK) {
+		PrintErrors(ET::Collector::GetErrorMessages());
+		return;
+	}
 };
 
 void cli::TakePreparedRoutes() {
-  if (Vapi::TakePreparedRoutes() != Vapi::ROUTER_API_OK) {
-    PrintErrors(ET::Collector::GetErrorMessages());
-    return;
-  }
+	if (Vapi::TakePreparedRoutes() != Vapi::ROUTER_API_OK) {
+		PrintErrors(ET::Collector::GetErrorMessages());
+		return;
+	}
 };
 
-void cli::LockRoute(int argc, const char *argv[], int &current_argument_index) {
-  int temp_destination;
+void cli::LockRoute(int argc, const char* argv[], int& current_argument_index) {
+	int temp_destination;
 
-  if (CheckArgCount(argc, current_argument_index, m_err_msg) != OK) {
-    std::cout << "Error: " << m_err_msg << '\n';
-    return;
-  }
+	if (CheckArgCount(argc, current_argument_index, m_err_msg) != OK) {
+		std::cout << "Error: " << m_err_msg << '\n';
+		return;
+	}
 
-  try {
-    temp_destination = std::stoi(argv[++current_argument_index]);
-  }
-  catch (const std::invalid_argument &exception) {
-    std::cout << "Error, not a valid integer: " << exception.what() << std::endl;
-  }
-  int result = Vapi::LockRoute(temp_destination);
-  if (result) {
-    PrintErrors(ET::Collector::GetErrorMessages());
-    return;
-  }
+	try {
+		temp_destination = std::stoi(argv[++current_argument_index]);
+	}
+	catch (const std::invalid_argument& exception) {
+		std::cout << "Error, not a valid integer: " << exception.what() << std::endl;
+	}
+	int result = Vapi::LockRoute(temp_destination);
+	if (result) {
+		PrintErrors(ET::Collector::GetErrorMessages());
+		return;
+	}
 };
 
-void cli::UnlockRoute(int argc, const char *argv[], int &current_argument_index) {
-  int temp_destination;
+void cli::UnlockRoute(int argc, const char* argv[], int& current_argument_index) {
+	int temp_destination;
 
-  if (CheckArgCount(argc, current_argument_index, m_err_msg) != OK) {
-    std::cout << "Error: " << m_err_msg << '\n';
-    return;
-  }
+	if (CheckArgCount(argc, current_argument_index, m_err_msg) != OK) {
+		std::cout << "Error: " << m_err_msg << '\n';
+		return;
+	}
 
-  try {
-    temp_destination = std::stoi(argv[++current_argument_index]);
-  }
-  catch (const std::invalid_argument &exception) {
-    std::cout << "Error, not a valid integer: " << exception.what() << std::endl;
-  }
-  int result = Vapi::UnlockRoute(temp_destination);
-  if (result) {
-    PrintErrors(ET::Collector::GetErrorMessages());
-    return;
-  }
+	try {
+		temp_destination = std::stoi(argv[++current_argument_index]);
+	}
+	catch (const std::invalid_argument& exception) {
+		std::cout << "Error, not a valid integer: " << exception.what() << std::endl;
+	}
+	int result = Vapi::UnlockRoute(temp_destination);
+	if (result) {
+		PrintErrors(ET::Collector::GetErrorMessages());
+		return;
+	}
 };
 
 void cli::ListRoutes() {
-  std::string routes_str;
+	std::string routes_str;
 
-  int result = Vapi::GetRoutes(routes_str);
-  if (result) {
-    PrintErrors(ET::Collector::GetErrorMessages());
-    return;
-  }
+	int result = Vapi::GetRoutes(routes_str);
+	if (result) {
+		PrintErrors(ET::Collector::GetErrorMessages());
+		return;
+	}
 
-  std::cout << routes_str << std::endl;
+	std::cout << routes_str << std::endl;
 };
 
-void cli::MarkRoutForSaving(int argc, const char *argv[], int &current_argument_index) {
-  int destination;
+void cli::MarkRoutForSavingOld(int argc, const char* argv[], int& current_argument_index) {
+	int destination;
 
-  if (CheckArgCount(argc, current_argument_index, m_err_msg) != OK) {
-    std::cout << "Error: " << m_err_msg << '\n';
-    return;
-  }
+	if (CheckArgCount(argc, current_argument_index, m_err_msg) != OK) {
+		std::cout << "Error: " << m_err_msg << '\n';
+		return;
+	}
 
-  try {
-    // std::cout << "current argument: " << std::stoi(argv[1+ current_argument_index]) << std::endl;
-    destination = std::stoi(argv[++current_argument_index]);
-  }
-  catch (std::exception e) {
-    std::cout << e.what() << std::endl;
-  }
+	try {
+		destination = std::stoi(argv[++current_argument_index]);
+	}
+	catch (std::exception e) {
+		std::cout << e.what() << std::endl;
+	}
 
-  int result = Vapi::MarkRouteForSaving(destination);
-  if (result) PrintErrors(ET::Collector::GetErrorMessages());
+	int result = Vapi::MarkRouteForSaving(destination);
+	if (result) PrintErrors(ET::Collector::GetErrorMessages());
 }
 
-void cli::SaveRouting(int argc, const char *argv[], int &current_argument_index) {
-  std::string name;
 
-  if (CheckArgCount(argc, current_argument_index, m_err_msg) != OK) {
-    std::cout << "Error: " << m_err_msg << '\n';
-    return;
-  }
 
-  name = argv[++current_argument_index];
 
-  int result = Vapi::SaveRoutes(name);
-  if (result) {
-    PrintErrors(ET::Collector::GetErrorMessages());
-    return;
-  }
+
+void cli::MarkRoutForSaving(int argc, const char* argv[], int& current_argument_index) {
+	int result = 0;
+	int destination;
+
+	if (CheckArgCount(argc, current_argument_index, m_err_msg) != OK) {
+		std::cout << "Error: " << m_err_msg << '\n';
+		return;
+	}
+
+	std::vector<int> destinations;
+
+	for (current_argument_index; current_argument_index < argc; current_argument_index++)
+	{
+		std::cout << argv[current_argument_index] << std::endl;
+
+		try {
+			destination = std::stoi(argv[1+current_argument_index]);
+			destinations.push_back(destination);
+		}
+		catch (std::exception e) {
+			break;
+		}
+	}
+
+	if (destinations.empty()) return;
+
+	result = Vapi::MarkRoutes2(destinations);
+	if (result) PrintErrors(ET::Collector::GetErrorMessages());
+}
+
+
+
+
+
+void cli::SaveRouting(int argc, const char* argv[], int& current_argument_index) {
+	std::string name;
+
+	if (CheckArgCount(argc, current_argument_index, m_err_msg) != OK) {
+		std::cout << "Error: " << m_err_msg << '\n';
+		return;
+	}
+
+	name = argv[++current_argument_index];
+
+	int result = Vapi::SaveRoutes(name);
+	if (result) {
+		PrintErrors(ET::Collector::GetErrorMessages());
+		return;
+	}
 };
 
 void cli::ListSavedRoutings() {
-  std::string callback;
+	int result = 0;
+	std::string routingsStr;
+	std::vector < std::pair<std::string, std::vector<std::pair<int, int>>>> routingsList;
 
-  int result = Vapi::GetSavedRoutes(callback);
-  if (result) {
-    PrintErrors(ET::Collector::GetErrorMessages());
-    return;
-  }
+	result = Vapi::GetSavedRoutes(routingsList);
+	if (result) {
+		PrintErrors(ET::Collector::GetErrorMessages());
+		return;
+	}
 
-  std::cout << callback << std::endl;
+	for (auto &routing : routingsList) {
+		routingsStr += routing.first + '\n';
+		for (auto& route : routing.second) {
+			routingsStr += std::to_string(route.first) + " " + std::to_string(route.second) + '\n';
+		}
+
+		routingsStr += '\n';
+	}
+
+	std::cout << routingsStr << std::endl;
 };
 
-void cli::LoadRouting(int argc, const char *argv[], int &current_argument_index) {
-  std::string routing_name;
+void cli::LoadRouting(int argc, const char* argv[], int& current_argument_index) {
+	std::string routing_name;
 
-  if (CheckArgCount(argc, current_argument_index, m_err_msg) != OK) {
-    std::cout << "Error: " << m_err_msg << '\n';
-    return;
-  }
+	if (CheckArgCount(argc, current_argument_index, m_err_msg) != OK) {
+		std::cout << "Error: " << m_err_msg << '\n';
+		return;
+	}
 
-  routing_name = argv[++current_argument_index];
+	routing_name = argv[++current_argument_index];
 
-  int result = Vapi::LoadRoutes(routing_name);
-  if (result) {
-    PrintErrors(ET::Collector::GetErrorMessages());
-    return;
-  }
+	int result = Vapi::LoadRoutes(routing_name);
+	if (result) {
+		PrintErrors(ET::Collector::GetErrorMessages());
+		return;
+	}
 };
 
 //===============================
 
 
  //TODO make functions compatible with new behaviour so multiple values can be evaluated at once
-void cli::invoke_methods(const int argc, const char *argv[]) {
-  for (int i = 1; i < argc; ++i) {
-    // unsigned int increment = 0;
-    int option = CompareToOptions(argv[i]);
+void cli::invoke_methods(const int argc, const char* argv[]) {
+	for (int i = 1; i < argc; ++i) {
+		// unsigned int increment = 0;
+		int option = CompareToOptions(argv[i]);
 
-    switch (option) {
-      case (Flags::add_router): {
-          std::cout << "Adding Router" << std::endl;
-          AddRouter(argc, argv, i);
-          break;
-        }
-      case (Flags::remove_router): {
-          std::cout << "Removing selected router" << std::endl;
-          RemoveRouter();
-          break;
-        }
-      case (Flags::select_router): {
-          std::cout << "selecting router\n";
-          SelectRouter(argc, argv, i);
-          break;
-        }
-      case (Flags::list_devices): {
-        // list routers
-          std::cout << "listing devices" << '\n';
-          ListDevices();
-          break;
-        }
-      case (Flags::rename_source): {
-          std::cout << "Renaming source\n";
-          RenameSource(argc, argv, i);
-          break;
-        }
-      case (Flags::list_sources): {
-          std::cout << "Listing sources\n";
-          ListSources();
-          break;
-        }
-      case (Flags::rename_destination): {
-          std::cout << "Renaming destination\n";
-          RenameDestination(argc, argv, i);
-          break;
-        }
-      case (Flags::list_destinations): {
-          std::cout << "Listing destination\n";
-          ListDestinations();
-          break;
-        }
-      case (Flags::new_route): {
-          std::cout << "Preparing new route\n";
-          PrepareNewRoute(argc, argv, i);
-          break;
-        }
-      case (Flags::take_routes): {
-          std::cout << "Taking prepared routes\n";
-          TakePreparedRoutes();
-          break;
-        }
-      case (Flags::lock_route): {
-          std::cout << "locking route\n";
-          LockRoute(argc, argv, i);
-          break;
-        }
-      case (Flags::unlock_route): {
-          std::cout << "unlocking route\n";
-          UnlockRoute(argc, argv, i);
-          break;
-        }
-      case (Flags::list_routes): {
-          std::cout << "listing routes\n";
-          ListRoutes();
-          break;
-        }
-      case (Flags::mark_route_for_saving): {
-          std::cout << "Marking route for saving\n";
-          MarkRoutForSaving(argc, argv, i);
-          break;
-        }
-      case (Flags::save_routing): {
-          std::cout << "saving routes\n";
-          SaveRouting(argc, argv, i);
-          break;
-        }
-      case (Flags::list_saved_routes): {
-          std::cout << "Listing saved routings\n";
-          ListSavedRoutings();
-          break;
-        }
-      case (Flags::load_routes): {
-          std::cout << "Loading saved routes\n";
-          LoadRouting(argc, argv, i);
-          break;
-        }
-      case (Flags::help): {
-        // help
-          PrintHelp();
-          break;
-        }
-      default:
-        PrintHelp();
-        break;
-    }
-  }
+		switch (option) {
+		case (Flags::add_router): {
+			std::cout << "Adding Router" << std::endl;
+			AddRouter(argc, argv, i);
+			break;
+		}
+		case (Flags::remove_router): {
+			std::cout << "Removing selected router" << std::endl;
+			RemoveRouter();
+			break;
+		}
+		case (Flags::select_router): {
+			std::cout << "selecting router\n";
+			SelectRouter(argc, argv, i);
+			break;
+		}
+		case (Flags::list_devices): {
+			// list routers
+			std::cout << "listing devices" << '\n';
+			ListDevices();
+			break;
+		}
+		case (Flags::rename_source): {
+			std::cout << "Renaming source\n";
+			RenameSource(argc, argv, i);
+			break;
+		}
+		case (Flags::list_sources): {
+			std::cout << "Listing sources\n";
+			ListSources();
+			break;
+		}
+		case (Flags::rename_destination): {
+			std::cout << "Renaming destination\n";
+			RenameDestination(argc, argv, i);
+			break;
+		}
+		case (Flags::list_destinations): {
+			std::cout << "Listing destination\n";
+			ListDestinations();
+			break;
+		}
+		case (Flags::new_route): {
+			std::cout << "Preparing new route\n";
+			PrepareNewRoute(argc, argv, i);
+			break;
+		}
+		case (Flags::take_routes): {
+			std::cout << "Taking prepared routes\n";
+			TakePreparedRoutes();
+			break;
+		}
+		case (Flags::lock_route): {
+			std::cout << "locking route\n";
+			LockRoute(argc, argv, i);
+			break;
+		}
+		case (Flags::unlock_route): {
+			std::cout << "unlocking route\n";
+			UnlockRoute(argc, argv, i);
+			break;
+		}
+		case (Flags::list_routes): {
+			std::cout << "listing routes\n";
+			ListRoutes();
+			break;
+		}
+		case (Flags::mark_route_for_saving_old): {
+			std::cout << "Marking route for saving\n";
+			MarkRoutForSavingOld(argc, argv, i);
+			break;
+		}
+		case (Flags::mark_route_for_saving): {
+			std::cout << "Marking route for saving\n";
+			MarkRoutForSaving(argc, argv, i);
+			break;
+		}
+		case (Flags::save_routing): {
+			std::cout << "saving routes\n";
+			SaveRouting(argc, argv, i);
+			break;
+		}
+		case (Flags::list_saved_routes): {
+			std::cout << "Listing saved routings\n";
+			ListSavedRoutings();
+			break;
+		}
+		case (Flags::load_routes): {
+			std::cout << "Loading saved routes\n";
+			LoadRouting(argc, argv, i);
+			break;
+		}
+		case (Flags::help): {
+			// help
+			PrintHelp();
+			break;
+		}
+		default:
+			PrintHelp();
+			break;
+		}
+	}
 }
 
 //
-void cli::invoke_methods_2(const int argc, const char *argv[]) {
-  std::vector<std::vector<std::string>> lines;
+void cli::invoke_methods_2(const int argc, const char* argv[]) {
+	std::vector<std::vector<std::string>> lines;
 
-  int mode = -1;
-  int old_mode = mode;
-  for (int i = 1; i < argc; ++i)
-  {
-    std::string arg_str = argv[i];
+	int mode = -1;
+	int old_mode = mode;
+	for (int i = 1; i < argc; ++i)
+	{
+		std::string arg_str = argv[i];
 
-    mode = CompareToOptions(arg_str);
+		mode = CompareToOptions(arg_str);
 
-  // Check, if mode is command
-    if (mode != Flags::value) {
-      std::vector<std::string> new_line;
-      lines.push_back(new_line);
-      old_mode = mode;
-    }
+		// Check, if mode is command
+		if (mode != Flags::value) {
+			std::vector<std::string> new_line;
+			lines.push_back(new_line);
+			old_mode = mode;
+		}
 
-    //add line if no line is present in vector
-    if (lines.empty())
-    {
-      lines.push_back(std::vector<std::string>());
-    }
+		//add line if no line is present in vector
+		if (lines.empty())
+		{
+			lines.push_back(std::vector<std::string>());
+		}
 
 
-    // Add value to current command
-    lines[lines.size() - 1].push_back(arg_str);
-  }
+		// Add value to current command
+		lines[lines.size() - 1].push_back(arg_str);
+	}
 
-  // Cycle through lines to emit methods
-  for (auto line : lines) {
-    std::string line_string = "";
-    for (auto argument : line) {
-      line_string += argument + " ";
-    }
+	// Cycle through lines to emit methods
+	for (auto line : lines) {
+		std::string line_string = "";
+		for (auto argument : line) {
+			line_string += argument + " ";
+		}
 
-    switch (mode) {
-      case (Flags::add_router): {
-          std::cout << "Adding Router" << ": " << line_string << std::endl;
-          // AddRouter(argc, argv, i);
-          break;
-        }
-      case (Flags::remove_router): {
-          std::cout << "Removing selected router" << "; " << line_string << std::endl;
-          // RemoveRouter();
-          break;
-        }
-      case (Flags::select_router): {
-          std::cout << "selecting router" << "; " << line_string << '\n';
-          // SelectRouter(argc, argv, i);
-          break;
-        }
-      case (Flags::list_devices): {
-        // list routers
-          std::cout << "listing devices" << "; " << line_string << '\n';
-          // ListDevices();
-          break;
-        }
-      case (Flags::rename_source): {
-          std::cout << "Renaming source" << "; " << line_string << '\n';
-          // RenameSource(argc, argv, i);
-          break;
-        }
-      case (Flags::list_sources): {
-          std::cout << "Listing sources" << "; " << line_string << '\n';
-          // ListSources();
-          break;
-        }
-      case (Flags::rename_destination): {
-          std::cout << "Renaming destination" << "; " << line_string << '\n';
-          // RenameDestination(argc, argv, i);
-          break;
-        }
-      case (Flags::list_destinations): {
-          std::cout << "Listing destination" << "; " << line_string << '\n';
-          // ListDestinations();
-          break;
-        }
-      case (Flags::new_route): {
-          std::cout << "Preparing new route" << "; " << line_string << '\n';
-          // PrepareNewRoute(argc, argv, i);
-          break;
-        }
-      case (Flags::take_routes): {
-          std::cout << "Taking prepared routes" << "; " << line_string << '\n';
-          // TakePreparedRoutes();
-          break;
-        }
-      case (Flags::lock_route): {
-          std::cout << "locking route" << "; " << line_string << '\n';
-          // LockRoute(argc, argv, i);
-          break;
-        }
-      case (Flags::unlock_route): {
-          std::cout << "unlocking route" << "; " << line_string << '\n';
-          // UnlockRoute(argc, argv, i);
-          break;
-        }
-      case (Flags::list_routes): {
-          std::cout << "listing routes" << "; " << line_string << '\n';
-          // ListRoutes();
-          break;
-        }
-      case (Flags::mark_route_for_saving): {
-          std::cout << "Marking route for saving" << "; " << line_string << '\n';
-          // MarkRoutForSaving(argc, argv, i);
-          break;
-        }
-      case (Flags::save_routing): {
-          std::cout << "saving routes" << "; " << line_string << '\n';
-          // SaveRouting(argc, argv, i);
-          break;
-        }
-      case (Flags::list_saved_routes): {
-          std::cout << "Listing saved routings" << "; " << line_string << '\n';
-          // ListSavedRoutings();
-          break;
-        }
-      case (Flags::load_routes): {
-          std::cout << "Loading saved routes" << "; " << line_string << '\n';
-          // LoadRouting(argc, argv, i);
-          break;
-        }
-      case (Flags::help): {
-        // help
-          PrintHelp();
-          break;
-        }
-      default:
-        PrintHelp();
-        break;
-    }
+		switch (mode) {
+		case (Flags::add_router): {
+			std::cout << "Adding Router" << ": " << line_string << std::endl;
+			// AddRouter(argc, argv, i);
+			break;
+		}
+		case (Flags::remove_router): {
+			std::cout << "Removing selected router" << "; " << line_string << std::endl;
+			// RemoveRouter();
+			break;
+		}
+		case (Flags::select_router): {
+			std::cout << "selecting router" << "; " << line_string << '\n';
+			// SelectRouter(argc, argv, i);
+			break;
+		}
+		case (Flags::list_devices): {
+			// list routers
+			std::cout << "listing devices" << "; " << line_string << '\n';
+			// ListDevices();
+			break;
+		}
+		case (Flags::rename_source): {
+			std::cout << "Renaming source" << "; " << line_string << '\n';
+			// RenameSource(argc, argv, i);
+			break;
+		}
+		case (Flags::list_sources): {
+			std::cout << "Listing sources" << "; " << line_string << '\n';
+			// ListSources();
+			break;
+		}
+		case (Flags::rename_destination): {
+			std::cout << "Renaming destination" << "; " << line_string << '\n';
+			// RenameDestination(argc, argv, i);
+			break;
+		}
+		case (Flags::list_destinations): {
+			std::cout << "Listing destination" << "; " << line_string << '\n';
+			// ListDestinations();
+			break;
+		}
+		case (Flags::new_route): {
+			std::cout << "Preparing new route" << "; " << line_string << '\n';
+			// PrepareNewRoute(argc, argv, i);
+			break;
+		}
+		case (Flags::take_routes): {
+			std::cout << "Taking prepared routes" << "; " << line_string << '\n';
+			// TakePreparedRoutes();
+			break;
+		}
+		case (Flags::lock_route): {
+			std::cout << "locking route" << "; " << line_string << '\n';
+			// LockRoute(argc, argv, i);
+			break;
+		}
+		case (Flags::unlock_route): {
+			std::cout << "unlocking route" << "; " << line_string << '\n';
+			// UnlockRoute(argc, argv, i);
+			break;
+		}
+		case (Flags::list_routes): {
+			std::cout << "listing routes" << "; " << line_string << '\n';
+			// ListRoutes();
+			break;
+		}
+		case (Flags::mark_route_for_saving): {
+			std::cout << "Marking route for saving" << "; " << line_string << '\n';
+			// MarkRoutForSaving(argc, argv, i);
+			break;
+		}
+		case (Flags::save_routing): {
+			std::cout << "saving routes" << "; " << line_string << '\n';
+			// SaveRouting(argc, argv, i);
+			break;
+		}
+		case (Flags::list_saved_routes): {
+			std::cout << "Listing saved routings" << "; " << line_string << '\n';
+			// ListSavedRoutings();
+			break;
+		}
+		case (Flags::load_routes): {
+			std::cout << "Loading saved routes" << "; " << line_string << '\n';
+			// LoadRouting(argc, argv, i);
+			break;
+		}
+		case (Flags::help): {
+			// help
+			PrintHelp();
+			break;
+		}
+		default:
+			PrintHelp();
+			break;
+		}
 
-  }
+	}
 }
 
 
 
-int cli::Evaluate(const int argc, const char *argv[]) {
-  if (argc < 2) {
-     // helping
-    std::cout << "No Argument passed." << std::endl;
-    PrintHelp();
-  }
+int cli::Evaluate(const int argc, const char* argv[]) {
+	if (argc < 2) {
+		// helping
+		std::cout << "No Argument passed." << std::endl;
+		PrintHelp();
+	}
 
 
-  // TODO: remove, when funcrtions are tested with new behaviour 
-  // new behaviour
-  invoke_methods(argc, argv); return 0; // Comment this line to use new behaviour
+	// TODO: remove, when funcrtions are tested with new behaviour 
+	// new behaviour
+	invoke_methods(argc, argv); return 0; // Comment this line to use new behaviour
 
 
-  // TODO: test functions with new behaviour
-  // old behaviour
-  invoke_methods_2(argc, argv);
-  return 0;
+	// TODO: test functions with new behaviour
+	// old behaviour
+	invoke_methods_2(argc, argv);
+	return 0;
 }
 
 void cli::PrintErrors(std::vector<std::string> err_msgs) {
-  ET::Printer::PrintTrace();
+	ET::Printer::PrintTrace();
 }
