@@ -103,7 +103,7 @@ public:
 	static int MarkRouteForSaving(int destination);
 	static int MarkRoutes2(std::vector<int> destinations);
 	static int SaveRoutes(std::string routing_name);
-	static int GetSavedRoutes(std::string& callback);
+	static int GetSavedRoutes(std::vector < std::pair<std::string, std::vector<std::pair<int, int>>>> &routingsList);
 	static int LoadRoutes(std::string name);
 
 	static int GetStatus(std::string ip, std::unique_ptr<device_data>& _data);
