@@ -1,5 +1,5 @@
 #include <Catch2/catch.hpp>
-#include <sql_access_handler.hpp>
+#include <SqlAccessHAndler.hpp>
 
 using namespace SqliteHandler;
 

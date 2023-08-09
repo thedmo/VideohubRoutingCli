@@ -1,0 +1,32 @@
+# SQL ACCESS
+add_library(SqlAccessHandlerLib STATIC
+    SqlAccessHandler.cpp
+    )
+
+target_link_libraries(SqlAccessHandlerLib PUBLIC 
+    whereami_lib
+    sqlite3_lib 
+    )
+
+target_include_directories(SqlAccessHandlerLib PUBLIC 
+    "./" 
+    ${whereami_SOURCE_DIR}/src
+    ${sqlite3_SOURCE_DIR}
+    )
+
+
+
+# install library files
+install(TARGETS
+        SqlAccessHandlerLib
+        EXPORT SqlAccessHandlerLib
+        ARCHIVE DESTINATION ${COMMON_LIB_DIR}/libs
+        LIBRARY DESTINATION ${COMMON_LIB_DIR}/libs)
+
+#install header files
+set(SQLACCESSHANDLERLIB_HEADERS 
+        SqlAccessHandler.hpp
+)
+
+install(FILES ${SQLACCESSHANDLERLIB_HEADERS}
+        DESTINATION ${COMMON_LIB_DIR}/includes)
