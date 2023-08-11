@@ -89,18 +89,16 @@ public:
 	static int AddRouter(std::string ip);
 	static int SelectRouter(std::string ip);
 	static int RemoveSelectedRouter();
-	static int GetDevices(std::string& callback);
 	static int GetDevicesList(std::vector<std::string> &entries);
 	static int RenameSource(int channel_number, const std::string new_name);
-	static int GetSources(std::string& callback);
+	static int GetSourcesList(std::vector<std::string>& sourcesList);
+	static int GetDestinations(std::vector<std::string>& destinationsList);
+	static int GetRoutes(std::vector<std::pair<int,int>>& routesList);
 	static int RenameDestination(int channel_number, const std::string new_name);
-	static int GetDestinations(std::string& callback);
 	static int PrepareNewRoute(unsigned int destination, unsigned int source);
 	static int TakePreparedRoutes();
 	static int LockRoute(unsigned int destination);
 	static int UnlockRoute(unsigned int destination);
-	static int GetRoutes(std::string& callback);
-	static int MarkRouteForSaving(int destination);
 	static int MarkRoutes2(std::vector<int> destinations);
 	static int SaveRoutes(std::string routing_name);
 	static int GetSavedRoutes(std::vector < std::pair<std::string, std::vector<std::pair<int, int>>>> &routingsList);
@@ -121,9 +119,6 @@ private:
 	static int GetDeviceInformation(std::string, std::unique_ptr<device_data>& _data);
 
 	static std::pair<int, int> GetRouteFromDestination(int destination, std::unique_ptr<device_data>& deviceData);
-	static int check_channel_number(int num);
-
-	static vdb m_database;
 };
 
 } // RouterModel
