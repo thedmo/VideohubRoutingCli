@@ -80,22 +80,18 @@ int Vapi::ExtractInformation(std::string info, std::unique_ptr<device_data>& _da
 			result = GetDeviceInformation(line, _data);
 			break;
 		case information_type::inputs_labels:
-			_data->source_labels += line + "\n";
 			result = Converter::StringLineToData(line, informationStr);
 			_data->sourceLabelsList.push_back(informationStr);
 			break;
 		case information_type::outputs_labels:
-			_data->destination_labels += line + "\n";
 			result = Converter::StringLineToData(line, informationStr);
 			_data->destinationsLabelsList.push_back(informationStr);
 			break;
 		case information_type::routing:
-			_data->routing += line + "\n";
 			result = Converter::RouteLineToRoutePair(line, routePair);
 			_data->routesList.push_back(routePair);
 			break;
 		case information_type::locks:
-			_data->locks += line + "\n";
 			result = Converter::StringLineToData(line, informationStr);
 			_data->locksList.push_back(informationStr);
 			break;
@@ -251,7 +247,6 @@ int Vapi::RenameSource(int channel_number, const std::string new_name) {
 	// get last response from socket and extract information
 	auto deviceDataSources = std::make_unique<device_data>();
 	response = tc.GetLastDataDump();
-	currentDevice->source_labels = "";
 	result = ExtractInformation(response, deviceDataSources);
 	if (result) return ET::Collector::Add("Could extract routing from response");
 
@@ -293,7 +288,6 @@ int Vapi::RenameDestination(int channel_number, const std::string new_name) {
 
 	auto deviceDataDestinations = std::make_unique<device_data>();
 	response = tc.GetLastDataDump();
-	currentDevice->destination_labels = "";
 	result = ExtractInformation(response, deviceDataDestinations);
 	if (result) return ET::Collector::Add("Could extract data from response");
 
@@ -379,8 +373,6 @@ int Vapi::TakePreparedRoutes() {
 
 	// get response from member variable and fill in routing of device data
 	response = tc.GetLastDataDump();
-	current_device->routing = "";
-
 	auto deviceRouting = std::make_unique<device_data>();
 	result = ExtractInformation(response, deviceRouting);
 	if (result) return ET::Collector::Add("Could extract routing from response");
