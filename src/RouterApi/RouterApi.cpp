@@ -152,7 +152,7 @@ int Vapi::GetStatus(std::string ip, std::unique_ptr<device_data>& _data) {
 	std::string response;
 
 	TelnetClient _telnet(ip, VIDEOHUB_TELNET_PORT, response, result);
-	if (result) return ET::Collector::Add("could not get status...", ET::Collector::GetErrorMessages());
+	if (result) return ET::Collector::Add("could not get status...", ET::Logger::GetErrorMessages());
 
 	result = ExtractInformation(response, _data);
 	if (result) return ET::Collector::Add("could not extract information");
@@ -166,7 +166,7 @@ int Vapi::AddRouter(std::string ip) {
 	std::unique_ptr<device_data> router_data = std::make_unique<device_data>();
 
 	int result = GetStatus(ip, router_data);
-	if (result) return ET::Collector::Add("Could not add router...", ET::Collector::GetErrorMessages());
+	if (result) return ET::Collector::Add("Could not get data from connected router");
 
 	result = DataHandler::AddDevice(router_data);
 	if (result) return ET::Collector::Add("could not add router to Storage");
@@ -186,7 +186,7 @@ int Vapi::SelectRouter(std::string ip) {
 	auto device = std::make_unique<device_data>();
 	device->ip = ip;
 	result = DataHandler::SelectDevice(device);
-	if (result) return ET::Collector::Add("could not select router...", ET::Collector::GetErrorMessages());
+	if (result) return ET::Collector::Add("could not select router...", ET::Logger::GetErrorMessages());
 
 	return 0;
 }
@@ -196,10 +196,10 @@ int Vapi::RemoveSelectedRouter() {
 
 	auto device = std::make_unique<device_data>();
 	result = DataHandler::GetDataOfSelectedDevice(device);
-	if (result) return ET::Collector::Add("removing device did not work.", ET::Collector::GetErrorMessages());
+	if (result) return ET::Collector::Add("removing device did not work.", ET::Logger::GetErrorMessages());
 
 	result = DataHandler::RemoveDevice(device);
-	if (result) return ET::Collector::Add("removing device did not work.", ET::Collector::GetErrorMessages());
+	if (result) return ET::Collector::Add("removing device did not work.", ET::Logger::GetErrorMessages());
 
 	return 0;
 }
@@ -209,7 +209,7 @@ int Vapi::GetDevicesList(std::vector<std::string>& entries) {
 
 	std::vector<std::unique_ptr<device_data>> devices;
 	result = DataHandler::GetEntries(devices);
-	if (result) return ET::Collector::Add("could not get Device listings: ", ET::Collector::GetErrorMessages());
+	if (result) return ET::Collector::Add("could not get Device listings: ", ET::Logger::GetErrorMessages());
 
 	for (auto& device : devices) {
 		const auto entry = std::format("| {0:<20} | {1:<20} | {2:<20} |", device->ip, device->name, device->version);
@@ -253,7 +253,7 @@ int Vapi::RenameSource(int channel_number, const std::string new_name) {
 	currentDevice->sourceLabelsList = deviceDataSources->sourceLabelsList;
 
 	result = DataHandler::UpdateSelectedDeviceData(currentDevice);
-	if (result) return ET::Collector::Add("Could not update device data of selected router in database", ET::Collector::GetErrorMessages());
+	if (result) return ET::Collector::Add("Could not update device data of selected router in database", ET::Logger::GetErrorMessages());
 
 	return 0;
 }
@@ -294,7 +294,7 @@ int Vapi::RenameDestination(int channel_number, const std::string new_name) {
 	currentDevice->destinationsLabelsList = deviceDataDestinations->destinationsLabelsList;
 
 	result = DataHandler::UpdateSelectedDeviceData(currentDevice);
-	if (result) return ET::Collector::Add("Could not update device data of selected router in database", ET::Collector::GetErrorMessages());
+	if (result) return ET::Collector::Add("Could not update device data of selected router in database", ET::Logger::GetErrorMessages());
 
 	return 0;
 }
@@ -553,7 +553,7 @@ int Vapi::LoadRoutes(std::string name) {
 	if (result) return ET::Collector::Add("could not get saved routes of selected device from storage");
 
 	TelnetClient tc(selectedDevice->ip, VIDEOHUB_TELNET_PORT, response, result);
-	if (result) return ET::Collector::Add("Could not create socket", ET::Collector::GetErrorMessages());
+	if (result) return ET::Collector::Add("Could not create socket", ET::Logger::GetErrorMessages());
 
 	for (DataHandler::Routing routing : routingsList) {
 		if (routing.first != name) continue;
@@ -566,12 +566,12 @@ int Vapi::LoadRoutes(std::string name) {
 	// send Command to take routes to connected device
 	std::string route_command = "VIDEO OUTPUT ROUTING:\n" + routes + '\n';
 	result = tc.SendMsgToServer(route_command);
-	if (result) return ET::Collector::Add("Could not load routes", ET::Collector::GetErrorMessages());
+	if (result) return ET::Collector::Add("Could not load routes", ET::Logger::GetErrorMessages());
 
 	// get current routes from connected device (response gets saved in member variable)
 	route_command = "VIDEO OUTPUT ROUTING:\n\n";
 	result = tc.SendMsgToServer(route_command);
-	if (result) return ET::Collector::Add("Could not get routing from device", ET::Collector::GetErrorMessages());
+	if (result) return ET::Collector::Add("Could not get routing from device", ET::Logger::GetErrorMessages());
 
 	// get response from member variable and fill in routing of device data
 	response = tc.GetLastDataDump();

@@ -39,14 +39,14 @@ void cli::AddRouter(int argc, const char* argv[], int& current_argument_index) {
 		return;
 	}
 	if (Vapi::AddRouter(argv[++current_argument_index]) != 0) {
-		PrintErrors(ET::Collector::GetErrorMessages());
+		PrintErrors(ET::Logger::GetErrorMessages());
 		return;
 	}
 }
 
 void cli::RemoveRouter() {
 	if (Vapi::RemoveSelectedRouter() != 0) {
-		PrintErrors(ET::Collector::GetErrorMessages());
+		PrintErrors(ET::Logger::GetErrorMessages());
 		return;
 	}
 }
@@ -58,7 +58,7 @@ void cli::SelectRouter(int argc, const char* argv[], int& current_argument_index
 	};
 
 	if (Vapi::SelectRouter(argv[++current_argument_index]) != 0) {
-		PrintErrors(ET::Collector::GetErrorMessages());
+		PrintErrors(ET::Logger::GetErrorMessages());
 		return;
 	}
 }
@@ -68,7 +68,7 @@ void cli::ListDevices() {
 
 
 	if (Vapi::GetDevicesList(devicesList) != 0) {
-		PrintErrors(ET::Collector::GetErrorMessages());
+		PrintErrors(ET::Logger::GetErrorMessages());
 		return;
 	}
 
@@ -103,7 +103,7 @@ void cli::RenameSource(int argc, const char* argv[], int& current_argument_index
 	new_name = argv[++current_argument_index];
 
 	if (Vapi::RenameSource(channel_number, new_name) != 0) {
-		PrintErrors(ET::Collector::GetErrorMessages());
+		PrintErrors(ET::Logger::GetErrorMessages());
 		return;
 	}
 };
@@ -113,7 +113,7 @@ void cli::ListSources() {
 	std::string device_text;
 
 	int result = Vapi::GetSourcesList(sourcesList);
-	if (result) return PrintErrors(ET::Collector::GetErrorMessages());
+	if (result) return PrintErrors(ET::Logger::GetErrorMessages());
 
 	std::cout << "Sources:\n";
 	for (auto source : sourcesList) {
@@ -150,7 +150,7 @@ void cli::RenameDestination(int argc, const char* argv[], int& current_argument_
 	new_name = argv[++current_argument_index];
 
 	int result = Vapi::RenameDestination(channel_number, new_name);
-	if (result) PrintErrors(ET::Collector::GetErrorMessages());
+	if (result) PrintErrors(ET::Logger::GetErrorMessages());
 }
 
 void cli::ListDestinations() {
@@ -158,7 +158,7 @@ void cli::ListDestinations() {
 	std::string device_text;
 
 	int result = Vapi::GetDestinations(destinationsList);
-	if (result) return PrintErrors(ET::Collector::GetErrorMessages());
+	if (result) return PrintErrors(ET::Logger::GetErrorMessages());
 
 	std::cout << "Destinations:\n";
 	for (auto destination : destinationsList) {
@@ -196,14 +196,14 @@ void cli::PrepareNewRoute(int argc, const char* argv[], int& current_argument_in
 		std::cout << "Error, not a valid integer: " << exception.what() << std::endl;
 	}
 	if (Vapi::PrepareNewRoute(temp_destination, temp_source) != 0) {
-		PrintErrors(ET::Collector::GetErrorMessages());
+		PrintErrors(ET::Logger::GetErrorMessages());
 		return;
 	}
 };
 
 void cli::TakePreparedRoutes() {
 	if (Vapi::TakePreparedRoutes() != 0) {
-		PrintErrors(ET::Collector::GetErrorMessages());
+		PrintErrors(ET::Logger::GetErrorMessages());
 		return;
 	}
 };
@@ -224,7 +224,7 @@ void cli::LockRoute(int argc, const char* argv[], int& current_argument_index) {
 	}
 	int result = Vapi::LockRoute(temp_destination);
 	if (result) {
-		PrintErrors(ET::Collector::GetErrorMessages());
+		PrintErrors(ET::Logger::GetErrorMessages());
 		return;
 	}
 };
@@ -245,7 +245,7 @@ void cli::UnlockRoute(int argc, const char* argv[], int& current_argument_index)
 	}
 	int result = Vapi::UnlockRoute(temp_destination);
 	if (result) {
-		PrintErrors(ET::Collector::GetErrorMessages());
+		PrintErrors(ET::Logger::GetErrorMessages());
 		return;
 	}
 };
@@ -255,7 +255,7 @@ void cli::ListRoutes() {
 	std::string device_text;
 
 	int result = Vapi::GetRoutes(routes);
-	if (result) return PrintErrors(ET::Collector::GetErrorMessages());
+	if (result) return PrintErrors(ET::Logger::GetErrorMessages());
 
 	std::cout << "Routes:\n";
 	for (auto route : routes) {
@@ -292,7 +292,7 @@ void cli::MarkRoutForSaving(int argc, const char* argv[], int& current_argument_
 	if (destinations.empty()) return;
 
 	result = Vapi::MarkRoutes2(destinations);
-	if (result) PrintErrors(ET::Collector::GetErrorMessages());
+	if (result) PrintErrors(ET::Logger::GetErrorMessages());
 }
 
 void cli::SaveRouting(int argc, const char* argv[], int& current_argument_index) {
@@ -307,7 +307,7 @@ void cli::SaveRouting(int argc, const char* argv[], int& current_argument_index)
 
 	int result = Vapi::SaveRoutes(name);
 	if (result) {
-		PrintErrors(ET::Collector::GetErrorMessages());
+		PrintErrors(ET::Logger::GetErrorMessages());
 		return;
 	}
 };
@@ -319,7 +319,7 @@ void cli::ListSavedRoutings() {
 
 	result = Vapi::GetSavedRoutes(routingsList);
 	if (result) {
-		PrintErrors(ET::Collector::GetErrorMessages());
+		PrintErrors(ET::Logger::GetErrorMessages());
 		return;
 	}
 
@@ -347,7 +347,7 @@ void cli::LoadRouting(int argc, const char* argv[], int& current_argument_index)
 
 	int result = Vapi::LoadRoutes(routing_name);
 	if (result) {
-		PrintErrors(ET::Collector::GetErrorMessages());
+		PrintErrors(ET::Logger::GetErrorMessages());
 		return;
 	}
 };

@@ -86,8 +86,35 @@ TEST_CASE("Add new router to storage") {
 	result = InitializeStorage();
 
 	std::string ip = "127.0.0.1";
+
 	result = Vapi::AddRouter(ip);
-	REQUIRE(result == 0);
+
+	std::vector<std::unique_ptr<device_data>> devices;
+
+	DataHandler::GetEntries(devices);
+
+	bool doesExist = false;
+	for (auto &device : devices) {
+		if (device->ip == ip) {
+			doesExist = true;
+			break;
+		}
+	}
+	
+	REQUIRE(doesExist == true);
+}
+
+TEST_CASE("Add new Router and tests logging, when router is aleady in list") {
+	int result = 0;
+
+	result = InitializeStorage();
+
+	std::string ip = "127.0.0.1";
+
+	result = Vapi::AddRouter(ip);
+	result = Vapi::AddRouter(ip);
+	REQUIRE(result == 1);
+
 }
 
 TEST_CASE("Select a Router from the devices list") {
