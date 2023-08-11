@@ -1,4 +1,5 @@
 #include <RouterApi.hpp>
+#include <format>
 
 using namespace RouterModel;
 
@@ -37,7 +38,7 @@ int Vapi::GetInformationType(std::string line, information_type& type) {
 	else {
 		return ET::Collector::Add("Type could not be extracted from: " + line + ".");
 	}
-	return Vapi::ROUTER_API_OK;
+	return 0;
 }
 
 int Vapi::ExtractInformation(std::string info, std::unique_ptr<device_data>& _data) {
@@ -61,7 +62,7 @@ int Vapi::ExtractInformation(std::string info, std::unique_ptr<device_data>& _da
 		if (type == information_type::none) {
 			result = GetInformationType(line, type);
 
-			if (result != Vapi::ROUTER_API_OK) {
+			if (result != 0) {
 				return ET::Collector::Add("Could not determine information type");
 			}
 			continue;
@@ -109,7 +110,7 @@ int Vapi::ExtractInformation(std::string info, std::unique_ptr<device_data>& _da
 			break;
 		}
 	}
-	return Vapi::ROUTER_API_OK;
+	return 0;
 }
 
 int Vapi::GetDeviceInformation(std::string line, std::unique_ptr<device_data>& _data) {
@@ -132,30 +133,24 @@ int Vapi::GetDeviceInformation(std::string line, std::unique_ptr<device_data>& _
 
 	if (key.compare("Version") == 0) {
 		_data->version = value;
-		return Vapi::ROUTER_API_OK;
+		return 0;
 	}
 	else if (key.compare("Friendly name") == 0) {
 		_data->name = value;
-		return Vapi::ROUTER_API_OK;
+		return 0;
 	}
 	else if (key.compare("Video inputs") == 0) {
 		_data->source_count = std::stoi(value);
-		return Vapi::ROUTER_API_OK;
+		return 0;
 	}
 	else if (key.compare("Video outputs") == 0) {
 		_data->destination_count = std::stoi(value);
-		return Vapi::ROUTER_API_OK;
+		return 0;
 	}
 
-	return Vapi::ROUTER_API_OK;
+	return 0;
 }
 
-/// <summary>
-/// Gets Information of router by ip and stores it into dataobject
-/// </summary>
-/// <param name="ip">ip as string</param>
-/// <param name="_data">reference to deviceData Object</param>
-/// <returns>int; 0 = OK</returns>
 int Vapi::GetStatus(std::string ip, std::unique_ptr<device_data>& _data) {
 	int result;
 	std::string response;
@@ -168,14 +163,9 @@ int Vapi::GetStatus(std::string ip, std::unique_ptr<device_data>& _data) {
 
 	_data->ip = ip;
 
-	return ROUTER_API_OK;
+	return 0;
 }
 
-/// <summary>
-/// Adds a Router by ip address
-/// </summary>
-/// <param name="ip">ip address as string</param>
-/// <returns>int; 0 = ok</returns>
 int Vapi::AddRouter(std::string ip) {
 	std::unique_ptr<device_data> router_data = std::make_unique<device_data>();
 
@@ -191,14 +181,9 @@ int Vapi::AddRouter(std::string ip) {
 	result = DataHandler::UpdateSelectedDeviceData(router_data);
 	if (result) return ET::Collector::Add("could not update data in Storage");
 
-	return ROUTER_API_OK;
+	return 0;
 }
 
-/// <summary>
-/// Selects a router from all devices to work on by ip
-/// </summary>
-/// <param name="ip">ip as string</param>
-/// <returns>int; 0 = OK</returns>
 int Vapi::SelectRouter(std::string ip) {
 	int result = 0;
 
@@ -210,10 +195,6 @@ int Vapi::SelectRouter(std::string ip) {
 	return 0;
 }
 
-/// <summary>
-/// Removes selected Device from storage if it exists
-/// </summary>
-/// <returns>int; 0 = ok</returns>
 int Vapi::RemoveSelectedRouter() {
 	int result = 0;
 
@@ -227,11 +208,6 @@ int Vapi::RemoveSelectedRouter() {
 	return 0;
 }
 
-/// <summary>
-/// Gets List of entries in Storage. stores informmation into list of formattet strings
-/// </summary>
-/// <param name="entries">reference to list of strings</param>
-/// <returns>int; 0 = ok</returns>
 int Vapi::GetDevicesList(std::vector<std::string>& entries) {
 	int result = 0;
 
@@ -247,12 +223,6 @@ int Vapi::GetDevicesList(std::vector<std::string>& entries) {
 	return 0;
 }
 
-/// <summary>
-/// Rename sourcechannel from connected device
-/// </summary>
-/// <param name="channel_number">number of channel</param>
-/// <param name="new_name">new name for channel</param>
-/// <returns>int; 0 = OK</returns>
 int Vapi::RenameSource(int channel_number, const std::string new_name) {
 	int result = 0;
 	auto currentDevice = std::make_unique<device_data>();
@@ -293,12 +263,6 @@ int Vapi::RenameSource(int channel_number, const std::string new_name) {
 	return 0;
 }
 
-/// <summary>
-/// Rename destination channel of selected router
-/// </summary>
-/// <param name="channel_number">number of channel</param>
-/// <param name="new_name">new name for channel</param>
-/// <returns>int; 0 = ok</returns>
 int Vapi::RenameDestination(int channel_number, const std::string new_name) {
 	int result;
 	auto currentDevice = std::make_unique<device_data>();
@@ -338,15 +302,34 @@ int Vapi::RenameDestination(int channel_number, const std::string new_name) {
 	result = DataHandler::UpdateSelectedDeviceData(currentDevice);
 	if (result) return ET::Collector::Add("Could not update device data of selected router in database", ET::Collector::GetErrorMessages());
 
-	return ROUTER_API_OK;
+	return 0;
 }
 
-/// <summary>
-/// prepares new route and adds ist to list of prepared routes. use Take to send new routes to device
-/// </summary>
-/// <param name="destination">number of destionation channel</param>
-/// <param name="source">number if sourcechannel</param>
-/// <returns>int; 0 = OK</returns>
+int Vapi::GetSourcesList(std::vector<std::string>& sourcesList) {
+	std::unique_ptr<device_data> device;
+	std::string ip;
+	int result = 0;
+
+	result = DataHandler::GetDataOfSelectedDevice(device);
+	if (result) return ET::Collector::Add("could not get data of selected device");
+
+	sourcesList = device->sourceLabelsList;
+
+	return 0;
+}
+
+int Vapi::GetDestinations(std::vector<std::string>& destinationsList) {
+	std::unique_ptr<device_data> device;
+	std::string ip;
+	int result = 0;
+
+	result = DataHandler::GetDataOfSelectedDevice(device);
+	if (result) return ET::Collector::Add("could not get data of selected device");
+
+	destinationsList = device->destinationsLabelsList;
+	return 0;
+}
+
 int Vapi::PrepareNewRoute(unsigned int destination, unsigned int source) {
 	int result = 0;
 	auto device = std::make_unique<device_data>();
@@ -362,10 +345,6 @@ int Vapi::PrepareNewRoute(unsigned int destination, unsigned int source) {
 	return 0;
 }
 
-/// <summary>
-/// Send all prepared routes to selected device
-/// </summary>
-/// <returns>int; 0= OK</returns>
 int Vapi::TakePreparedRoutes() {
 	std::string response;
 	int result;
@@ -410,14 +389,21 @@ int Vapi::TakePreparedRoutes() {
 	result = DataHandler::UpdateSelectedDeviceData(current_device);
 	if (result) return ET::Collector::Add("Could not update device data of selected router in database");
 
-	return ROUTER_API_OK;
+	return 0;
 }
 
-/// <summary>
-/// Enables lock on certain channel
-/// </summary>
-/// <param name="destination"></param>
-/// <returns></returns>
+int Vapi::GetRoutes(std::vector<std::pair<int, int>>& routesList) {
+	std::unique_ptr<device_data> device;
+	std::string ip;
+	int result = 0;
+
+	result = DataHandler::GetDataOfSelectedDevice(device);
+	if (result) return ET::Collector::Add("could not get data of selected device");
+
+	routesList = device->routesList;
+	return 0;
+}
+
 int Vapi::LockRoute(unsigned int destination) {
 	int result;
 	auto currentDevice = std::make_unique<device_data>();
@@ -454,14 +440,9 @@ int Vapi::LockRoute(unsigned int destination) {
 	result = DataHandler::UpdateSelectedDeviceData(currentDevice);
 	if (result) return ET::Collector::Add("could not update data of selected device in storage");
 	
-	return ROUTER_API_OK;
+	return 0;
 }
 
-/// <summary>
-/// Unlock route from selected device
-/// </summary>
-/// <param name="destination">channelnumber to unlock</param>
-/// <returns>int; 0 = OK</returns>
 int Vapi::UnlockRoute(unsigned int destination) {
 	int result;
 	auto currentDevice = std::make_unique<device_data>();
@@ -496,7 +477,7 @@ int Vapi::UnlockRoute(unsigned int destination) {
 
 	result = DataHandler::UpdateSelectedDeviceData(currentDevice);
 
-	return ROUTER_API_OK;
+	return 0;
 }
 
 std::pair<int, int> Vapi::GetRouteFromDestination(int destination, std::unique_ptr<device_data>& deviceData) {
@@ -507,11 +488,6 @@ std::pair<int, int> Vapi::GetRouteFromDestination(int destination, std::unique_p
 	}
 }
 
-/// <summary>
-/// Mark routes for saving
-/// </summary>
-/// <param name="destinations">list with destinations to add to marked routes</param>
-/// <returns>int; 0 = ok</returns>
 int Vapi::MarkRoutes2(std::vector<int> destinations) {
 	int result = 0;
 	std::unique_ptr<device_data> selectedDevice;
@@ -536,52 +512,9 @@ int Vapi::MarkRoutes2(std::vector<int> destinations) {
 	// update device data with new deviceData object to update the markedforsavings list in storage
 	DataHandler::UpdateSelectedDeviceData(selectedDevice);
 
-	return ROUTER_API_OK;
-}
-
-int Vapi::GetSourcesList(std::vector<std::string>& sourcesList) {
-	std::unique_ptr<device_data> device;
-	std::string ip;
-	int result = 0;
-
-	result = DataHandler::GetDataOfSelectedDevice(device);
-	if (result) return ET::Collector::Add("could not get data of selected device");
-
-	sourcesList = device->sourceLabelsList;
-
 	return 0;
 }
 
-int Vapi::GetDestinations(std::vector<std::string>& destinationsList) {
-	std::unique_ptr<device_data> device;
-	std::string ip;
-	int result = 0;
-
-	result = DataHandler::GetDataOfSelectedDevice(device);
-	if (result) return ET::Collector::Add("could not get data of selected device");
-
-	destinationsList = device->destinationsLabelsList;
-	return 0;
-}
-
-int Vapi::GetRoutes(std::vector<std::pair<int, int>>& routesList) {
-	std::unique_ptr<device_data> device;
-	std::string ip;
-	int result = 0;
-
-	result = DataHandler::GetDataOfSelectedDevice(device);
-	if (result) return ET::Collector::Add("could not get data of selected device");
-
-	routesList = device->routesList;
-	return 0;
-}
-
-
-/// <summary>
-/// Saves marked routes from selected device in storage as new routing
-/// </summary>
-/// <param name="routing_name">name for new routing to store</param>
-/// <returns>int; 0 = ok</returns>
 int Vapi::SaveRoutes(std::string routing_name) {
 	int result;
 	std::unique_ptr<device_data> selectedDevice;
@@ -603,28 +536,17 @@ int Vapi::SaveRoutes(std::string routing_name) {
 	return 0;
 }
 
-/// <summary>
-/// Gets List of all saved routings for selected device in storage
-/// </summary>
-/// <param name="routingsList">list to store routings into</param>
-/// <returns>int; 0 = ok</returns>
 int Vapi::GetSavedRoutes(std::vector < std::pair<std::string, std::vector<std::pair<int, int>>>> &routingsList) {
 	int result;
 
 	result = DataHandler::GetRoutesFromSelected(routingsList);
 	if (result) return ET::Collector::Add("could not acquire routings from storage");
 
-	return ROUTER_API_OK;
+	return 0;
 }
 
-/// <summary>
-/// loads routing from storage of selected device and sends it to connected device
-/// </summary>
-/// <param name="name">name of routing</param>
-/// <returns>int; 0 = ok</returns>
 int Vapi::LoadRoutes(std::string name) {
 	int result;
-	//std::unique_ptr<device_data> current_device;
 	std::string response;
 	std::string routes;
 	DataHandler::Routing routing;

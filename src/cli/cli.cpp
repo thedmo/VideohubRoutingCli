@@ -38,14 +38,14 @@ void cli::AddRouter(int argc, const char* argv[], int& current_argument_index) {
 		std::cout << "Argc error: " << m_err_msg << '\n';
 		return;
 	}
-	if (Vapi::AddRouter(argv[++current_argument_index]) != Vapi::ROUTER_API_OK) {
+	if (Vapi::AddRouter(argv[++current_argument_index]) != 0) {
 		PrintErrors(ET::Collector::GetErrorMessages());
 		return;
 	}
 }
 
 void cli::RemoveRouter() {
-	if (Vapi::RemoveSelectedRouter() != Vapi::ROUTER_API_OK) {
+	if (Vapi::RemoveSelectedRouter() != 0) {
 		PrintErrors(ET::Collector::GetErrorMessages());
 		return;
 	}
@@ -57,7 +57,7 @@ void cli::SelectRouter(int argc, const char* argv[], int& current_argument_index
 		return;
 	};
 
-	if (Vapi::SelectRouter(argv[++current_argument_index]) != Vapi::ROUTER_API_OK) {
+	if (Vapi::SelectRouter(argv[++current_argument_index]) != 0) {
 		PrintErrors(ET::Collector::GetErrorMessages());
 		return;
 	}
@@ -67,7 +67,7 @@ void cli::ListDevices() {
 	std::vector<std::string> devicesList;
 
 
-	if (Vapi::GetDevicesList(devicesList) != Vapi::ROUTER_API_OK) {
+	if (Vapi::GetDevicesList(devicesList) != 0) {
 		PrintErrors(ET::Collector::GetErrorMessages());
 		return;
 	}
@@ -102,7 +102,7 @@ void cli::RenameSource(int argc, const char* argv[], int& current_argument_index
 
 	new_name = argv[++current_argument_index];
 
-	if (Vapi::RenameSource(channel_number, new_name) != Vapi::ROUTER_API_OK) {
+	if (Vapi::RenameSource(channel_number, new_name) != 0) {
 		PrintErrors(ET::Collector::GetErrorMessages());
 		return;
 	}
@@ -195,14 +195,14 @@ void cli::PrepareNewRoute(int argc, const char* argv[], int& current_argument_in
 	catch (const std::invalid_argument& exception) {
 		std::cout << "Error, not a valid integer: " << exception.what() << std::endl;
 	}
-	if (Vapi::PrepareNewRoute(temp_destination, temp_source) != Vapi::ROUTER_API_OK) {
+	if (Vapi::PrepareNewRoute(temp_destination, temp_source) != 0) {
 		PrintErrors(ET::Collector::GetErrorMessages());
 		return;
 	}
 };
 
 void cli::TakePreparedRoutes() {
-	if (Vapi::TakePreparedRoutes() != Vapi::ROUTER_API_OK) {
+	if (Vapi::TakePreparedRoutes() != 0) {
 		PrintErrors(ET::Collector::GetErrorMessages());
 		return;
 	}

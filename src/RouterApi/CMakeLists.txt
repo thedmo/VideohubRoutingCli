@@ -1,6 +1,4 @@
 # Router Api LIBRARY
-add_subdirectory(sql_access)
-add_subdirectory(sql_interface)
 add_subdirectory(SqlAccessHandler)
 add_subdirectory(DataHandler)
 add_subdirectory(TelnetClient)
@@ -47,7 +45,6 @@ add_library(RouterApi_lib STATIC
         )
 
 target_link_libraries(RouterApi_lib PUBLIC
-            sql_interface_lib
             TelnetClient_lib
             DeviceDataLib
             ErrorTraceLib
@@ -58,7 +55,6 @@ target_include_directories(RouterApi_lib PUBLIC
             "./"            
             "ErrorTrace"
             "DeviceData"
-            "sql_interface"
             "TelnetClient"
         )
 

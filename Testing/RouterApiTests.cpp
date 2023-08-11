@@ -1,6 +1,5 @@
 #include <catch2/catch.hpp>
 #include <RouterApi.hpp>
-#include <SqliteInterface.hpp>
 #include <DataHandler.hpp>
 #include <MockupServer.h>
 
@@ -12,13 +11,9 @@ int InitializeStorage() {
 	result = DataHandler::ClearStorageFile("RouterDb");
 	if (result) return 1;
 
-	result = DataHandler::ClearStorageFile("router");
-	if (result) return 1;
-
 	result = DataHandler::InitializeStorage();
 	if (result) return 1;
 
-	vdb dataBase;
 	VhubMockup::StartServer();
 
 	return 0;
@@ -29,14 +24,6 @@ int AddMockDeviceToStorage(std::string ip) {
 	DataHandler::GetDataOfSelectedDevice(device);
 	device->ip = ip;
 
-
-	// OLD
-	vdb oldStorage;
-	oldStorage.insert_device_into_db(device);
-	// old
-
-
-	// NEW
 	DataHandler::AddDevice(device);
 	DataHandler::SelectDevice(device);
 	DataHandler::UpdateSelectedDeviceData(device);
@@ -98,8 +85,6 @@ TEST_CASE("Add new router to storage") {
 
 	result = InitializeStorage();
 
-	vdb dataBase;
-
 	std::string ip = "127.0.0.1";
 	result = Vapi::AddRouter(ip);
 	REQUIRE(result == 0);
@@ -137,9 +122,6 @@ TEST_CASE("Get list of entries from storage") {
 
 
 	std::string devicesString;
-	//Vapi::GetDevices(devicesString);
-	//isSame = devicesString == compareString;
-	//REQUIRE(isSame);
 
 	std::vector<std::string> stringList;
 	Vapi::GetDevicesList(stringList);
