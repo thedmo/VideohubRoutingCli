@@ -37,7 +37,7 @@ private:
     lock_route,
     unlock_route,
     list_routes,
-    mark_route_for_saving_old,
+    //mark_route_for_saving_old,
     mark_route_for_saving,
     save_routing,
     list_saved_routes,
@@ -59,7 +59,7 @@ private:
       {Flags::lock_route, "-l", "--lock"},
       {Flags::unlock_route, "-u", "--unlock"},
       {Flags::list_routes, "-Lr", "--list_routes"},
-      {Flags::mark_route_for_saving_old, "-m2", "--mark2"},
+      //{Flags::mark_route_for_saving_old, "-m2", "--mark2"},
       {Flags::mark_route_for_saving, "-m", "--mark"},
       {Flags::save_routing, "-sr", "--save_routes"},
       {Flags::list_saved_routes, "-lsr", "--list_saved_routings"},
@@ -85,7 +85,7 @@ private:
   void LockRoute(int argc, const char *argv[], int &current_argument_index);
   void UnlockRoute(int argc, const char *argv[], int &current_argument_index);
   void ListRoutes();
-  void MarkRoutForSavingOld(int argc, const char *argv[], int &current_argument_index);
+  //void MarkRoutForSavingOld(int argc, const char *argv[], int &current_argument_index);
   void MarkRoutForSaving(int argc, const char *argv[], int &current_argument_index);
   void SaveRouting(int argc, const char *argv[], int &current_argument_index);
   void ListSavedRoutings();
